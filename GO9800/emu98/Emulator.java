@@ -210,7 +210,7 @@ public class Emulator implements Runnable
       } while((memory_address & 0100000) != 0);
     }
 
-    indStr = indirect? ",I [" + intToOctalString(memory_address, 7) + "]" : "";
+    indStr = indirect? ",I [" + intToOctalString(memory_address, 6) + "]" : "";
 
     Memory m = memory[memory_address];
 
