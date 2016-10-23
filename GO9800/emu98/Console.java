@@ -570,7 +570,7 @@ public class Console extends JDialog implements ActionListener
     if (cmd.equals("MicroCodeLED")) {
       emu.dumpMicroCode = microCodeCheckBox.isSelected();
       if(microCodeCheckBox.isSelected())
-        columnLabels.setText("A      B      E M      T      Q      P       I          mcisqKDPMCS     AR1                     AR2                     bdx     PASA NEXT BRC IQN C XTR RC  SC  XC  TTM TTT AC");
+        columnLabels.setText("A      B      E M      T      Q      P      I          mcisqKDPMCS     AR1                     AR2                     bdx     PASA NEXT BRC IQN C XTR RC  SC  XC  TTM TTT AC");
       else
         columnLabels.setText("A      B      E I      mcisKDPMCS      P       OPCODE  INSTR           AR1                     AR2");
     }
