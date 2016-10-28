@@ -20,6 +20,7 @@
 /*
  * 30.06.2016 Rel. 2.00: class created 
  * 07.08.2016 Rel. 2.00: beta release
+ * 25.10.2016 Rel. 2.03: fixed ALU operation in shift cycle
  */
 
 package emu98;
@@ -421,7 +422,7 @@ public class IOunit
     int i;
 
     for(i = 0; i < count; i++) {
-      cpu.IOR.exec(); // execute ALU operation, defined in micro-instructions 0512+1207 (IO wait loop)
+      cpu.alu.exec(2); // execute ALU IOR operation, defined in micro-instructions 0512+1207 (IO wait loop)
       // load registers with input value from their shift sources
       Iregister.loadInput();
       cpu.Aregister.loadInput();

@@ -23,6 +23,7 @@
  * 13.08.2016 Rel. 2.01: change ALU operation to use ROM codes 
  * 04.10.2016 Rel. 2.02: optimizing BCD operations
  * 04.10.2016 Rel. 2.02: performance optimization by suppressing useless shift loops
+ * 25.10.2016 Rel. 2.03: ALU operations transfered to new class ALU
  */
 
 package emu98;
@@ -44,7 +45,9 @@ public class CPU
   Vector<StringBuffer> printBuffer;
   boolean decode = false;
 
-
+  // ALU
+  ALU alu;
+  
   // main memory
   Memory memory[];
 
@@ -105,19 +108,12 @@ public class CPU
   // micro code storage, each instruction has 28 bits
   int[] microCode_ROM;
 
-  // ALU operation storage
-  int[] ALU_ROM, ALUdecoded;
-
-  // BCD operation storage
-  int[] BCD_ROM, BCDdecoded;
-
   public CPU(Memory memory[])
   {
     MicroInstruction instr;
     int ac;
     int code, i;
     StringBuffer line;
-
 
     printBuffer = new Vector<StringBuffer>();
     this.memory = memory;
@@ -255,141 +251,9 @@ public class CPU
 
       printBuffer.add(line);
     }
-
-    // load and decode ALU ROM for faster execution
-    ALU_ROM = new int[256];
-    ALUdecoded = new int[256];
-    loadROMdump("ALUcode", ALU_ROM);
-
-    line = new StringBuffer("HP9800 ALU ROM Decoding:\n");
-    printBuffer.add(line);
-    line = new StringBuffer("B AC_ T C R S Y___ ADDR\n");
-    printBuffer.add(line);
-
-    for(int b = 0; b < 2; b++) // BCD = 0 or 1
-      for(int a = 0; a < 8; a++) // ALU code = 0...7
-        for(int t = 0; t < 2; t++) // T1 = 0 or 1
-          for(int c = 0; c < 2; c++) // binary carry = 0 or 1
-            for(int r = 0; r < 2; r++) // R-bus = 0 or 1
-              for(int s = 0; s < 2; s++) { // S-bus = 0 or 1
-                if(b == 0) {
-                  i = a & 0b101 | t << 1; // AC2,T1,AC0
-                  i = i << 2 | a & 0b10 | (1 - c); // AC1, BC is inverted
-                } else {
-                  i = 0b1000 | a & 0b100 | t << 1; // T1
-                  i = i << 1 | ~a >> 1 & 1 | ~a << 1 & 0b10; // T2, T3 (in BCD-mode AC0 and AC1 have to be replaced by inverted T2 and T3) 	
-                  i = i << 1 | (1 - c); // DC is inverted 
-                }
-
-                i = i << 1 | (1 - r); // Rbus is inverted
-                i = i << 1 | (1 - s); // Sbus is inverted
-                ALUdecoded[a << 5 | b << 4 | r << 3 | s << 2 | t << 1 | c] = ALU_ROM[i];
-
-                // print decoded operation
-                line = new StringBuffer("");
-                line.append(b);
-                line.append(" ");
-                line.append(intToBinaryString(a, 3));
-                line.append(" ");
-                line.append(t);
-                line.append(" ");
-                line.append(c);
-                line.append(" ");
-                line.append(r);
-                line.append(" ");
-                line.append(s);
-                line.append(" ");
-                line.append(intToBinaryString(ALU_ROM[i], 4));
-                line.append(" ");
-                line.append(i);
-                line.append("\n");
-
-                printBuffer.add(line);
-              }
-
-    // load and decode BCD ROM for faster execution
-    BCD_ROM = new int[256];
-    BCDdecoded = new int[256];
-    loadROMdump("BCDcode", BCD_ROM);
-
-    line = new StringBuffer("HP9800 BCD ROM Decoding:\n");
-    printBuffer.add(line);
-    line = new StringBuffer("U A__ Y__ T Z___ ADDR\n");
-    printBuffer.add(line);
-
-    for(int u = 0; u < 2; u++) // UTR = 0 or 1
-      for(int a = 0; a < 8; a++) // A-register A3-A1 = 0...7
-        for(int y = 0; y < 8; y++) // ALU-output Y2-Y0 = 0...7
-          for(int t = 0; t < 2; t++) { // T1 = 0 or 1
-            i = 1 - u; // UTR is inverted
-            i = i << 3 | y & 0b100; // Y2
-            i = i << 1 | a; // A3,A2,A1
-            i = i << 2 | y & 0b11; // Y1,Y0
-            i = i << 1 | t; // T1
-            BCDdecoded[a << 5 | y << 2 | t << 1 | u] = BCD_ROM[i];
-
-            // print decoded operation
-            line = new StringBuffer("");
-            line.append(u);
-            line.append(" ");
-            line.append(intToBinaryString(a, 3));
-            line.append(" ");
-            line.append(intToBinaryString(y, 3));
-            line.append(" ");
-            line.append(t);
-            line.append(" ");
-            line.append(intToBinaryString(BCD_ROM[i], 4));
-            line.append(" ");
-            line.append(i);
-            line.append("\n");
-
-            printBuffer.add(line);
-          }
-
-    System.out.print("HP9800 ALU test:");
-
-    int r, s, y, z;
-    int sum, DC, dc;
-
-    for(int c = 0; c < 2; c++) {
-      for(int a = 0; a < 10; a++) {
-        System.out.print("\n");
-        System.out.print(a);
-        System.out.print(c == 0? "+":"-");
-        for(int t = 0; t < 10; t++) {
-          System.out.print(t);
-          for(int d = 0; d < 2; d++) {
-           	r = a & 1; // R-bus
-           	s = t & 1; // S-bus
-            i = c << 2 | t >> 2 & 0b11;  // AC2,T3,T2
-            i = i << 5 | 0b10000 | r << 3 | s << 2 | t & 0b10 | d;
-            y = ALUdecoded[i];
-            
-            i = (a & 0b1110) << 4 | (y & 0b111) << 2 | t &0b10 | 0;
-            z = BCDdecoded[i];
-
-            dc = z & 1;
-            z = z & 0b1110 | y >> 3;
-
-            if(c == 0) { // compare BCD ADD result
-              sum = a + t + d;
-            } else {// compare BCD SUB result
-              sum = a + 9 - t + d;
-            }
-
-            if(sum >= 10) {
-              sum -= 10;
-              DC = 1;
-            } else
-              DC = 0;
-
-            if(sum != z || DC != dc) {
-              System.out.print(":failure ");
-            }
-          }
-        }
-      }
-    }
+    
+    // initialize ALU
+    alu = new ALU();
 
     System.out.println("\nHP9800 CPU loaded.");
   }
@@ -502,7 +366,6 @@ public class CPU
   {
     MicroInstruction instr;
     int clock, i;
-    int addr, a, b, d, r, s, t, u, y, z;
     boolean brc = false;
     StringBuffer line = null; 
     Register reg;
@@ -604,42 +467,12 @@ public class CPU
         clock = -1;
 
     // prepare ALU parameters
-    b = BC;
-    u = instr.RC == UTR? 1 : 0;
-    z = 0;
+    alu.init(BC, instr.RC == UTR? 1 : 0, instr.BCD);
 
     // shift loop
     do {
       // execute ALU operation
-      a = instr.ALUcode;
-      d = DC;
-      r = Rbus.getOutput();
-      s = Sbus.getOutput();
-      t = Tregister.getValue();
-
-      if(instr.BCD == 0) {
-        addr = a << 5 | r << 3 | s << 2 | t & 0b10 | b;
-      } else {
-        addr = a & 0b100 | t >> 2 & 0b11;
-        addr = addr << 5 | 0b10000 | r << 3 | s << 2 | t & 0b10 | d;
-      }
-
-      y = ALUdecoded[addr];
-      Tbus.setValue(y >> 3); // put Y3 into T-bus
-
-      if(instr.BCD == 0) {
-        // change binary carry only if A2=1 (carry relevant operations)
-        if((a & 0b100) != 0)
-          b = y >> 2 & 1; // put Y2 into temp. BC
-      } else {
-        a = Aregister.getValue();
-        addr = (a & 0b1110) << 4 | (y & 0b111) << 2 | t &0b10 | u;
-        z = BCDdecoded[addr];
-
-        // transfer results to Aregister and DC only after shift loop (when ROMCLK 1->0)
-        d = z & 1; // decimal carry
-        z = z & 0b1110 | Tbus.getValue();
-      }
+      alu.exec(instr.ALUcode);
   
       // branch condition must be checked before last shift and executed after shifting (falling edge of ROMCLK loads PC-register)
       if(instr.BRC == 1)
@@ -652,7 +485,7 @@ public class CPU
         }
 
         if(instr.BCD == 0 && clock >= 0) // set binary carry only in case of a performance optimized loop
-          BC = b;
+          BC = alu.bc;
         
         break; // exit loop
       }
@@ -669,16 +502,16 @@ public class CPU
       
       // binary carry FF is set and cleared only during shift operation (ROMCLK = 1)
       if(instr.BCD == 0)
-        BC = b;
+        BC = alu.bc;
       
     } while(--clock >= 0);
 
     // finish BCD operations after shift loop, when ROMCLK changes 1->0 
     if(instr.BCD == 1) {
       // transfer BCD result to A only if UTR false
-      if(u == 0)
-        Aregister.setValue((Aregister.getValue() & 0xfff0) | z);
-      DC = d; // set decimal carry (SDC is implemented in BCD ROM with UTR=1
+      if(alu.utr == 0)
+        Aregister.setValue((Aregister.getValue() & 0xfff0) | alu.z);
+      DC = alu.dc; // set decimal carry (SDC is implemented in BCD ROM with UTR=1
     }
     
     if(brc)
@@ -687,6 +520,199 @@ public class CPU
 
     // cleanup shift sources to register rotation
     cleanSources();
+  }
+
+  public class ALU
+  {
+    // ALU operation storage
+    int[] ALU_ROM, ALUdecoded;
+
+    // BCD operation storage
+    int[] BCD_ROM, BCDdecoded;
+
+    int i, bc, dc, r, s, t, bcd, utr, y, z;
+    StringBuffer line;
+
+    public ALU()
+    {
+      int xy, sum;
+
+      // load and decode ALU ROM for faster execution
+      ALU_ROM = new int[256];
+      ALUdecoded = new int[256];
+      loadROMdump("ALUcode", ALU_ROM);
+
+      line = new StringBuffer("HP9800 ALU ROM Decoding:\n");
+      printBuffer.add(line);
+      line = new StringBuffer("B AC_ T C R S Y___ ADDR\n");
+      printBuffer.add(line);
+
+      for(int b = 0; b < 2; b++) // BCD = 0 or 1
+        for(int a = 0; a < 8; a++) // ALU code = 0...7
+          for(int t = 0; t < 2; t++) // T1 = 0 or 1
+            for(int c = 0; c < 2; c++) // binary carry = 0 or 1
+              for(int r = 0; r < 2; r++) // R-bus = 0 or 1
+                for(int s = 0; s < 2; s++) { // S-bus = 0 or 1
+                  if(b == 0) {
+                    i = a & 0b101 | t << 1; // AC2,T1,AC0
+                    i = i << 2 | a & 0b10 | (1 - c); // AC1, BC is inverted
+                  } else {
+                    i = 0b1000 | a & 0b100 | t << 1; // T1
+                    i = i << 1 | ~a >> 1 & 1 | ~a << 1 & 0b10; // T2, T3 (in BCD-mode AC0 and AC1 have to be replaced by inverted T2 and T3)  
+                    i = i << 1 | (1 - c); // DC is inverted 
+                  }
+
+                  i = i << 1 | (1 - r); // Rbus is inverted
+                  i = i << 1 | (1 - s); // Sbus is inverted
+                  ALUdecoded[a << 5 | b << 4 | r << 3 | s << 2 | t << 1 | c] = ALU_ROM[i];
+
+                  // print decoded operation
+                  line = new StringBuffer("");
+                  line.append(b);
+                  line.append(" ");
+                  line.append(intToBinaryString(a, 3));
+                  line.append(" ");
+                  line.append(t);
+                  line.append(" ");
+                  line.append(c);
+                  line.append(" ");
+                  line.append(r);
+                  line.append(" ");
+                  line.append(s);
+                  line.append(" ");
+                  line.append(intToBinaryString(ALU_ROM[i], 4));
+                  line.append(" ");
+                  line.append(i);
+                  line.append("\n");
+
+                  printBuffer.add(line);
+                }
+
+      // load and decode BCD ROM for faster execution
+      BCD_ROM = new int[256];
+      BCDdecoded = new int[256];
+      loadROMdump("BCDcode", BCD_ROM);
+
+      line = new StringBuffer("HP9800 BCD ROM Decoding:\n");
+      printBuffer.add(line);
+      line = new StringBuffer("U A__ Y__ T Z___ ADDR\n");
+      printBuffer.add(line);
+
+      for(int u = 0; u < 2; u++) // UTR = 0 or 1
+        for(int a = 0; a < 8; a++) // A-register A3-A1 = 0...7
+          for(int y = 0; y < 8; y++) // ALU-output Y2-Y0 = 0...7
+            for(int t = 0; t < 2; t++) { // T1 = 0 or 1
+              i = 1 - u; // UTR is inverted
+              i = i << 3 | y & 0b100; // Y2
+              i = i << 1 | a; // A3,A2,A1
+              i = i << 2 | y & 0b11; // Y1,Y0
+              i = i << 1 | t; // T1
+              BCDdecoded[a << 5 | y << 2 | t << 1 | u] = BCD_ROM[i];
+
+              // print decoded operation
+              line = new StringBuffer("");
+              line.append(u);
+              line.append(" ");
+              line.append(intToBinaryString(a, 3));
+              line.append(" ");
+              line.append(intToBinaryString(y, 3));
+              line.append(" ");
+              line.append(t);
+              line.append(" ");
+              line.append(intToBinaryString(BCD_ROM[i], 4));
+              line.append(" ");
+              line.append(i);
+              line.append("\n");
+
+              printBuffer.add(line);
+            }
+
+      System.out.print("HP9800 ALU test:");
+
+      for(int c = 0; c < 2; c++) {
+        for(int a = 0; a < 10; a++) {
+          System.out.print("\n");
+          System.out.print(a);
+          System.out.print(c == 0? "+":"-");
+          for(int t = 0; t < 10; t++) {
+            System.out.print(t);
+            for(int d = 0; d < 2; d++) {
+              r = a & 1; // R-bus
+              s = t & 1; // S-bus
+              i = c << 2 | t >> 2 & 0b11;  // AC2,T3,T2
+              i = i << 5 | 0b10000 | r << 3 | s << 2 | t & 0b10 | d;
+              y = ALUdecoded[i];
+              
+              i = (a & 0b1110) << 4 | (y & 0b111) << 2 | t &0b10 | 0;
+              z = BCDdecoded[i];
+
+              xy = z & 1;
+              z = z & 0b1110 | y >> 3;
+
+              if(c == 0) { // compare BCD ADD result
+                sum = a + t + d;
+              } else {// compare BCD SUB result
+                sum = a + 9 - t + d;
+              }
+
+              if(sum >= 10) {
+                sum -= 10;
+                DC = 1;
+              } else
+                DC = 0;
+
+              if(sum != z || DC != xy) {
+                System.out.print(":failure ");
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    public void init(int BC, int utr, int bcd)
+    {
+      // prepare ALU parameters
+      bc = BC;
+      this.bcd = bcd;
+      this.utr = utr;
+      z = 0;
+    }
+    
+    public int exec(int ac)
+    {
+      // execute ALU operation
+      dc = DC;
+      r = Rbus.getOutput();
+      s = Sbus.getOutput();
+      t = Tregister.getValue();
+
+      if(bcd == 0) {
+        i = ac << 5 | r << 3 | s << 2 | t & 0b10 | bc;
+      } else {
+        i = ac & 0b100 | t >> 2 & 0b11;
+        i = i << 5 | 0b10000 | r << 3 | s << 2 | t & 0b10 | dc;
+      }
+
+      y = ALUdecoded[i];
+      Tbus.setValue(y >> 3); // put Y3 into T-bus
+
+      if(bcd == 0) {
+        // change binary carry only if A2=1 (carry relevant operations)
+        if((ac & 0b100) != 0)
+          bc = y >> 2 & 1; // put Y2 into temp. BC
+      } else {
+        ac = Aregister.getValue();
+        i = (ac & 0b1110) << 4 | (y & 0b111) << 2 | t &0b10 | utr;
+        z = BCDdecoded[i];
+
+        // transfer results to Aregister and DC only after shift loop (when ROMCLK 1->0)
+        dc = z & 1; // decimal carry
+        z = z & 0b1110 | Tbus.getValue();
+      }
+
+      return(z);
+    }
   }
 
   public void POP()
@@ -1319,7 +1345,6 @@ public class CPU
 
     public void exec()
     {
-      Tbus.setValue(Rbus.getOutput() | Sbus.getOutput()); // operation used by IOunit.shift()
     }
   }
 
