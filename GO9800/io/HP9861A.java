@@ -74,10 +74,10 @@ public class HP9861A extends IOdevice implements Printable
 
     //fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav");
     // load print sound
-    typeSound = new SoundMedia("media/HP9861A/HP9861_TYPE.wav");
-    spaceSound = new SoundMedia("media/HP9861A/HP9861_SPC.wav");
-    crSound = new SoundMedia("media/HP9861A/HP9861_CR.wav");
-    lfSound = new SoundMedia("media/HP9861A/HP9861_LF.wav");
+    typeSound = new SoundMedia("media/HP9861A/HP9861_TYPE.wav", true);
+    spaceSound = new SoundMedia("media/HP9861A/HP9861_SPC.wav", true);
+    crSound = new SoundMedia("media/HP9861A/HP9861_CR.wav", true);
+    lfSound = new SoundMedia("media/HP9861A/HP9861_LF.wav", true);
     /*
     fanSound.loop();
      */

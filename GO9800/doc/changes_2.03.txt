@@ -7,7 +7,6 @@ Changes in Release 2.03
 Change: ALU now in separate class and use in IOunit fixed
 Bugfix: Minor bug in console output fixed
 
-
 Changes in Release 2.02
 =======================
 Change: Performance optimization in microcode execution and register shifting

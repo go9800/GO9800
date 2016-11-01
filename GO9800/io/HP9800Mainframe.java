@@ -136,7 +136,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     addKeyListener(this);
     addWindowListener(new windowListener());
 
-    fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav");
+    fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", false);
   
     fanSound.loop();
 
@@ -150,8 +150,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     setLocation(0, 100);
     
     if(!machine.startsWith("HP9830")) {
-      printSound = new SoundMedia("media/HP9810A/HP9810A_PRINT_LINE.wav");
-      paperSound = new SoundMedia("media/HP9810A/HP9810A_PAPER.wav");
+      printSound = new SoundMedia("media/HP9810A/HP9810A_PRINT_LINE.wav", false);
+      paperSound = new SoundMedia("media/HP9810A/HP9810A_PAPER.wav", true);
       paperWhite = new Color(230, 230, 230);
       paperGray = new Color(100, 100, 85);
       initializeBuffer();

@@ -89,9 +89,9 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
     WAIT_INSERT = 2 * ioUnit.time_100ms;
 
     // generate motor sound
-    startSound = new SoundMedia("media/HP9800/HP9800_CARD_START.wav");
-    loopSound = new SoundMedia("media/HP9800/HP9800_CARD_MOTOR.wav");
-    cardSound = new SoundMedia("media/HP9800/HP9800_CARD_IN.wav");
+    startSound = new SoundMedia("media/HP9800/HP9800_CARD_START.wav", true);
+    loopSound = new SoundMedia("media/HP9800/HP9800_CARD_MOTOR.wav", true);
+    cardSound = new SoundMedia("media/HP9800/HP9800_CARD_IN.wav", false);
 
     System.out.println("HP9800 Magnetic Card Reader loaded.");
   }

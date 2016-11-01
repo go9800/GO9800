@@ -28,6 +28,8 @@
  * 01.09.2007 Rel. 1.20 Added method isEnabled()
  * 13.08.2008 Rel. 1.30 Bugfix: handle exception if sound output completely unvailable.
  * 19.11.2011 Rel. 1.51 Bugfix: added BufferedInputStream to creation of AudioInputStream for OpenJDK
+ * 01.11.2016 Rel. 2.04 Added methods close() and getMaxLines()
+ * 01.11.2016 Rel. 2.04 Added class parameter 'discardable' to ignore sounds on hosts with a limited number of mixer lines 
  */
 
 package io;
@@ -42,9 +44,9 @@ public class SoundMedia
   private static boolean enabled = true;
   private static final Mixer smMixer;
   private static final boolean DIRECT = false;
+  private static int maxlines;
   
   static {
-    int maxlines;
     Mixer mixer = null;
     
     try {
@@ -69,8 +71,12 @@ public class SoundMedia
     smMixer = mixer;
   }
 
-  public SoundMedia(String soundFile)
+  public SoundMedia(String soundFile, boolean discardable)
   {
+  	// can sound be discarded if not enough lines are available?
+  	if(maxlines != AudioSystem.NOT_SPECIFIED && maxlines < 16 && discardable)
+  		return;
+  	
     try {
       ais = AudioSystem.getAudioInputStream(new BufferedInputStream(getClass().getResourceAsStream("/" + soundFile)));
       DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
@@ -86,15 +92,7 @@ public class SoundMedia
       }
         
       soundClip.open(ais);
-    } catch(IOException e) {
-      System.err.println(soundFile + ": " + e);
-    } catch (UnsupportedAudioFileException e) {
-      System.err.println(soundFile + ": " + e);
-    } catch (LineUnavailableException e) {
-      System.err.println(soundFile + ": " + e);
-    } catch (IllegalArgumentException e) {
-      System.err.println(soundFile + ": " + e);
-    } catch (NullPointerException e) {
+    } catch(IOException | UnsupportedAudioFileException | LineUnavailableException | IllegalArgumentException | NullPointerException e) {
       System.err.println(soundFile + ": " + e);
     }
   }
@@ -165,5 +163,16 @@ public class SoundMedia
   public Clip getClip()
   {
     return(soundClip);
+  }
+
+
+  public void close()
+  {
+    soundClip.close();
+  }
+  
+  public int getMaxLines()
+  {
+  	return(maxlines);
   }
 }

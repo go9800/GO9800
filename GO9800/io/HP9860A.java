@@ -57,7 +57,7 @@ public class HP9860A extends IOdevice
     super("HP9860A");
 
     // generate motor sound
-    cardReaderSound = new SoundMedia("media/HP9860A/HP9860_CARD.wav");
+    cardReaderSound = new SoundMedia("media/HP9860A/HP9860_CARD.wav", false);
     WAIT_CHAR = IOinterface.ioReg.time_30ms;
     hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg").getImage();
     setResizable(false);

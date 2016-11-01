@@ -93,10 +93,10 @@ public class HP9862A extends IOdevice implements Printable
   {
     super("HP9862A"); // set window title
 
-    plotSound = new SoundMedia("media/HP9862A/HP9862_PLOT.wav");
-    moveSound = new SoundMedia("media/HP9862A/HP9862_MOVE.wav");
-    penDownSound = new SoundMedia("media/HP9862A/HP9862_PEN_DOWN.wav");
-    penUpSound = new SoundMedia("media/HP9862A/HP9862_PEN_UP.wav");
+    plotSound = new SoundMedia("media/HP9862A/HP9862_PLOT.wav", true);
+    moveSound = new SoundMedia("media/HP9862A/HP9862_MOVE.wav", true);
+    penDownSound = new SoundMedia("media/HP9862A/HP9862_PEN_DOWN.wav", true);
+    penUpSound = new SoundMedia("media/HP9862A/HP9862_PEN_UP.wav", true);
 
     setSize(DEFAULT_SIZE + 30, DEFAULT_SIZE + 20);
     //hp9862aImage = getToolkit().getImage("media/HP9862A/HP9862A.jpg");

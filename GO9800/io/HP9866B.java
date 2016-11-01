@@ -186,12 +186,10 @@ public class HP9866B extends IOdevice implements Printable
     super("HP9866B"); // set window title
     addWindowListener(new windowListener());
 
-    fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav");
+    //fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", true);
+    //fanSound.loop();
     // load print sound
-    printSound = new SoundMedia("media/HP9866A/HP9866_PRINT.wav");
-    /*
-    fanSound.loop();
-     */
+    printSound = new SoundMedia("media/HP9866A/HP9866_PRINT.wav", false);
 
     paperColor = Color.WHITE;
     printColor = Color.BLUE;

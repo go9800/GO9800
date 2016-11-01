@@ -141,15 +141,15 @@
       private void loadSound()
       {
         // generate door sound
-        doorOpenSound = new SoundMedia("media/HP9865A/HP9865_DOOR_OPEN.wav");
-        doorCloseSound = new SoundMedia("media/HP9865A/HP9865_DOOR_CLOSE.wav");
+        doorOpenSound = new SoundMedia("media/HP9865A/HP9865_DOOR_OPEN.wav", true);
+        doorCloseSound = new SoundMedia("media/HP9865A/HP9865_DOOR_CLOSE.wav", true);
 
         // generate motor sound
-        motorStartSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_START.wav");
-        motorStopSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_STOP.wav");
-        motorSlowSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_SLOW.wav");
-        motorFastSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_FAST.wav");
-        motorRewindSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_REWIND.wav");
+        motorStartSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_START.wav", true);
+        motorStopSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_STOP.wav", true);
+        motorSlowSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_SLOW.wav", true);
+        motorFastSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_FAST.wav", true);
+        motorRewindSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_REWIND.wav", true);
       }
       
       public boolean openTapeFile()
