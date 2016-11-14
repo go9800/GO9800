@@ -23,7 +23,8 @@
  * 13.08.2016 Rel. 2.01: change ALU operation to use ROM codes 
  * 04.10.2016 Rel. 2.02: optimizing BCD operations
  * 04.10.2016 Rel. 2.02: performance optimization by suppressing useless shift loops
- * 25.10.2016 Rel. 2.03: ALU operations transfered to new class ALU
+ * 25.10.2016 Rel. 2.04: ALU operations transfered to new class ALU
+ * 06.11.2016	Rel. 2.04: Further performance optimizations in ALU 
  */
 
 package emu98;
@@ -467,12 +468,12 @@ public class CPU
         clock = -1;
 
     // prepare ALU parameters
-    alu.init(BC, instr.RC == UTR? 1 : 0, instr.BCD);
+    alu.init(BC, instr.RC == UTR? 1 : 0, instr.ALUcode, instr.BCD);
 
     // shift loop
     do {
       // execute ALU operation
-      alu.exec(instr.ALUcode);
+      alu.exec();
   
       // branch condition must be checked before last shift and executed after shifting (falling edge of ROMCLK loads PC-register)
       if(instr.BRC == 1)
@@ -530,7 +531,7 @@ public class CPU
     // BCD operation storage
     int[] BCD_ROM, BCDdecoded;
 
-    int i, bc, dc, r, s, t, bcd, utr, y, z;
+    int i, ac, ac3, bc, dc, r, s, rst, t, t1, bcd, utr, y, z;
     StringBuffer line;
 
     public ALU()
@@ -670,28 +671,35 @@ public class CPU
       }
     }
     
-    public void init(int BC, int utr, int bcd)
+    public void init(int BC, int utr, int ac, int bcd)
     {
-      // prepare ALU parameters
+      // prepare ALU parameters for performance optimization
       bc = BC;
+      dc = DC;
+      this.ac = ac << 5;
+      ac3 = this.ac & 0b10000000;
       this.bcd = bcd;
       this.utr = utr;
       z = 0;
     }
     
-    public int exec(int ac)
+    public int exec(int ac)  // used by IOunit
+    {
+    	this.ac = ac << 5;
+    	return(exec());
+    }
+    
+    public int exec()
     {
       // execute ALU operation
-      dc = DC;
-      r = Rbus.getOutput();
-      s = Sbus.getOutput();
       t = Tregister.getValue();
+      t1 = t & 0b10;
+      rst = Rbus.getOutput() << 3 | Sbus.getOutput() << 2 | t1;
 
       if(bcd == 0) {
-        i = ac << 5 | r << 3 | s << 2 | t & 0b10 | bc;
+        i = ac | rst | bc;
       } else {
-        i = ac & 0b100 | t >> 2 & 0b11;
-        i = i << 5 | 0b10000 | r << 3 | s << 2 | t & 0b10 | dc;
+        i = ac3 | t << 3 & 0b1100000 | 0b10000 | rst | DC;
       }
 
       y = ALUdecoded[i];
@@ -699,11 +707,10 @@ public class CPU
 
       if(bcd == 0) {
         // change binary carry only if A2=1 (carry relevant operations)
-        if((ac & 0b100) != 0)
+        if(ac3 != 0)
           bc = y >> 2 & 1; // put Y2 into temp. BC
       } else {
-        ac = Aregister.getValue();
-        i = (ac & 0b1110) << 4 | (y & 0b111) << 2 | t &0b10 | utr;
+        i = (Aregister.getValue() & 0b1110) << 4 | (y & 0b111) << 2 | t1 | utr;
         z = BCDdecoded[i];
 
         // transfer results to Aregister and DC only after shift loop (when ROMCLK 1->0)
