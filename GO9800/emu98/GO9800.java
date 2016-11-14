@@ -74,7 +74,7 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.03, Copyright (C) 2006-2016 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.04, Copyright (C) 2006-2016 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to");
     System.out.println("redistribute it under certain conditions.\n");
