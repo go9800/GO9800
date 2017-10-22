@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2012 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -48,6 +48,7 @@
  * 18.01.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on ROM block
  * 18.03.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on handle of top cover
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
+ * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
  */
 
 package io.HP9810A;
@@ -150,8 +151,9 @@ public class HP9810AMainframe extends HP9800Mainframe
   {
     public void mousePressed(MouseEvent event)
     {
-      int x = event.getX() - getInsets().left;
-      int y = event.getY() - getInsets().top;
+    	// get unscaled coordinates of mouse position
+      int x = (int)((event.getX() - getInsets().left) / scaleWidth); 
+      int y = (int)((event.getY() - getInsets().top) / scaleHeight);
       
       // ROM block area
       if((y > 10 && y < 50) && (x >= 25 && x <= 475)) {
@@ -249,31 +251,34 @@ public class HP9810AMainframe extends HP9800Mainframe
     int i, j;
     int x = getInsets().left;
     int y = getInsets().top;
+    
+    // get scaling parameters
+    super.paint(g);
 
-    backgroundImage = g.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
+    backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
 
     if(backgroundImage) {
       // get images of ROM modules and template
       MemoryBlock block = (MemoryBlock)emu.memoryBlocks.get("Slot1");
 
       if(block != null) {
-        g.drawImage(block.getModule(), x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);
+        g2d.drawImage(block.getModule(), x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);
         // draw ROM template
-        g.drawImage(block.getTemplate(), x + TEMPLATE_X, y + TEMPLATE_Y, TEMPLATE_W, TEMPLATE_H, this);
+        g2d.drawImage(block.getTemplate(), x + TEMPLATE_X, y + TEMPLATE_Y, TEMPLATE_W, TEMPLATE_H, this);
       }
         
       block = (MemoryBlock)emu.memoryBlocks.get("Slot2");
       if(block != null) {
-        g.drawImage(block.getModule(), x + BLOCK2_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);
+        g2d.drawImage(block.getModule(), x + BLOCK2_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);
       }
         
       block = (MemoryBlock)emu.memoryBlocks.get("Slot3");
       if(block != null) {
-        g.drawImage(block.getModule(), x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);
+        g2d.drawImage(block.getModule(), x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);
       }
 
       // draw display area
-      g.drawImage(displayImage, x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W, DISPLAY_H, this);
+      g2d.drawImage(displayImage, x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W, DISPLAY_H, this);
 
       // draw keyboard LEDs
       displayLEDs(ioUnit.bus.display.getKeyLEDs());
@@ -297,81 +302,79 @@ public class HP9810AMainframe extends HP9800Mainframe
     int x = getInsets().left;
     int y = getInsets().top;
 
-    Graphics g = this.getGraphics();
-    
     // STATUS
     if((keyLEDs & 0x10) != 0) {
-      g.drawImage(ledLargeOn, x + STATUS_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOn, x + STATUS_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     } else {
-      g.drawImage(ledLargeOff, x + STATUS_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOff, x + STATUS_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     }
 
     // FLOAT / FIX
     if((keyLEDs & 0x80) != 0) {
-      g.drawImage(ledLargeOn, x + FLOAT_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
-      g.drawImage(ledLargeOff, x + FIX_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOn, x + FLOAT_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOff, x + FIX_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     } else {
-      g.drawImage(ledLargeOff, x + FLOAT_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
-      g.drawImage(ledLargeOn, x + FIX_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOff, x + FLOAT_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOn, x + FIX_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     }
 
     // RUN / PRGM
     if((keyLEDs & 0x02) != 0) {
-      g.drawImage(ledLargeOn, x + RUN_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
-      g.drawImage(ledLargeOff, x + PRGM_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOn, x + RUN_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOff, x + PRGM_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     } else {
-      g.drawImage(ledLargeOff, x + RUN_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
-      g.drawImage(ledLargeOn, x + PRGM_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOff, x + RUN_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOn, x + PRGM_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     }
     
     // KEY LOG
     if((keyLEDs & 0x04) != 0) {
-      g.drawImage(ledLargeOn, x + KEYLOG_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOn, x + KEYLOG_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     } else {
-      g.drawImage(ledLargeOff, x + KEYLOG_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOff, x + KEYLOG_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     }
     
     // INSERT CARD
     if((keyLEDs & 0x01) != 0) {
-      g.drawImage(ledLargeOn, x + CARD_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOn, x + CARD_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     } else {
-      g.drawImage(ledLargeOff, x + CARD_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledLargeOff, x + CARD_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
     }
     
     // check if ROM template is present
      if(((MemoryBlock)emu.memoryBlocks.get("Slot1")).getTemplate() == null) {
       if((keyLEDs & 0x20) != 0) {
-        g.drawImage(ledLargeOn, x + LED1_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
+        g2d.drawImage(ledLargeOn, x + LED1_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
       }
 
       if((keyLEDs & 0x40) != 0) {
-        g.drawImage(ledLargeOn, x + LED2_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
+        g2d.drawImage(ledLargeOn, x + LED2_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
       }
 
       if((keyLEDs & 0x08) != 0) {
-        g.drawImage(ledLargeOn, x + LED3_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
+        g2d.drawImage(ledLargeOn, x + LED3_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
       }
     } else {
       // LED 1
-      g.drawImage((keyLEDs & 0x20) != 0 ? ledSmallOn : ledSmallOff, x + LED1_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
+      g2d.drawImage((keyLEDs & 0x20) != 0 ? ledSmallOn : ledSmallOff, x + LED1_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
 
       // LED 2
-      g.drawImage((keyLEDs & 0x40) != 0 ? ledSmallOn : ledSmallOff, x + LED2_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
+      g2d.drawImage((keyLEDs & 0x40) != 0 ? ledSmallOn : ledSmallOff, x + LED2_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
 
       // LED 3
-      g.drawImage((keyLEDs & 0x08) != 0 ? ledSmallOn : ledSmallOff, x + LED3_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
+      g2d.drawImage((keyLEDs & 0x08) != 0 ? ledSmallOn : ledSmallOff, x + LED3_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
     }
   }
   
   public void display(int reg, int i)
   {
-    int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
-    int x = getInsets().left;
-    int y = getInsets().top;
-    int x1, y1, y2, segments;
-    Graphics g = this.getGraphics();
+    if(backgroundImage && this.getGraphics() != null) {
+    	super.paint(this.getGraphics());
+      int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
+      int x = getInsets().left;
+      int y = getInsets().top;
+      int x1, y1, y2, segments;
 
-    if(backgroundImage && g != null) {
       segments = displayBuffer[reg][i];
 
       // graphic digit position
@@ -384,51 +387,51 @@ public class HP9810AMainframe extends HP9800Mainframe
       y2 = y1 + LED_SEGMENT_SIZE;
 
 
-      g.setColor(ledBack);
-      g.fillRect(x, y, LED_SEGMENT_SIZE + 5, 2 * LED_SEGMENT_SIZE+1);
-      g.setColor(ledRed);
+      g2d.setColor(ledBack);
+      g2d.fillRect(x - 1, y - 1, LED_SEGMENT_SIZE + 6, 2 * LED_SEGMENT_SIZE + 3); // draw digit background slightly greater than segment area
+      g2d.setColor(ledRed);
 
       if(segments == 0)
         return;
 
       // segment a
       if((segments & 0x40) != 0) {
-        g.drawLine(x+3, y, x1+1, y);
+        g2d.drawLine(x+3, y, x1+1, y);
       }
 
       // segment b
       if((segments & 0x20) != 0) {
-        g.drawLine(x1+2, y, x1+1, y1);
+        g2d.drawLine(x1+2, y, x1+1, y1);
       }
 
       // segment c
       if((segments & 0x02) != 0) {
-        g.drawLine(x1+1, y1, x1, y2);
+        g2d.drawLine(x1+1, y1, x1, y2);
       }
 
       // segment d
       if((segments & 0x04) != 0) {
-        g.drawLine(x+1, y2, x1-1, y2);
+        g2d.drawLine(x+1, y2, x1-1, y2);
       }
 
       // segment e
       if((segments & 0x08) != 0) {
-        g.drawLine(x+1, y1, x, y2);
+        g2d.drawLine(x+1, y1, x, y2);
       }
 
       // segment f
       if((segments & 0x80) != 0) {
-        g.drawLine(x+2, y, x+1, y1);
+        g2d.drawLine(x+2, y, x+1, y1);
       }
 
       // segment g
       if((segments & 0x10) != 0) {
-        g.drawLine(x+2, y1, x1, y1);
+        g2d.drawLine(x+2, y1, x1, y1);
       }
 
       // segment p
       if((segments & 0x01) != 0) {
-        g.drawLine(x1+2, y2, x1+2, y2);
+        g2d.drawLine(x1+2, y2, x1+2, y2);
       }
     }
   }

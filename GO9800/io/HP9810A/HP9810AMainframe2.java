@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,6 +20,7 @@
 /*
  * 07.04.2007 Class derived from HP9810A mainframe 
  * 05.03.2008 Rel. 1.21 Bugfix: DEN is now longer evaluated in display() method
+ * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
  */
 
 package io.HP9810A;
@@ -64,51 +65,52 @@ public class HP9810AMainframe2 extends HP9810AMainframe
       y2 = y1 + LED_SEGMENT_SIZE;
 
 
-      g.setColor(ledBack);
-      g.fillRect(x, y, LED_SEGMENT_SIZE+1, 2 * LED_SEGMENT_SIZE+1);
-      g.setColor(ledRed);
+      //g.fillRect(x, y, LED_SEGMENT_SIZE+1, 2 * LED_SEGMENT_SIZE+1);
+      g2d.setColor(ledBack);
+      g2d.fillRect(x - 1, y - 1, LED_SEGMENT_SIZE + 2, 2 * LED_SEGMENT_SIZE + 2); // draw digit background slightly greater than segment area
+      g2d.setColor(ledRed);
 
       if(segments == 0)
         return;
 
       // segment a
       if((segments & 0x40) != 0) {
-        g.drawLine(x, y, x1, y);
+        g2d.drawLine(x, y, x1, y);
       }
 
       // segment b
       if((segments & 0x20) != 0) {
-        g.drawLine(x1, y, x1, y1);
+        g2d.drawLine(x1, y, x1, y1);
       }
 
       // segment c
       if((segments & 0x02) != 0) {
-        g.drawLine(x1, y1, x1, y2);
+        g2d.drawLine(x1, y1, x1, y2);
       }
 
       // segment d
       if((segments & 0x04) != 0) {
-        g.drawLine(x, y2, x1, y2);
+        g2d.drawLine(x, y2, x1, y2);
       }
 
       // segment e
       if((segments & 0x08) != 0) {
-        g.drawLine(x, y1, x, y2);
+        g2d.drawLine(x, y1, x, y2);
       }
 
       // segment f
       if((segments & 0x80) != 0) {
-        g.drawLine(x, y, x, y1);
+        g2d.drawLine(x, y, x, y1);
       }
 
       // segment g
       if((segments & 0x10) != 0) {
-        g.drawLine(x, y1, x1, y1);
+        g2d.drawLine(x, y1, x1, y1);
       }
 
       // segment p
       if((segments & 0x01) != 0) {
-        g.drawLine(x1-1, y2, x1-1, y2);
+        g2d.drawLine(x1-1, y2, x1-1, y2);
       }
     }
   }

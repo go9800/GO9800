@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2012 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@
  * 30.10.2011 Rel. 1.50 Added original HP9821A system ROMs (finally!)
  * 30.10.2011 Rel. 1.50 Added beeper, changed internal tape select code to 10
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
+ * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
  */
 
 package io.HP9821A;
@@ -67,6 +68,9 @@ public class HP9821AMainframe extends HP9820AMainframe
     keyOffsetX = HP9821keyOffsetX;
     keyCodes = HP9821keyCodes;
 
+    KEYB_W = 1065;
+    KEYB_H = 650;
+    
     DISPLAY_X = 74;
     DISPLAY_Y = 133;
     DISPLAY_W = 75;
@@ -133,8 +137,9 @@ public class HP9821AMainframe extends HP9820AMainframe
   {
     public void mousePressed(MouseEvent event)
     {
-      int x = event.getX() - getInsets().left;
-      int y = event.getY() - getInsets().top;
+    	// get unscaled coordinates of mouse position
+      int x = (int)((event.getX() - getInsets().left) / scaleWidth); 
+      int y = (int)((event.getY() - getInsets().top) / scaleHeight);
 
       if((y > 10 && y < 50) && (x >= 25 && x <= 475)) {
         int block = (x - 25) / 150 + 1;

@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,6 +36,7 @@
  * 18.04.2016 Rel. 1.61 Fixed displacement of keyMatrix for HP9830B
  * 25.06.2016 Rel. 1.61 Changed wait time in printOutput() and paper() to consider run-time of painting the output
  * 07.09.2016 Rel. 2.01 Changed parameters and handling of printOutput()
+ * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
  */
 
 package io;
@@ -45,6 +46,7 @@ import java.awt.event.*;
 import java.awt.print.*;
 import java.util.*;
 import javax.sound.sampled.*;
+import javax.swing.SwingUtilities;
 
 import emu98.*;
 
@@ -93,6 +95,10 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   protected ROMselector romSelector;
   public InstructionsWindow instructionsWindow;
   
+  public Graphics2D g2d;
+  public double aspectRatio = 1.;
+	public double scaleWidth = 1., scaleHeight = 1.;
+	
   protected Image keyboardImage, displayImage;
   protected Color ledRed, ledBack, paperWhite, paperGray;
   private SoundMedia fanSound, printSound, paperSound;
@@ -114,7 +120,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     super(machine);
 
     this.emu = emu;
-
+    
     // console output of emulator (disassembler)
     console = new Console(this, emu);
     emu.setConsole(console);
@@ -135,9 +141,25 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     
     addKeyListener(this);
     addWindowListener(new windowListener());
+    
+    // fixed window size ratio
+    addComponentListener(new ComponentAdapter() {
+      public void componentResized(ComponentEvent e) {
+        SwingUtilities.invokeLater(new Runnable() {
+          public void run() {   	
+          	aspectRatio = getPreferredSize().getWidth() / getPreferredSize().getHeight();
+          	
+          	if((double)getWidth() / getHeight() >= aspectRatio) {
+          		setSize(getWidth(), (int)(getWidth() / aspectRatio));
+          	} else {
+            	setSize((int)(getHeight() * aspectRatio), getHeight());
+          	}
+          }
+        });
+      }
+    });
 
     fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", false);
-  
     fanSound.loop();
 
     romSelector = new ROMselector(this, emu);
@@ -164,9 +186,12 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       System.out.println("HP9800 Printer loaded.");
     }
   }
+  
  
   public void setSize()
   {
+  	Dimension normalSize;
+	
     setResizable(false);
     setVisible(true);
     // wait until background image has been loaded
@@ -178,7 +203,13 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       { }
     }
     
-    setSize(keyboardImage.getWidth(this) + getInsets().left + getInsets().right, keyboardImage.getHeight(this) + getInsets().top + getInsets().bottom);
+    // set window to standard size
+    normalSize = new Dimension(KEYB_W + getInsets().left + getInsets().right, KEYB_H + getInsets().top + getInsets().bottom);
+  	aspectRatio = normalSize.getWidth() / normalSize.getHeight();
+  	
+    this.setPreferredSize(normalSize);
+    this.setSize(normalSize);
+    setResizable(true);
   }
   
   public void setTapeDevice(HP9865A tapeDevice)
@@ -205,7 +236,26 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   }
   
   public void paint(Graphics g)
-  {}
+  {
+  	g2d = (Graphics2D)g.create();
+  	
+  	aspectRatio = getPreferredSize().getWidth() / getPreferredSize().getHeight();
+  	
+  	if((double)getWidth() / getHeight() >= aspectRatio) {
+  		setSize(getWidth(), (int)(getWidth() / aspectRatio));
+  	} else {
+    	setSize((int)(getHeight() * aspectRatio), getHeight());
+  	}
+
+  	scaleWidth = getSize().getWidth() / getPreferredSize().getWidth();
+  	scaleHeight = getSize().getHeight() / getPreferredSize().getHeight();
+
+  	g2d.scale(scaleWidth, scaleHeight);
+  	
+  	// enable antialiasing for higher quality of scaled graphics
+  	RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2d.setRenderingHints(hints);
+  }
 
   public void displayLEDs(int keyLEDs)
   {}
@@ -563,12 +613,12 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     if(minLine < 0) minLine = 0;
 
     x += PAPER_LEFT;
-    g.setColor(paperWhite);
-    g.fillRect(x, y + PAPER_HEIGHT - maxLine, PAPER_WIDTH, maxLine);
+    g2d.setColor(paperWhite);
+    g2d.fillRect(x, y + PAPER_HEIGHT - maxLine, PAPER_WIDTH, maxLine);
 
     x += 8;
     y += PAPER_HEIGHT - 1;
-    g.setColor(Color.BLUE);
+    g2d.setColor(Color.BLUE);
 
     for(i = maxLine - 1; i >= minLine; i--) {
       lineBuffer = (byte[])printBuffer.elementAt(i);
@@ -578,7 +628,10 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
         for(n = 4; n >= 0; n--) {
           if((dotRow & 1) != 0) {
             xd = x + 7 * j + n;
-            g.drawLine(xd, y, xd, y);
+            if(scaleHeight < 10.2)
+              g2d.drawLine(xd, y, xd, y);
+            else
+            	g2d.fillOval(xd, y, 1, 1);
           }
 
           dotRow >>= 1;
@@ -589,8 +642,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 
     x = getInsets().left + PAPER_LEFT;
     y = getInsets().top + PAPER_EDGE;
-    g.setColor(paperGray);
-    g.fillRect(x, y, PAPER_WIDTH, 6);
+    g2d.setColor(paperGray);
+    g2d.fillRect(x, y, PAPER_WIDTH, 6);
   }
   
   public void displayKeyMatrix()
@@ -606,12 +659,12 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     if(g == null)
       return;
 
-    g.setColor(new Color(0, 120, 250));
+    g2d.setColor(new Color(255, 255, 255));
     Font font = new Font("Sans", Font.BOLD, 12);
-    g.setFont(font);
+    g2d.setFont(font);
     
     for(int row = 0; row < keyOffsetX.length; row++) {
-      y = keyOffsetY - getInsets().top - row * keyWidth;
+      y = keyOffsetY - getInsets().top - row * keyWidth + 15; // why is +15 necessary ???
 
       for(int col = 0; col < keyCodes[row].length; col++) {
         keyCode = keyCodes[row][col];
@@ -622,14 +675,14 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
             x = keyOffsetX[row];
             
           x += col * keyWidth + getInsets().left;
-          g.drawRect(x, y, keyWidth, keyWidth);
+          g2d.drawRect(x, y, keyWidth, keyWidth);
           
           if(keyCode < 0700) {
             strKey = Integer.toString(keyCode);
             strKey = (String)emu.keyStrings.get(strKey);
             if(strKey == null)
               strKey = String.valueOf((char)keyCode);
-            g.drawString(strKey, x + 5, y + keyWidth - 5);
+            g2d.drawString(strKey, x + 5, y + keyWidth - 5);
           }
         }
       }

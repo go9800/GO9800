@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -46,7 +46,8 @@
  * 09.04.2007 Rel. 1.00 Code reorganized for usage of class HP9800Mainframe
  * 17.07.2007 Rel. 1.20 Added use of keyCode Hashtable
  * 24.09.2007 Rel. 1.20 Changed display blanking control from fixed timer to instruction counter
- * 13.12.2007 Rel. 1.20 Don't release keyboard by mouseReleased() or keyReleased(). This is now done after 5ms by KeyboardInterface.run()   
+ * 13.12.2007 Rel. 1.20 Don't release keyboard by mouseReleased() or keyReleased(). This is now done after 5ms by KeyboardInterface.run()
+ * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
  */
 
 package io.HP9830A;
@@ -162,6 +163,9 @@ public class HP9830AMainframe extends HP9800Mainframe
     keyOffsetX = HP9830keyOffsetX;
     keyCodes = HP9830keyCodes;
 
+    KEYB_W = 1000;
+    KEYB_H = 558;
+    
     DISPLAY_X = 40;
     DISPLAY_Y = 25;
     DISPLAY_W = 635;
@@ -243,8 +247,9 @@ public class HP9830AMainframe extends HP9800Mainframe
   {
     public void mousePressed(MouseEvent event)
     {
-      int x = event.getX() - getInsets().left;
-      int y = event.getY() - getInsets().top;
+    	// get unscaled coordinates of mouse position
+      int x = (int)((event.getX() - getInsets().left) / scaleWidth); 
+      int y = (int)((event.getY() - getInsets().top) / scaleHeight);
 
       if(y < 80 && x <= 250) {
         if(event.getButton() == MouseEvent.BUTTON1) {
@@ -337,14 +342,17 @@ public class HP9830AMainframe extends HP9800Mainframe
     int y = getInsets().top;
     int charCode;
 
-    backgroundImage = g.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
+    // get scaling parameters
+    super.paint(g);
+
+    backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
 
     if(backgroundImage) {
       // draw display only not blanked 
       if(ioUnit.dispCounter.running()) {
         for(int i = 0; i < 32; i++) {
           charCode = displayBuffer[0][i];
-          g.drawImage(ledMatrix[charCode], x + DISPLAY_X + i * (6 * LED_DOT_SIZE + 2), y + DISPLAY_Y, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE, this);
+          g2d.drawImage(ledMatrix[charCode], x + DISPLAY_X + i * (6 * LED_DOT_SIZE + 2), y + DISPLAY_Y, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE, this);
         }
       }
       
@@ -354,15 +362,13 @@ public class HP9830AMainframe extends HP9800Mainframe
 
   public void display(int line, int i)
   {
-    Graphics g = this.getGraphics();
-
-    if(ioUnit.DEN && backgroundImage && g != null) {
+     if(ioUnit.DEN && backgroundImage && this.getGraphics() != null) {
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x = getInsets().left;
       int y = getInsets().top;
       int charCode = displayBuffer[0][i];
 
-      g.drawImage(ledMatrix[charCode], x + DISPLAY_X + i * (6 * LED_DOT_SIZE + 2), y + DISPLAY_Y, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE, this);
+      g2d.drawImage(ledMatrix[charCode], x + DISPLAY_X + i * (6 * LED_DOT_SIZE + 2), y + DISPLAY_Y, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE, this);
     }
   }
 

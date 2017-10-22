@@ -722,6 +722,7 @@ public class CPU
     }
   }
 
+  // Power On Preset
   public void POP()
   {
     PC = 0b1111_1111;

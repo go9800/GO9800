@@ -312,7 +312,7 @@ public class HP9866A extends IOdevice implements Printable
   private void makeFont(int printDotHeight)
   {
     Graphics printGraphics;
-
+/* ?????
     // make image for graphics dot
     printDot = createImage(printDotHeight, printDotHeight);
     printGraphics = printDot.getGraphics();
@@ -321,7 +321,7 @@ public class HP9866A extends IOdevice implements Printable
       printGraphics.fillRect(0, 0, printDotWidth, printDotHeight);
     else
       printGraphics.fillOval(0, 0, printDotWidth, printDotHeight);
-
+*/
     // make images for character matrices
     for(int i = 0; i < numChars ; i++) {
       printMatrix[i] = createImage(5 * printDotHeight, 7 * printDotHeight);

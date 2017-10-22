@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2012 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -40,6 +40,7 @@
  * 18.01.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on ROM block
  * 18.03.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on handle of top cover
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
+ * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
 */
 
 package io.HP9820A;
@@ -142,8 +143,9 @@ public class HP9820AMainframe extends HP9800Mainframe
   {
     public void mousePressed(MouseEvent event)
     {
-      int x = event.getX() - getInsets().left;
-      int y = event.getY() - getInsets().top;
+    	// get unscaled coordinates of mouse position
+      int x = (int)((event.getX() - getInsets().left) / scaleWidth); 
+      int y = (int)((event.getY() - getInsets().top) / scaleHeight);
 
       if((y > 10 && y < 50) && (x >= 25 && x <= 475)) {
         int block = (x - 25) / 150 + 1;
@@ -243,33 +245,39 @@ public class HP9820AMainframe extends HP9800Mainframe
     int x = getInsets().left;
     int y = getInsets().top;
 
-    backgroundImage = g.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
+    // get scaling parameters
+    super.paint(g);
+
+    backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
 
     if(backgroundImage) {
       // get images of ROM modules and template
       MemoryBlock block = (MemoryBlock)emu.memoryBlocks.get("Slot1");
 
       if(block != null) {
-        g.drawImage(block.getModule(), x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);
-        g.drawImage(block.getTemplate(), x + TEMPLATE1_X, y + TEMPLATE1_Y, TEMPLATE_W, TEMPLATE_H, this);
+        g2d.drawImage(block.getModule(), x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);
+        // draw ROM template
+        g2d.drawImage(block.getTemplate(), x + TEMPLATE1_X, y + TEMPLATE1_Y, TEMPLATE_W, TEMPLATE_H, this);
       }
         
       block = (MemoryBlock)emu.memoryBlocks.get("Slot2");
       if(block != null) {
-        g.drawImage(block.getModule(), x + BLOCK2_X, y + BLOCK2_Y, BLOCK_W, BLOCK_H, this);
-        g.drawImage(block.getTemplate(), x + TEMPLATE2_X, y + TEMPLATE2_Y, TEMPLATE_W, TEMPLATE_H, this);
+        g2d.drawImage(block.getModule(), x + BLOCK2_X, y + BLOCK2_Y, BLOCK_W, BLOCK_H, this);
+        // draw ROM template
+        g2d.drawImage(block.getTemplate(), x + TEMPLATE2_X, y + TEMPLATE2_Y, TEMPLATE_W, TEMPLATE_H, this);
         
       }
         
       block = (MemoryBlock)emu.memoryBlocks.get("Slot3");
       if(block != null) {
-        g.drawImage(block.getModule(), x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);
-        g.drawImage(block.getTemplate(), x + TEMPLATE3_X, y + TEMPLATE3_Y, TEMPLATE_W, TEMPLATE_H, this);
+        g2d.drawImage(block.getModule(), x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);
+        // draw ROM template
+        g2d.drawImage(block.getTemplate(), x + TEMPLATE3_X, y + TEMPLATE3_Y, TEMPLATE_W, TEMPLATE_H, this);
       }
 
       // draw display area
-      g.setColor(ledBack);
-      g.fillRect(x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W + 16 * (6 * LED_DOT_SIZE + 2), DISPLAY_H + 7 * LED_DOT_SIZE);
+      g2d.setColor(ledBack);
+      g2d.fillRect(x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W + 16 * (6 * LED_DOT_SIZE + 2), DISPLAY_H + 7 * LED_DOT_SIZE);
 
       // draw display only not blanked 
       if(ioUnit.dispCounter.running()) {
@@ -287,21 +295,20 @@ public class HP9820AMainframe extends HP9800Mainframe
 
   public void display(int col, int chr)
   {
-    Graphics g = this.getGraphics();
-
-    if(backgroundImage && g != null) {
+    if(backgroundImage && this.getGraphics() != null) {
+    	super.paint(this.getGraphics());
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x = getInsets().left + DISPLAY_X + LED_X + chr * (6 * LED_DOT_SIZE + 2)  + col * LED_DOT_SIZE;
       int y = getInsets().top + DISPLAY_Y + LED_Y;
       int ledColumn = displayBuffer[col][chr];
 
+      g2d.setColor(ledBack);
+      g2d.fillRect(x - 1, y - 1, 5 * LED_DOT_SIZE + 2, 7 * LED_DOT_SIZE + 2); // draw character background slightly greater
+      g2d.setColor(ledRed);
+
       for(int j = 6; j >= 0; j--) {
         if((ledColumn & 1) != 0)
-          g.setColor(ledRed);
-        else
-          g.setColor(ledBack);
-
-        g.fillRect(x, y + j * LED_DOT_SIZE, LED_DOT_SIZE - 1, LED_DOT_SIZE - 1);
+        	g2d.fillRect(x, y + j * LED_DOT_SIZE, LED_DOT_SIZE - 1, LED_DOT_SIZE - 1);
         ledColumn >>= 1;
       }
     }
