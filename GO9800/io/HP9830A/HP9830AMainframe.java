@@ -248,8 +248,8 @@ public class HP9830AMainframe extends HP9800Mainframe
     public void mousePressed(MouseEvent event)
     {
     	// get unscaled coordinates of mouse position
-      int x = (int)((event.getX() - getInsets().left) / scaleWidth); 
-      int y = (int)((event.getY() - getInsets().top) / scaleHeight);
+      int x = (int)((event.getX() - getInsets().left) / widthScale); 
+      int y = (int)((event.getY() - getInsets().top) / heightScale);
 
       if(y < 80 && x <= 250) {
         if(event.getButton() == MouseEvent.BUTTON1) {
@@ -338,11 +338,10 @@ public class HP9830AMainframe extends HP9800Mainframe
   public void paint(Graphics g)
   {
     int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
-    int x = getInsets().left;
-    int y = getInsets().top;
+    int x = 0, y = 0; // positioning is done by g2d.translate()
     int charCode;
 
-    // get scaling parameters
+    // normalize frame and get scaling parameters
     super.paint(g);
 
     backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
@@ -364,9 +363,9 @@ public class HP9830AMainframe extends HP9800Mainframe
   {
      if(ioUnit.DEN && backgroundImage && this.getGraphics() != null) {
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
-      int x = getInsets().left;
-      int y = getInsets().top;
+      int x = 0, y = 0; // positioning is done by g2d.translate()
       int charCode = displayBuffer[0][i];
+    	super.paint(this.getGraphics());
 
       g2d.drawImage(ledMatrix[charCode], x + DISPLAY_X + i * (6 * LED_DOT_SIZE + 2), y + DISPLAY_Y, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE, this);
     }

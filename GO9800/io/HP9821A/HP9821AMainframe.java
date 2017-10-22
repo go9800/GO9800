@@ -138,8 +138,8 @@ public class HP9821AMainframe extends HP9820AMainframe
     public void mousePressed(MouseEvent event)
     {
     	// get unscaled coordinates of mouse position
-      int x = (int)((event.getX() - getInsets().left) / scaleWidth); 
-      int y = (int)((event.getY() - getInsets().top) / scaleHeight);
+      int x = (int)((event.getX() - getInsets().left) / widthScale); 
+      int y = (int)((event.getY() - getInsets().top) / heightScale);
 
       if((y > 10 && y < 50) && (x >= 25 && x <= 475)) {
         int block = (x - 25) / 150 + 1;

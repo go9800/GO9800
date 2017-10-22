@@ -144,8 +144,8 @@ public class HP9820AMainframe extends HP9800Mainframe
     public void mousePressed(MouseEvent event)
     {
     	// get unscaled coordinates of mouse position
-      int x = (int)((event.getX() - getInsets().left) / scaleWidth); 
-      int y = (int)((event.getY() - getInsets().top) / scaleHeight);
+      int x = (int)((event.getX() - getInsets().left) / widthScale); 
+      int y = (int)((event.getY() - getInsets().top) / heightScale);
 
       if((y > 10 && y < 50) && (x >= 25 && x <= 475)) {
         int block = (x - 25) / 150 + 1;
@@ -242,10 +242,9 @@ public class HP9820AMainframe extends HP9800Mainframe
   public void paint(Graphics g)
   {
     int i, j;
-    int x = getInsets().left;
-    int y = getInsets().top;
+    int x = 0, y = 0; // positioning is done by g2d.translate()
 
-    // get scaling parameters
+    // normalize frame and get scaling parameters
     super.paint(g);
 
     backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
@@ -275,7 +274,8 @@ public class HP9820AMainframe extends HP9800Mainframe
         g2d.drawImage(block.getTemplate(), x + TEMPLATE3_X, y + TEMPLATE3_Y, TEMPLATE_W, TEMPLATE_H, this);
       }
 
-      // draw display area
+      // draw display background area
+    	super.paint(this.getGraphics());
       g2d.setColor(ledBack);
       g2d.fillRect(x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W + 16 * (6 * LED_DOT_SIZE + 2), DISPLAY_H + 7 * LED_DOT_SIZE);
 
@@ -298,8 +298,8 @@ public class HP9820AMainframe extends HP9800Mainframe
     if(backgroundImage && this.getGraphics() != null) {
     	super.paint(this.getGraphics());
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
-      int x = getInsets().left + DISPLAY_X + LED_X + chr * (6 * LED_DOT_SIZE + 2)  + col * LED_DOT_SIZE;
-      int y = getInsets().top + DISPLAY_Y + LED_Y;
+      int x = DISPLAY_X + LED_X + chr * (6 * LED_DOT_SIZE + 2)  + col * LED_DOT_SIZE;
+      int y = DISPLAY_Y + LED_Y;
       int ledColumn = displayBuffer[col][chr];
 
       g2d.setColor(ledBack);

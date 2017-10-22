@@ -152,8 +152,8 @@ public class HP9810AMainframe extends HP9800Mainframe
     public void mousePressed(MouseEvent event)
     {
     	// get unscaled coordinates of mouse position
-      int x = (int)((event.getX() - getInsets().left) / scaleWidth); 
-      int y = (int)((event.getY() - getInsets().top) / scaleHeight);
+      int x = (int)((event.getX() - getInsets().left) / widthScale); 
+      int y = (int)((event.getY() - getInsets().top) / heightScale);
       
       // ROM block area
       if((y > 10 && y < 50) && (x >= 25 && x <= 475)) {
@@ -249,10 +249,9 @@ public class HP9810AMainframe extends HP9800Mainframe
   public void paint(Graphics g)
   {
     int i, j;
-    int x = getInsets().left;
-    int y = getInsets().top;
+    int x = 0, y = 0; // positioning is done by g2d.translate()
     
-    // get scaling parameters
+    // normalize frame and get scaling parameters
     super.paint(g);
 
     backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
@@ -299,8 +298,7 @@ public class HP9810AMainframe extends HP9800Mainframe
 
   public void displayLEDs(int keyLEDs)
   {
-    int x = getInsets().left;
-    int y = getInsets().top;
+    int x = 0, y = 0; // positioning is done by g2d.translate()
 
     // STATUS
     if((keyLEDs & 0x10) != 0) {
@@ -368,11 +366,11 @@ public class HP9810AMainframe extends HP9800Mainframe
   
   public void display(int reg, int i)
   {
+    int x = 0, y = 0; // positioning is done by g2d.translate()
+
     if(backgroundImage && this.getGraphics() != null) {
-    	super.paint(this.getGraphics());
+//    	super.paint(this.getGraphics());
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
-      int x = getInsets().left;
-      int y = getInsets().top;
       int x1, y1, y2, segments;
 
       segments = displayBuffer[reg][i];

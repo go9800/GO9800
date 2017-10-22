@@ -97,7 +97,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   
   public Graphics2D g2d;
   public double aspectRatio = 1.;
-	public double scaleWidth = 1., scaleHeight = 1.;
+	public double widthScale = 1., heightScale = 1.;
 	
   protected Image keyboardImage, displayImage;
   protected Color ledRed, ledBack, paperWhite, paperGray;
@@ -146,19 +146,13 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
-          public void run() {   	
-          	aspectRatio = getPreferredSize().getWidth() / getPreferredSize().getHeight();
-          	
-          	if((double)getWidth() / getHeight() >= aspectRatio) {
-          		setSize(getWidth(), (int)(getWidth() / aspectRatio));
-          	} else {
-            	setSize((int)(getHeight() * aspectRatio), getHeight());
-          	}
+          public void run() {
+          	normalizeSize();
           }
         });
       }
     });
-
+		
     fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", false);
     fanSound.loop();
 
@@ -192,7 +186,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   {
   	Dimension normalSize;
 	
-    setResizable(false);
+    setResizable(true); // this changes size of insets
     setVisible(true);
     // wait until background image has been loaded
     synchronized(keyboardImage) {
@@ -203,13 +197,35 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       { }
     }
     
+    // fixed aspect ratio of keyboard
+    aspectRatio = (double)KEYB_W / (double)KEYB_H;
+
     // set window to standard size
     normalSize = new Dimension(KEYB_W + getInsets().left + getInsets().right, KEYB_H + getInsets().top + getInsets().bottom);
-  	aspectRatio = normalSize.getWidth() / normalSize.getHeight();
-  	
     this.setPreferredSize(normalSize);
     this.setSize(normalSize);
-    setResizable(true);
+  }
+  
+  public void normalizeSize()
+  {
+  	// actual size of keyboard area
+  	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
+  	double aspectMismatch = actualSize.getWidth() / actualSize.getHeight() / aspectRatio;
+  	
+  	if(aspectMismatch > 1.02) {  // is actual aspect ratio more than 2% bigger than normal?
+  		actualSize.width = (int)(actualSize.getHeight() * aspectRatio);  // then make width smaller
+  	} else if(aspectMismatch < 0.98) {  // is actual aspect ratio more than 2% smaller than normal?
+  		actualSize.height = (int)(actualSize.getWidth() / aspectRatio);  // then make height smaller
+  	}
+  	
+  	// scale factors for drawing
+  	widthScale = actualSize.getWidth() / KEYB_W;
+  	heightScale = actualSize.getHeight() / KEYB_H;
+
+  	actualSize.width += getInsets().left + getInsets().right;
+  	actualSize.height += getInsets().top + getInsets().bottom;
+  	
+  	setSize(actualSize);
   }
   
   public void setTapeDevice(HP9865A tapeDevice)
@@ -238,19 +254,10 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public void paint(Graphics g)
   {
   	g2d = (Graphics2D)g.create();
+  	normalizeSize();  // normalize aspect ratio and get scaling factors
   	
-  	aspectRatio = getPreferredSize().getWidth() / getPreferredSize().getHeight();
-  	
-  	if((double)getWidth() / getHeight() >= aspectRatio) {
-  		setSize(getWidth(), (int)(getWidth() / aspectRatio));
-  	} else {
-    	setSize((int)(getHeight() * aspectRatio), getHeight());
-  	}
-
-  	scaleWidth = getSize().getWidth() / getPreferredSize().getWidth();
-  	scaleHeight = getSize().getHeight() / getPreferredSize().getHeight();
-
-  	g2d.scale(scaleWidth, scaleHeight);
+  	g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
+  	g2d.scale(widthScale, heightScale);  // scale graphics to required size
   	
   	// enable antialiasing for higher quality of scaled graphics
   	RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -604,8 +611,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     if(g == null)
       return;
     
-    int x = getInsets().left;
-    int y = getInsets().top;
+    int x = 0, y = 0; // positioning is done by g2d.translate()
     int maxLine = numLines - page * PAPER_HEIGHT;
 
     if(maxLine < 0) maxLine = 0;
@@ -628,7 +634,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
         for(n = 4; n >= 0; n--) {
           if((dotRow & 1) != 0) {
             xd = x + 7 * j + n;
-            if(scaleHeight < 10.2)
+            if(heightScale < 10.2)
               g2d.drawLine(xd, y, xd, y);
             else
             	g2d.fillOval(xd, y, 1, 1);
@@ -640,8 +646,9 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       y--;
     } // for i
 
-    x = getInsets().left + PAPER_LEFT;
-    y = getInsets().top + PAPER_EDGE;
+    // draw transparent paper cover
+    x = PAPER_LEFT;
+    y = PAPER_EDGE;
     g2d.setColor(paperGray);
     g2d.fillRect(x, y, PAPER_WIDTH, 6);
   }
@@ -664,7 +671,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     g2d.setFont(font);
     
     for(int row = 0; row < keyOffsetX.length; row++) {
-      y = keyOffsetY - getInsets().top - row * keyWidth + 15; // why is +15 necessary ???
+      //y = keyOffsetY - getInsets().top - row * keyWidth + 15; // why is +15 necessary ???
+      y = keyOffsetY - (row + 1) * keyWidth;
 
       for(int col = 0; col < keyCodes[row].length; col++) {
         keyCode = keyCodes[row][col];
@@ -674,7 +682,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
           else
             x = keyOffsetX[row];
             
-          x += col * keyWidth + getInsets().left;
+          x += col * keyWidth;
           g2d.drawRect(x, y, keyWidth, keyWidth);
           
           if(keyCode < 0700) {
