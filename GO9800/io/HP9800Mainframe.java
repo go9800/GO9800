@@ -36,7 +36,7 @@
  * 18.04.2016 Rel. 1.61 Fixed displacement of keyMatrix for HP9830B
  * 25.06.2016 Rel. 1.61 Changed wait time in printOutput() and paper() to consider run-time of painting the output
  * 07.09.2016 Rel. 2.01 Changed parameters and handling of printOutput()
- * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
+ * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
  */
 
 package io;

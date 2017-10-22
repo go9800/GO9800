@@ -47,7 +47,7 @@
  * 17.07.2007 Rel. 1.20 Added use of keyCode Hashtable
  * 24.09.2007 Rel. 1.20 Changed display blanking control from fixed timer to instruction counter
  * 13.12.2007 Rel. 1.20 Don't release keyboard by mouseReleased() or keyReleased(). This is now done after 5ms by KeyboardInterface.run()
- * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
+ * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
  */
 
 package io.HP9830A;
@@ -342,7 +342,7 @@ public class HP9830AMainframe extends HP9800Mainframe
     int charCode;
 
     // normalize frame and get scaling parameters
-    super.paint(g);
+    super.paint(this.getGraphics());
 
     backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
 
@@ -365,7 +365,6 @@ public class HP9830AMainframe extends HP9800Mainframe
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x = 0, y = 0; // positioning is done by g2d.translate()
       int charCode = displayBuffer[0][i];
-    	super.paint(this.getGraphics());
 
       g2d.drawImage(ledMatrix[charCode], x + DISPLAY_X + i * (6 * LED_DOT_SIZE + 2), y + DISPLAY_Y, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE, this);
     }

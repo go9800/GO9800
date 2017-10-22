@@ -20,7 +20,7 @@
 /*
  * 07.04.2007 Class derived from HP9810A mainframe 
  * 05.03.2008 Rel. 1.21 Bugfix: DEN is now longer evaluated in display() method
- * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
+ * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
  */
 
 package io.HP9810A;
@@ -47,12 +47,10 @@ public class HP9810AMainframe2 extends HP9810AMainframe
   public void display(int reg, int i)
   {
     int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
-    int x = getInsets().left;
-    int y = getInsets().top;
+    int x = 0, y = 0; // positioning is done by g2d.translate()
     int x1, y1, y2, segments;
-    Graphics g = this.getGraphics();
 
-    if(backgroundImage && g != null) {
+    if(backgroundImage && this.getGraphics() != null) {
       segments = displayBuffer[reg][i];
 
       // graphic digit position

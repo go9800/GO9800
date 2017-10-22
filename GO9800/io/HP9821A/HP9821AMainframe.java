@@ -27,7 +27,7 @@
  * 30.10.2011 Rel. 1.50 Added original HP9821A system ROMs (finally!)
  * 30.10.2011 Rel. 1.50 Added beeper, changed internal tape select code to 10
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
- * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
+ * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
  */
 
 package io.HP9821A;

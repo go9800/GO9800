@@ -40,7 +40,7 @@
  * 18.01.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on ROM block
  * 18.03.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on handle of top cover
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
- * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
+ * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
 */
 
 package io.HP9820A;
@@ -245,7 +245,7 @@ public class HP9820AMainframe extends HP9800Mainframe
     int x = 0, y = 0; // positioning is done by g2d.translate()
 
     // normalize frame and get scaling parameters
-    super.paint(g);
+  	super.paint(this.getGraphics());
 
     backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
 
@@ -275,7 +275,6 @@ public class HP9820AMainframe extends HP9800Mainframe
       }
 
       // draw display background area
-    	super.paint(this.getGraphics());
       g2d.setColor(ledBack);
       g2d.fillRect(x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W + 16 * (6 * LED_DOT_SIZE + 2), DISPLAY_H + 7 * LED_DOT_SIZE);
 
@@ -296,14 +295,13 @@ public class HP9820AMainframe extends HP9800Mainframe
   public void display(int col, int chr)
   {
     if(backgroundImage && this.getGraphics() != null) {
-    	super.paint(this.getGraphics());
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x = DISPLAY_X + LED_X + chr * (6 * LED_DOT_SIZE + 2)  + col * LED_DOT_SIZE;
       int y = DISPLAY_Y + LED_Y;
       int ledColumn = displayBuffer[col][chr];
 
-      g2d.setColor(ledBack);
-      g2d.fillRect(x - 1, y - 1, 5 * LED_DOT_SIZE + 2, 7 * LED_DOT_SIZE + 2); // draw character background slightly greater
+      //g2d.setColor(ledBack);
+      //g2d.fillRect(x - 1, y - 1, 5 * LED_DOT_SIZE + 2, 7 * LED_DOT_SIZE + 2); // draw character background slightly greater
       g2d.setColor(ledRed);
 
       for(int j = 6; j >= 0; j--) {

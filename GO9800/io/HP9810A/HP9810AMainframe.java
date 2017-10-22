@@ -48,7 +48,7 @@
  * 18.01.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on ROM block
  * 18.03.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on handle of top cover
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
- * 21.10.2017 Rel. 2.03 Added Graphics scaling using class Graphics2D
+ * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
  */
 
 package io.HP9810A;
@@ -252,7 +252,7 @@ public class HP9810AMainframe extends HP9800Mainframe
     int x = 0, y = 0; // positioning is done by g2d.translate()
     
     // normalize frame and get scaling parameters
-    super.paint(g);
+    super.paint(this.getGraphics());
 
     backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
 
@@ -369,7 +369,6 @@ public class HP9810AMainframe extends HP9800Mainframe
     int x = 0, y = 0; // positioning is done by g2d.translate()
 
     if(backgroundImage && this.getGraphics() != null) {
-//    	super.paint(this.getGraphics());
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x1, y1, y2, segments;
 

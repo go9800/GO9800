@@ -167,7 +167,6 @@ public class HP9866A extends IOdevice implements Printable
   static int numChars = 96;
   
   Image[] printMatrix;
-  Image printDot;
 
   private static final long serialVersionUID = 1L;
   HP9866Interface hp9866Interface;
@@ -312,16 +311,7 @@ public class HP9866A extends IOdevice implements Printable
   private void makeFont(int printDotHeight)
   {
     Graphics printGraphics;
-/* ?????
-    // make image for graphics dot
-    printDot = createImage(printDotHeight, printDotHeight);
-    printGraphics = printDot.getGraphics();
-    printGraphics.setColor(printColor);
-    if(printDotWidth < 3)
-      printGraphics.fillRect(0, 0, printDotWidth, printDotHeight);
-    else
-      printGraphics.fillOval(0, 0, printDotWidth, printDotHeight);
-*/
+
     // make images for character matrices
     for(int i = 0; i < numChars ; i++) {
       printMatrix[i] = createImage(5 * printDotHeight, 7 * printDotHeight);
