@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -58,9 +58,9 @@ public class HP11201A extends IOinterface
 
       // put printer in ready status after delay
       if(delay) {
-        synchronized(ioReg) {
+        synchronized(ioUnit) {
           status |= IOunit.devStatusReady;
-          ioReg.CEO = false;
+          ioUnit.CEO = false;
           delay = false;
           hp9861a.soundStop();
           // set timer to idle
@@ -72,27 +72,27 @@ public class HP11201A extends IOinterface
   
   public boolean input()
   {
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       // put status on IO bus (8=EOL)
-      ioReg.bus.setStatus(status);
-      return(ioReg.CEO); // hold CEO
+      ioUnit.bus.setStatus(status);
+      return(ioUnit.CEO); // hold CEO
     }
   }
 
   public boolean output()
   {
-    synchronized(ioReg) {
-      status = hp9861a.output(ioReg.getStatus(), ioReg.getData());
+    synchronized(ioUnit) {
+      status = hp9861a.output(ioUnit.getStatus(), ioUnit.getData());
 
       // restart timer for printer status
       timerValue = highSpeed? 0 : timerValue;
       devThread.interrupt();
 
-      ioReg.setStatus(status); // return printer status (CFI loads IO-Register and clears CEO)
+      ioUnit.setStatus(status); // return printer status (CFI loads IO-Register and clears CEO)
 
       if((status & IOunit.devStatusReady) == 0) {
         delay = true;
-        return(ioReg.CEO); // during line output set busy status and hold CEO 
+        return(ioUnit.CEO); // during line output set busy status and hold CEO 
       }
       else
         return(false); // character output ok, reset CEO

@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,7 +19,10 @@
 
 /*
  * 01.04.2010 Class created 
- */
+ * 24.10.2017 Rel. 2.04: Added method close()
+ * 25.10.2017 Rel. 2.03 Changed static access to IOregister
+ * 25.10.2017 Rel. 2.04 Added method close() to stop thread
+*/
 
 package io;
 
@@ -63,11 +66,7 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
   {
     public void windowClosing(WindowEvent event)
     {
-      setVisible(false);  // close window
-      dispose();  // and remove it
-      ioInterface.stop();  // stop interface thread
-      IOinterface.ioUnit.bus.interfaces.remove(ioInterface);  // remove device interface object from IObus 
-      System.out.println(hpName + " unloaded.");
+      close();
     }
   }
 
@@ -164,5 +163,17 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
 
   public void soundStop()
   {
+  }
+  
+  public void close()
+  {
+  	// stop all threads including sounds and images and free all ressources
+    ioInterface.stop();  // stop interface thread
+    IOinterface.ioUnit.bus.interfaces.removeElement(ioInterface);  // remove device interface object from IObus
+    IOinterface.ioUnit.bus.devices.removeElement(this);  // remove device object from devices list
+    setVisible(false);  // close window
+    dispose();  // and remove it
+    
+    System.out.println(hpName + " unloaded.");
   }
 }

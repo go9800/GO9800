@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,7 @@
  * 09.02.2010 Rel. 1.42 Added method stop() for stopping device threads before unloading 
  * 12.03.2011 Rel. 1.50 Changed to static setting of IOregister
  * 01.08.2016 Rel. 2.00 Changed to reference ioUnit instead of ioRegister
+ * 25.10.2017 Rel. 2.03 Changed static access to ioUnit, removed deprecated use of ioRegister
  */
 
 package io;
@@ -41,7 +42,6 @@ import emu98.IOunit;
 public class IOinterface implements Runnable
 {
   static protected IOunit ioUnit; // connection to IOunit
-  static protected IOunit ioReg; // for backward-compatibility with IOregister
   static protected Memory[] memory; // connection to HP9830A memory extension (e.g. HP11273A)
   public int selectCode;
   public int srqBits; // bit pattern for service request
@@ -94,10 +94,9 @@ public class IOinterface implements Runnable
   }
   
   // connect to IOunit for all IOinterfaces
-  public static void setIOunit(IOunit ioUnit)
+  static public void setIOunit(IOunit ioUnit)
   {
     IOinterface.ioUnit = ioUnit;
-    IOinterface.ioReg = ioUnit;
   }
   
   public void setDevice(IOdevice ioDev)
@@ -143,6 +142,7 @@ public class IOinterface implements Runnable
   public void stop()
   {
     devThread.stop();
+  	devThread = null;
   }
   
   protected void requestInterrupt()

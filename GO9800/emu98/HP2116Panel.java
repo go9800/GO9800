@@ -102,6 +102,12 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
         timerValue = 100;
     }
   }
+  
+  public void stop()
+  {
+  	panelThread.stop();
+  	panelThread = null;
+  }
 
   class windowListener extends WindowAdapter
   {

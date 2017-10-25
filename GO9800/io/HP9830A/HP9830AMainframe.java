@@ -48,6 +48,7 @@
  * 24.09.2007 Rel. 1.20 Changed display blanking control from fixed timer to instruction counter
  * 13.12.2007 Rel. 1.20 Don't release keyboard by mouseReleased() or keyReleased(). This is now done after 5ms by KeyboardInterface.run()
  * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
+ * 24.10.2017 Rel. 2.04 Added display of click areas, changed size ROM click area
  */
 
 package io.HP9830A;
@@ -142,6 +143,12 @@ public class HP9830AMainframe extends HP9800Mainframe
     {000, 001, 002, 003, 004, -1, 036, 016, 0160, 014, 015, -1, 024, 025, -1, 0167, 012, 030, 031, 0776, 0777}
   };
 
+  // click area for ROM block exchange
+  static int ROM_X = 0;
+  static int ROM_Y = 0;
+  static int ROM_W = 30;
+  static int ROM_H = 100;
+
   HP9830ROMslots romSlots;
   HP9865A tapeDevice;
   HP9865Interface hp9865Interface;
@@ -233,14 +240,6 @@ public class HP9830AMainframe extends HP9800Mainframe
         }
       }
     }
-
-    public void windowClosing(WindowEvent event)
-    {
-      setVisible(false);
-      dispose();
-      System.out.println("HP9800 Emulator terminated.");
-      System.exit(0);
-    }
   }
 
   class mouseListener extends MouseAdapter
@@ -251,7 +250,7 @@ public class HP9830AMainframe extends HP9800Mainframe
       int x = (int)((event.getX() - getInsets().left) / widthScale); 
       int y = (int)((event.getY() - getInsets().top) / heightScale);
 
-      if(y < 80 && x <= 250) {
+      if((y >= ROM_Y && y <= ROM_Y + ROM_H) && (x >= ROM_X && x <= ROM_X + ROM_W)) {
         if(event.getButton() == MouseEvent.BUTTON1) {
           romSlots.setVisible(true);
         } else {
@@ -344,7 +343,8 @@ public class HP9830AMainframe extends HP9800Mainframe
     // normalize frame and get scaling parameters
     super.paint(this.getGraphics());
 
-    backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
+    // scale keyboard image to normal size
+    backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
 
     if(backgroundImage) {
       // draw display only not blanked 
@@ -357,6 +357,17 @@ public class HP9830AMainframe extends HP9800Mainframe
       
       displayKeyMatrix();
     }
+  }
+
+  public void displayClickAreas()
+  {
+    float[] dashArray = {4f, 4f};
+    
+    BasicStroke stroke = new BasicStroke(1, 0, 0, 1f, dashArray, 0f);
+    g2d.setStroke(stroke);
+    g2d.setColor(Color.white);
+
+   	g2d.drawRect(ROM_X, ROM_Y, ROM_W, ROM_H);
   }
 
   public void display(int line, int i)

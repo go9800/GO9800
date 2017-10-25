@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +22,7 @@
  * 06.08.2008 Rel. 1.20: Asynchronous execution disabled because of timing problems on some plattforms
  * 22.10.2009 Rel. 1.40 Moved output sleep() to HP9867.java
  * 04.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
+ * 25.10.2017 Rel. 2.03 Changed static access to ioUnit, removed deprecated use of ioRegister
 */
 
 package io;
@@ -63,25 +64,25 @@ public class HP11273A extends IOinterface
         timerValue = HP11305A.IDLE_TIMER;
 
         status = hp11305a.output(command);
-        ioReg.setStatus(status); // return error status
-        ioReg.CEO = false; // clear CEO
+        ioUnit.setStatus(status); // return error status
+        ioUnit.CEO = false; // clear CEO
       }
     }
   }
 
   public boolean output()
   {
-    debug = IOinterface.ioReg.console.getDebugMode();
+    debug = ioUnit.console.getDebugMode();
     
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       // is it an output operation (SO3=0)?
-      if(ioReg.CEO) {
+      if(ioUnit.CEO) {
         if(debug)
-          ioReg.console.append("HP11273A out: " + Integer.toHexString(ioReg.getValue()) + "\n");
+          ioUnit.console.append("HP11273A out: " + Integer.toHexString(ioUnit.getValue()) + "\n");
 
       // synchronous execution of disc command
-      status = hp11305a.output(ioReg.getValue());
-      ioReg.setStatus(status); // return error status
+      status = hp11305a.output(ioUnit.getValue());
+      ioUnit.setStatus(status); // return error status
 
       return(false); // clear CEO
 
@@ -94,27 +95,27 @@ public class HP11273A extends IOinterface
       */
       }
 
-      return(ioReg.CEO); // hold CEO
+      return(ioUnit.CEO); // hold CEO
     }
   }
 
   public boolean input()
   {
-    debug = IOinterface.ioReg.console.getDebugMode();
+    debug = ioUnit.console.getDebugMode();
 
-    synchronized(ioReg) {
-      if(ioReg.CEO) {
+    synchronized(ioUnit) {
+      if(ioUnit.CEO) {
         // put status on IO bus
-        ioReg.bus.din = status;
+        ioUnit.bus.din = status;
 
         if(debug)
-          ioReg.console.append("HP11273A in: " + Integer.toHexString(ioReg.bus.din) + "\n");
+          ioUnit.console.append("HP11273A in: " + Integer.toHexString(ioUnit.bus.din) + "\n");
       } else {
         // put status on IO bus
-        ioReg.bus.din = status;
+        ioUnit.bus.din = status;
       }
 
-      return(ioReg.CEO); // hold CEO
+      return(ioUnit.CEO); // hold CEO
     }
   }
 }

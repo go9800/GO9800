@@ -430,4 +430,14 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
 
     return(true);
   }
+  
+  public void stop()
+  {
+    // stop all sound threads
+  	startSound.close();
+  	loopSound.close();
+  	cardSound.close();
+
+  	super.stop();
+  }
 }

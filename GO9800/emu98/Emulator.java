@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -122,7 +122,7 @@ public class Emulator implements Runnable
     // initialize IO-unit
     ioUnit = new IOunit(cpu);
     cpu.setIOunit(ioUnit);
-
+    
     disassemble = dumpRegisters = dumpFPregisters = dumpMicroCode = false;
     emuThread = new Thread(this, "HP9800 CPU");
 
@@ -143,6 +143,17 @@ public class Emulator implements Runnable
   public void start()
   {
     emuThread.start();
+  }
+
+  public void stop()
+  {
+    emuThread.stop();
+  	emuThread = null;
+  	
+  	// unload all memory block and free ressources
+  	for(Enumeration<MemoryBlock> enumBlock = memoryBlocks.elements(); enumBlock.hasMoreElements(); ) {
+  		enumBlock.nextElement().unload();
+  	}
   }
 
   public void setDisassemblerMode(boolean disasmMode)
@@ -908,10 +919,13 @@ public class Emulator implements Runnable
     try {
       // find Class for device interface by name
       ioInt = Class.forName("io." + hpInterface);
+      
       // find constructor for formal parameters
       constr = ioInt.getConstructor(formpara);
+      
       // create new object instance of device interface
       ioInterface = (IOinterface)constr.newInstance(actpara);
+      
     } catch(Exception e) {
       System.err.println("\nClass for interface " + hpInterface + " not found.");
       System.exit(1);      
@@ -945,11 +959,14 @@ public class Emulator implements Runnable
     if(ioDevice != null) {
       ioDevice.setInterface(ioInterface);
       ioDevice.hpName = hpDevice;
+      ioUnit.bus.devices.add(ioDevice); // add device to list
     }
 
     // set link from interface to device
     if(ioInterface != null) {
       ioInterface.setDevice(ioDevice);
+      ioInterface.setIOunit(ioUnit);
+      
       // start IOinterface thread at last 
       ioInterface.start();
     }

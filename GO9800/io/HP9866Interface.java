@@ -62,10 +62,10 @@ public class HP9866Interface extends IOinterface
       }
       
       // put printer in ready status after delay of 270ms
-      synchronized(ioReg) {
+      synchronized(ioUnit) {
         if(delay) {
           status |= IOunit.devStatusReady;
-          ioReg.CEO = false; // reset CEO for HP9810A Typewriter ROM
+          ioUnit.CEO = false; // reset CEO for HP9810A Typewriter ROM
           delay = false;
         }
       }
@@ -76,24 +76,24 @@ public class HP9866Interface extends IOinterface
   
   public boolean input()
   {
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       // put status on IO bus (1=ready)
-      ioReg.bus.setStatus(status);
-      return(ioReg.CEO); // hold CEO
+      ioUnit.bus.setStatus(status);
+      return(ioUnit.CEO); // hold CEO
     }
   }
   
   public boolean output()
   {
-    synchronized(ioReg) {
-      status = hp9866.output(ioReg.getStatus(), ioReg.getData());
+    synchronized(ioUnit) {
+      status = hp9866.output(ioUnit.getStatus(), ioUnit.getData());
       // restart timer for printer status
       timerValue = highSpeed? 0 : timerValue;
       devThread.interrupt();
 
       if(status == 0) {
         delay = true;
-        return(ioReg.CEO); // during line output set busy status and hold CEO 
+        return(ioUnit.CEO); // during line output set busy status and hold CEO 
       }
       else
         return(false); // character output ok, reset CEO

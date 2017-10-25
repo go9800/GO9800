@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@
  * 05.09.2007 Rel. 1.20 requestInterrupt() reworked
  * 12.12.2007 Rel. 1.20 don't input IO-bus value to IO-register in requestInterrupt(). This is now done by IOregister.serviceRequestAcknowledge() 
  * 03.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
+ * 25.10.2017 Rel. 2.03 Changed static access to ioUnit, removed deprecated use of ioRegister
 */
 
 package io;
@@ -61,14 +62,14 @@ public class HP11200A extends IOinterface
         continue;
       }
 
-      synchronized(ioReg) {
-        if(serviceRequested && !ioReg.line10_20) {
+      synchronized(ioUnit) {
+        if(serviceRequested && !ioUnit.line10_20) {
           // on HP9860 SRQ is held only for one card clock
           // clear Service Request line 12
-          ioReg.SSI &= ~srqBits;
+          ioUnit.SSI &= ~srqBits;
 
           // this in turn clears Single Service FF
-          ioReg.SSF = false;
+          ioUnit.SSF = false;
           //serviceRequested = false;
         }
       }
@@ -86,16 +87,16 @@ public class HP11200A extends IOinterface
   {
     serviceRequested = true;
 
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       // set Service Request
-      ioReg.SSI |= srqBits;
-      ioReg.notifyAll(); // Notify waiting threads esp. HP98xxDisplayInterface
+      ioUnit.SSI |= srqBits;
+      ioUnit.notifyAll(); // Notify waiting threads esp. HP98xxDisplayInterface
       
       // if SRQ not inhibited and SC=0 and HP9820/30
-      if(!ioReg.SIH && !ioReg.SSF) {
-        if(!ioReg.line10_20) {
+      if(!ioUnit.SIH && !ioUnit.SSF) {
+        if(!ioUnit.line10_20) {
           // on HP9810 deliver keyCode directly
-          ioReg.bus.din = keyCode;
+          ioUnit.bus.din = keyCode;
         }
       }
     }
@@ -103,14 +104,14 @@ public class HP11200A extends IOinterface
   
   public boolean input()
   {
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       if(serviceRequested && (keyCode != -1)) {
-        ioReg.bus.din = keyCode;
+        ioUnit.bus.din = keyCode;
         keyCode = -1;
 
         // clear Service Request
-        ioReg.SSI &= ~srqBits;
-        ioReg.SSF = false;
+        ioUnit.SSI &= ~srqBits;
+        ioUnit.SSF = false;
         serviceRequested = false;
       }
       

@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -58,7 +58,7 @@ public class HP9860A extends IOdevice
 
     // generate motor sound
     cardReaderSound = new SoundMedia("media/HP9860A/HP9860_CARD.wav", false);
-    WAIT_CHAR = IOinterface.ioReg.time_30ms;
+    WAIT_CHAR = IOinterface.ioUnit.time_30ms;
     hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg").getImage();
     setResizable(false);
     setLocation(740,0);
@@ -67,12 +67,15 @@ public class HP9860A extends IOdevice
     setVisible(true);
     // wait until background image has been loaded
     synchronized(hp9860aImage) {
-      try
-      {
-        hp9860aImage.wait(500);
-      } catch (InterruptedException e)
-      { }
+    	while(hp9860aImage.getWidth(this) <= 0) {
+    		try
+    		{
+    			hp9860aImage.wait(100);
+    		} catch (InterruptedException e)
+    		{ }
+    	}
     }
+    
     setSize(hp9860aImage.getWidth(this) + getInsets().left + getInsets().right, hp9860aImage.getHeight(this) + getInsets().top + getInsets().bottom);
   }
 
@@ -191,10 +194,10 @@ public class HP9860A extends IOdevice
     if(hp11200a.reading) {
       hp11200a.reading = false;
 
-      synchronized(IOinterface.ioReg) {
+      synchronized(IOinterface.ioUnit) {
         // cancel pending service request
-        IOinterface.ioReg.SSI &= ~(1 << 11);
-        IOinterface.ioReg.SIH = IOinterface.ioReg.SSF = false;
+        IOinterface.ioUnit.SSI &= ~(1 << 11);
+        IOinterface.ioUnit.SIH = IOinterface.ioUnit.SSF = false;
       }
 
       try {
@@ -248,5 +251,14 @@ public class HP9860A extends IOdevice
     int y = getInsets().top;
 
     g.drawImage(hp9860aImage, x, y, hp9860aImage.getWidth(this), hp9860aImage.getHeight(this), this);
+  }
+  
+  public void close()
+  {
+  	// stop all sound and image threads
+  	cardReaderSound.close();
+  	hp9860aImage.flush();
+
+  	super.close();
   }
 }

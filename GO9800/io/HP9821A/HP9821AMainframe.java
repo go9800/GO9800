@@ -28,12 +28,12 @@
  * 30.10.2011 Rel. 1.50 Added beeper, changed internal tape select code to 10
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
  * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
+ * 24.10.2017 Rel. 2.04 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
  */
 
 package io.HP9821A;
 
 import java.awt.event.*;
-
 import io.*;
 import io.HP9820A.HP9820AMainframe;
 import emu98.*;
@@ -63,6 +63,7 @@ public class HP9821AMainframe extends HP9820AMainframe
   {
     super(emu, "HP9821A");
 
+    // override constants for HP9821A
     keyWidth = (950 - 110) / 20;  // with of one key area in pix
     keyOffsetY = 615;            // offset of lowest key row from image boarder 
     keyOffsetX = HP9821keyOffsetX;
@@ -86,6 +87,7 @@ public class HP9821AMainframe extends HP9820AMainframe
     BLOCK2_X = 185;
     BLOCK3_X = 336;
     
+    // ROM template sizes
     TEMPLATE1_X = 87;
     TEMPLATE1_Y = 391;
     TEMPLATE2_X = 214;
@@ -94,6 +96,23 @@ public class HP9821AMainframe extends HP9820AMainframe
     TEMPLATE3_Y = 391;
     TEMPLATE_W = 118;
     TEMPLATE_H = 223;
+
+    // click area for ROM block exchange
+    ROM_X = 30;
+    ROM_Y = 5;
+    ROM_W = 150;
+    ROM_H = 45;
+    // click area for keyboard overlay
+    OVERLAY_X = 90;
+    OVERLAY_Y = 370;
+    OVERLAY_W = 123;
+    OVERLAY_H = 30;
+    // click area for instructions window
+    INSTRUCTIONS_X = 515;
+    INSTRUCTIONS_Y = 40;
+    INSTRUCTIONS_W = 230;
+    INSTRUCTIONS_H = 30;
+
 
     addMouseListener(new mouseListener());
 
@@ -141,8 +160,9 @@ public class HP9821AMainframe extends HP9820AMainframe
       int x = (int)((event.getX() - getInsets().left) / widthScale); 
       int y = (int)((event.getY() - getInsets().top) / heightScale);
 
-      if((y > 10 && y < 50) && (x >= 25 && x <= 475)) {
-        int block = (x - 25) / 150 + 1;
+      // ROM block click area
+      if((y >= ROM_Y && y <= ROM_Y + ROM_H) && (x >= ROM_X && x <= ROM_X + 3 * ROM_W)) {
+        int block = (x - ROM_X) / ROM_W + 1;
         if(event.getButton() == MouseEvent.BUTTON1) {
           romSelector.setRomSlot("Slot" + Integer.toString(block));
           romSelector.setTitle("HP9821A ROM Blocks Slot " + Integer.toString(block));
@@ -158,10 +178,10 @@ public class HP9821AMainframe extends HP9820AMainframe
         return;
       }
 
-      // Overlay block area
-      if((y > 390 && y < 615) && (x >= 90 && x <= 460)) {
-        int block = (x - 90) / 123 + 1;
-        if(event.getButton() != MouseEvent.BUTTON1) {
+      // Overlay block click area
+      if((y >= OVERLAY_Y && y <= OVERLAY_Y + OVERLAY_H) && (x >= OVERLAY_X && x <= OVERLAY_X + 3 * OVERLAY_W)) {
+        int block = (x - OVERLAY_X) / OVERLAY_W + 1;
+        if(event.getButton() == MouseEvent.BUTTON1) {
           MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Slot" + Integer.toString(block));
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
@@ -172,8 +192,8 @@ public class HP9821AMainframe extends HP9820AMainframe
         }
       }
 
-      // instructions area
-      if((y >= 40 && y <= 70) && (x >= 760 && x <= 990)) {
+      // instructions window click area
+      if((y >= INSTRUCTIONS_Y && y <= INSTRUCTIONS_Y + INSTRUCTIONS_H) && (x >= INSTRUCTIONS_X && x <= INSTRUCTIONS_X + INSTRUCTIONS_W)) {
         if(event.getButton() == MouseEvent.BUTTON1) {
         } else {
           MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Block0");

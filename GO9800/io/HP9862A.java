@@ -392,4 +392,15 @@ public class HP9862A extends IOdevice implements Printable
   {
     moveSound.stop();
   }
+  
+  public void close()
+  {
+  	// stop all sound threads
+  	plotSound.close();
+  	moveSound.close();
+  	penDownSound.close();
+  	penUpSound.close();
+
+  	super.close();
+  }
 }

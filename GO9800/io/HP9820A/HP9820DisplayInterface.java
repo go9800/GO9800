@@ -75,7 +75,7 @@ public class HP9820DisplayInterface extends IOinterface implements DisplayInterf
 
     int l = mainframe.getInsets().left;
     int t = mainframe.getInsets().top;
-    mainframe.repaint(l + HP9800Mainframe.DISPLAY_X + HP9800Mainframe.LED_X, t + HP9800Mainframe.DISPLAY_Y + HP9800Mainframe.LED_Y, 320, 20);
+    mainframe.repaint(l + mainframe.DISPLAY_X + mainframe.LED_X, t + mainframe.DISPLAY_Y + mainframe.LED_Y, 320, 20);
   }
 
   public boolean output(int printBuffer)

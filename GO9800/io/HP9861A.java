@@ -43,7 +43,7 @@ public class HP9861A extends IOdevice implements Printable
   private static final long serialVersionUID = 1L;
   HP11201A hp11201a;
   //Image hp9861aImage;
-  SoundMedia fanSound, typeSound, spaceSound, crSound, lfSound;
+  SoundMedia typeSound, spaceSound, crSound, lfSound;
   private Vector<StringBuffer> printBuffer;
   private StringBuffer lineBuffer;
   private int fontSize;
@@ -72,7 +72,6 @@ public class HP9861A extends IOdevice implements Printable
   {
     super("HP9861A"); // set window title
 
-    //fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav");
     // load print sound
     typeSound = new SoundMedia("media/HP9861A/HP9861_TYPE.wav", true);
     spaceSound = new SoundMedia("media/HP9861A/HP9861_SPC.wav", true);
@@ -287,7 +286,7 @@ public class HP9861A extends IOdevice implements Printable
     int i;
     
     if(debug)
-      IOinterface.ioReg.console.append("HP9861A out: " + Integer.toHexString(value) + "\n");
+      IOinterface.ioUnit.console.append("HP9861A out: " + Integer.toHexString(value) + "\n");
     
     hp11201a.timerValue = 30;
     status = IOunit.devStatusReady;
@@ -399,5 +398,16 @@ public class HP9861A extends IOdevice implements Printable
   public void soundStop()
   {
     crSound.stop();
+  }
+  
+  public void close()
+  {
+  	// stop all sound threads
+    typeSound.close();
+    spaceSound.close();
+    crSound.close();
+    lfSound.close();
+
+  	super.close();
   }
 }

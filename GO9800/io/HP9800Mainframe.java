@@ -37,6 +37,7 @@
  * 25.06.2016 Rel. 1.61 Changed wait time in printOutput() and paper() to consider run-time of painting the output
  * 07.09.2016 Rel. 2.01 Changed parameters and handling of printOutput()
  * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
+ * 23.10.2017 Rel. 2.04 Changed color ledRed
  */
 
 package io;
@@ -54,38 +55,38 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 {
   private static final long serialVersionUID = 1L;
 
-  public static int keyWidth = (920 - 80) / 20;  // with of one key area in pix
-  public static int keyOffsetY = 525;            // offset of lowest key row from image boarder 
-  public static int[] keyOffsetX; // offset of leftmost key in row
-  public static int[][] keyCodes;
+  public int keyWidth = (920 - 80) / 20;  // with of one key area in pix
+  public int keyOffsetY = 525;            // offset of lowest key row from image boarder 
+  public int[] keyOffsetX; // offset of leftmost key in row
+  public int[][] keyCodes;
 
-  public static int KEYB_W = 1000;
-  public static int KEYB_H = 578;
+  public int KEYB_W = 1000;
+  public int KEYB_H = 578;
   
-  public static int DISPLAY_X = 100;
-  public static int DISPLAY_Y = 105;
-  public static int DISPLAY_W = 320;
-  public static int DISPLAY_H = 118;
-  public static int LED_X = +100;
-  public static int LED_Y = +25;
-  public static int LED_DOT_SIZE = 3; // used in HP9820/21/30 only
+  public int DISPLAY_X = 100;
+  public int DISPLAY_Y = 105;
+  public int DISPLAY_W = 320;
+  public int DISPLAY_H = 118;
+  public int LED_X = +100;
+  public int LED_Y = +25;
+  public int LED_DOT_SIZE = 3; // used in HP9820/21/30 only
 
 
-  public static int PAPER_HEIGHT = 168;
-  public static int PAPER_WIDTH = 124;
-  public static int PAPER_LEFT = 548;
-  public static int PAPER_EDGE = 126;
+  public int PAPER_HEIGHT = 168;
+  public int PAPER_WIDTH = 124;
+  public int PAPER_LEFT = 548;
+  public int PAPER_EDGE = 126;
 
-  public static int BLOCK1_X = 23;
-  public static int BLOCK1_Y = 3;
-  public static int BLOCK2_X = 174;
-  public static int BLOCK2_Y = 3;
-  public static int BLOCK3_X = 324;
-  public static int BLOCK3_Y = 3;
-  public static int BLOCK_W = 152;
-  public static int BLOCK_H = 54;
+  public int BLOCK1_X = 23;
+  public int BLOCK1_Y = 3;
+  public int BLOCK2_X = 174;
+  public int BLOCK2_Y = 3;
+  public int BLOCK3_X = 324;
+  public int BLOCK3_Y = 3;
+  public int BLOCK_W = 152;
+  public int BLOCK_H = 54;
   
-  public static int STOP_KEYCODE = 041; // code of STOP key
+  public int STOP_KEYCODE = 041; // code of STOP key
   
   public Emulator emu;
   protected Memory[] memory;
@@ -100,6 +101,9 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 	public double widthScale = 1., heightScale = 1.;
 	
   protected Image keyboardImage, displayImage;
+  protected Image ledLargeOn, ledLargeOff;
+  protected Image ledSmallOn, ledSmallOff;
+
   protected Color ledRed, ledBack, paperWhite, paperGray;
   private SoundMedia fanSound, printSound, paperSound;
   Vector<byte[]> printBuffer;
@@ -159,7 +163,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     romSelector = new ROMselector(this, emu);
     instructionsWindow = new InstructionsWindow(this);
     instructionsWindow.setSize(860, 800);
-    ledRed = new Color(255, 125, 25);
+    ledRed = new Color(255, 120, 80);
     ledBack = new Color(31, 10, 9);
     
     setBackground(Color.BLACK);
@@ -235,10 +239,18 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   {
     public void windowClosing(WindowEvent event)
     {
+    	System.out.println("\nHP9800 Emulator shutdown initiated ...");
+    	ioUnit.bus.closeAllDevices(); // close all loaded devices
+    	emu.stop();
+    	hp2116panel.stop();
+      ImageMedia.disposeAll();
+      SoundMedia.disposeAll();
       setVisible(false);
       dispose();
       System.out.println("HP9800 Emulator terminated.");
-      System.exit(0);
+      
+      g2d = null;
+      //System.exit(0);
    }
   }
 
@@ -655,6 +667,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   
   public void displayKeyMatrix()
   {
+    float[] dashArray = {2f, 2f};
     int keyCode;
     int x, y;
     String strKey;
@@ -662,13 +675,13 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     if(!showKeycode)
       return;
     
-    Graphics g = getGraphics();
-    if(g == null)
-      return;
+    BasicStroke stroke = new BasicStroke(1, 0, 0, 1f, dashArray, 0f);
+    g2d.setStroke(stroke);
 
-    g2d.setColor(new Color(255, 255, 255));
+    g2d.setColor(Color.white);
     Font font = new Font("Sans", Font.BOLD, 12);
     g2d.setFont(font);
+    
     
     for(int row = 0; row < keyOffsetX.length; row++) {
       //y = keyOffsetY - getInsets().top - row * keyWidth + 15; // why is +15 necessary ???
@@ -695,5 +708,12 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
         }
       }
     }
+    
+    // draw model specific click areas
+    displayClickAreas();
+  }
+  
+  public void displayClickAreas()
+  {
   }
 }

@@ -132,7 +132,10 @@ public class MemoryBlock
   public void unload()
   {
     if(blockName != null && !blockName.equals("HP11XXXX")) {
-      // dismiss previous images
+      // dismiss previous images, stop image threads and free all ressources
+    	if(moduleImage != null) moduleImage.flush();
+    	if(templateImage != null) templateImage.flush();
+    	if(instructionsImage != null) instructionsImage.flush();
       moduleImage = templateImage = instructionsImage = null;
       instructionsVector = null;
 

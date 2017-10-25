@@ -41,6 +41,7 @@
  * 18.03.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on handle of top cover
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
  * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
+ * 24.10.2017 Rel. 2.04 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
 */
 
 package io.HP9820A;
@@ -67,7 +68,9 @@ public class HP9820AMainframe extends HP9800Mainframe
       {0145, -1, -1, -1, -1, -1, -1, 022, 023, -1, -1, -1, -1, -1, -1, 0777, -1, -1, -1, -1},
   };
 
-  // the following constants are used in HP9820/21A only
+  // the following constants are used in HP9820A only
+  
+  // ROM template sizes
   public static int TEMPLATE1_X = 58;
   public static int TEMPLATE1_Y = 301;
   public static int TEMPLATE2_X = 184;
@@ -76,6 +79,23 @@ public class HP9820AMainframe extends HP9800Mainframe
   public static int TEMPLATE3_Y = 301;
   public static int TEMPLATE_W = 118;
   public static int TEMPLATE_H = 223;
+  
+  // click area for ROM block exchange
+  public static int ROM_X = 25;
+  public static int ROM_Y = 5;
+  public static int ROM_W = 150;
+  public static int ROM_H = 45;
+  // click area for keyboard overlay
+  public static int OVERLAY_X = 60;
+  public static int OVERLAY_Y = 280;
+  public static int OVERLAY_W = 123;
+  public static int OVERLAY_H = 30;
+  // click area for instructions window
+  public static int INSTRUCTIONS_X = 765;
+  public static int INSTRUCTIONS_Y = 40;
+  public static int INSTRUCTIONS_W = 230;
+  public static int INSTRUCTIONS_H = 30;
+
 
   public HP9820AMainframe(Emulator emu, String machine)
   {
@@ -147,8 +167,9 @@ public class HP9820AMainframe extends HP9800Mainframe
       int x = (int)((event.getX() - getInsets().left) / widthScale); 
       int y = (int)((event.getY() - getInsets().top) / heightScale);
 
-      if((y > 10 && y < 50) && (x >= 25 && x <= 475)) {
-        int block = (x - 25) / 150 + 1;
+      // ROM block click area
+      if((y >= ROM_Y && y <= ROM_Y + ROM_H) && (x >= ROM_X && x <= ROM_X + 3 * ROM_W)) {
+        int block = (x - ROM_X) / ROM_W + 1;
         if(event.getButton() == MouseEvent.BUTTON1) {
           romSelector.setRomSlot("Slot" + Integer.toString(block));
           romSelector.setTitle("HP9820A ROM Blocks Slot " + Integer.toString(block));
@@ -164,10 +185,10 @@ public class HP9820AMainframe extends HP9800Mainframe
         return;
       }
 
-      // Overlay block area
-      if((y > 300 && y < 525) && (x >= 60 && x <= 430)) {
-        int block = (x - 60) / 123 + 1;
-        if(event.getButton() != MouseEvent.BUTTON1) {
+      // Overlay block click area
+      if((y >= OVERLAY_Y && y <= OVERLAY_Y + OVERLAY_H) && (x >= OVERLAY_X && x <= OVERLAY_X + 3 * OVERLAY_W)) {
+        int block = (x - OVERLAY_X) / OVERLAY_W + 1;
+        if(event.getButton() == MouseEvent.BUTTON1) {
           MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Slot" + Integer.toString(block));
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
@@ -178,10 +199,9 @@ public class HP9820AMainframe extends HP9800Mainframe
         }
       }
 
-      // instructions area
-      if((y >= 40 && y <= 70) && (x >= 760 && x <= 990)) {
+      // instructions window click area
+      if((y >= INSTRUCTIONS_Y && y <= INSTRUCTIONS_Y + INSTRUCTIONS_H) && (x >= INSTRUCTIONS_X && x <= INSTRUCTIONS_X + INSTRUCTIONS_W)) {
         if(event.getButton() == MouseEvent.BUTTON1) {
-        } else {
           MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Block0");
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
@@ -247,7 +267,8 @@ public class HP9820AMainframe extends HP9800Mainframe
     // normalize frame and get scaling parameters
   	super.paint(this.getGraphics());
 
-    backgroundImage = g2d.drawImage(keyboardImage, x, y, keyboardImage.getWidth(this), keyboardImage.getHeight(this), this);
+  	// scale keyboard image to normal size
+    backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
 
     if(backgroundImage) {
       // get images of ROM modules and template
@@ -290,6 +311,26 @@ public class HP9820AMainframe extends HP9800Mainframe
       displayPrintOutput();
       displayKeyMatrix();
     }
+  }
+
+  public void displayClickAreas()
+  {
+    float[] dashArray = {4f, 4f};
+    int i;
+    
+    BasicStroke stroke = new BasicStroke(1, 0, 0, 1f, dashArray, 0f);
+    g2d.setStroke(stroke);
+    g2d.setColor(Color.white);
+
+    for(i = 0; i < 3; i++) {
+    	g2d.drawRect(ROM_X + i * ROM_W, ROM_Y, ROM_W, ROM_H);
+    }
+    
+    for(i = 0; i < 3; i++) {
+    	g2d.drawRect(OVERLAY_X + i * OVERLAY_W, OVERLAY_Y, OVERLAY_W, OVERLAY_H);
+    }
+    
+    g2d.drawRect(INSTRUCTIONS_X, INSTRUCTIONS_Y, INSTRUCTIONS_W, INSTRUCTIONS_H);
   }
 
   public void display(int col, int chr)

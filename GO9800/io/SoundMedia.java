@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2010 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,11 +30,14 @@
  * 19.11.2011 Rel. 1.51 Bugfix: added BufferedInputStream to creation of AudioInputStream for OpenJDK
  * 01.11.2016 Rel. 2.04 Added methods close() and getMaxLines()
  * 01.11.2016 Rel. 2.04 Added class parameter 'discardable' to ignore sounds on hosts with a limited number of mixer lines 
+ * 25.10.2017 Rel. 2.04 Added method disposeAll() to close all loaded sound clips
  */
 
 package io;
 
 import java.io.*;
+import java.util.Vector;
+
 import javax.sound.sampled.*;
 
 public class SoundMedia
@@ -45,11 +48,15 @@ public class SoundMedia
   private static final Mixer smMixer;
   private static final boolean DIRECT = false;
   private static int maxlines;
-  
+  private static Vector<Clip> clipList;
+
   static {
     Mixer mixer = null;
     
-    try {
+  	// save all sounds in clipList for later disposeAll()
+  	clipList = new Vector<Clip>();
+
+  	try {
       mixer = AudioSystem.getMixer(null); // default mixer
       if ((maxlines = mixer.getMaxLines(new Line.Info(SourceDataLine.class))) !=
         AudioSystem.NOT_SPECIFIED && maxlines < 16) {
@@ -92,6 +99,7 @@ public class SoundMedia
       }
         
       soundClip.open(ais);
+      clipList.add(soundClip);
     } catch(IOException | UnsupportedAudioFileException | LineUnavailableException | IllegalArgumentException | NullPointerException e) {
       System.err.println(soundFile + ": " + e);
     }
@@ -174,5 +182,21 @@ public class SoundMedia
   public int getMaxLines()
   {
   	return(maxlines);
+  }
+  
+  public static void disposeAll()
+  {
+  	Clip soundClip;
+
+  	// delete all soundClips
+  	while(!clipList.isEmpty())
+  	{
+  		soundClip = clipList.lastElement();
+  		soundClip.stop();
+  		soundClip.close();
+  		clipList.removeElement(soundClip);
+  	}
+  	
+  	System.out.println("Sound threads stopped.");
   }
 }

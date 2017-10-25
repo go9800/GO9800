@@ -32,7 +32,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
-public class HP9867A extends Frame implements KeyListener
+public class HP9867A extends IOdevice //Frame implements KeyListener
 {
   private static final long serialVersionUID = 1L;
 
@@ -113,11 +113,13 @@ public class HP9867A extends Frame implements KeyListener
       setVisible(true);
       // wait until background image has been loaded
       synchronized(hp9867Image) {
-        try
-        {
-          hp9867Image.wait(500);
-        } catch (InterruptedException e)
-        { }
+      	while(hp9867Image.getWidth(this) <= 0) {
+      		try
+      		{
+      			hp9867Image.wait(100);
+      		} catch (InterruptedException e)
+      		{ }
+      	}
       }
       setSize(hp9867Image.getWidth(this) + getInsets().left + getInsets().right, hp9867Image.getHeight(this) + getInsets().top + getInsets().bottom);
     } else {
@@ -139,9 +141,7 @@ public class HP9867A extends Frame implements KeyListener
   {
     public void windowClosing(WindowEvent event)
     {
-      setVisible(false);
-      dispose();
-      System.out.println("HP9867 Unit " + unit + " unloaded.");
+    	close();
    }
   }
  
@@ -368,5 +368,14 @@ public class HP9867A extends Frame implements KeyListener
     }
 
     return(HP11305A.POWER_ON);
+  }
+  
+  public void close()
+  {
+    setVisible(false);  // close window
+    dispose();  // and remove it
+    IOinterface.ioUnit.bus.devices.removeElement(this);  // remove device object from devices list
+
+    System.out.println("HP9867 Unit " + unit + " unloaded.");
   }
 }

@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2012 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -68,49 +68,49 @@ public class HP11202A extends IOinterface
 
   public boolean output()
   {
-    debug = IOinterface.ioReg.console.getDebugMode();
+    debug = ioUnit.console.getDebugMode();
 
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       // is it an output operation (SO3=0)?
-      if(ioReg.CEO && (ioReg.getStatus() & INPUT_MODE) == 0) {
+      if(ioUnit.CEO && (ioUnit.getStatus() & INPUT_MODE) == 0) {
         status = 0;
 
         if(debug)
-          ioReg.console.append("HP11202A out: " + Integer.toHexString(ioReg.getValue()) + "\n");
+          ioUnit.console.append("HP11202A out: " + Integer.toHexString(ioUnit.getValue()) + "\n");
 
-        if(ioDevice.output(ioReg.getStatus(), ioReg.getData()) == 0) {
+        if(ioDevice.output(ioUnit.getStatus(), ioUnit.getData()) == 0) {
           // set status to ready
           status = IOunit.devStatusReady;
         }
       }
 
-      return(ioReg.CEO); // hold CEO
+      return(ioUnit.CEO); // hold CEO
     }
   }
 
   public boolean input()
   {
-    debug = IOinterface.ioReg.console.getDebugMode();
+    debug = ioUnit.console.getDebugMode();
 
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       // input operation (SO3=1)?
       // CEO triggers reading of file (peripheral) and buffering in inByte
-      if(ioReg.CEO && (ioReg.getStatus() & INPUT_MODE) != 0) {
-        ioReg.bus.din = status;
+      if(ioUnit.CEO && (ioUnit.getStatus() & INPUT_MODE) != 0) {
+        ioUnit.bus.din = status;
 
-        inByte = ioDevice.input(ioReg.getStatus());
+        inByte = ioDevice.input(ioUnit.getStatus());
         if(inByte != -1) {
-          ioReg.bus.din |= inByte;
+          ioUnit.bus.din |= inByte;
 
           if(debug)
-            ioReg.console.append("HP11202A in: " + Integer.toHexString(inByte) + "\n");
+            ioUnit.console.append("HP11202A in: " + Integer.toHexString(inByte) + "\n");
         }
       } else {
         // put status and last buffered value on IO bus (1=ready)
-        ioReg.bus.din = status | inByte;
+        ioUnit.bus.din = status | inByte;
       }
 
-      return(ioReg.CEO); // hold CEO
+      return(ioUnit.CEO); // hold CEO
     }
   }
 }

@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2016 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,6 +21,7 @@
  * 30.06.2016 Rel. 2.00: class created 
  * 07.08.2016 Rel. 2.00: beta release
  * 25.10.2016 Rel. 2.03: fixed ALU operation in shift cycle
+ * 24.10.2017 Rel. 2.04: Added method closeAllDevices() for forced closing of IOdevices
  */
 
 package emu98;
@@ -30,6 +31,7 @@ import java.util.Vector;
 
 import io.DisplayInterface;
 import io.HP9800MagneticCardReaderInterface;
+import io.IOdevice;
 import io.IOinterface;
 import io.KeyboardInterface;
 
@@ -543,11 +545,12 @@ public class IOunit
   public class Bus
   {
     public Vector<IOinterface> interfaces;
+    public Vector<IOdevice> devices;
     IOinterface device;
     public KeyboardInterface keyboard;
     public DisplayInterface display;
     public HP9800MagneticCardReaderInterface cardReader;
-    Enumeration<IOinterface> devEnum = null;
+    Enumeration<IOinterface> interfaceEnum = null;
 
     public int din; // value of input bus lines from all devices
     public int dout; // value of output bus lines to all devices
@@ -555,7 +558,11 @@ public class IOunit
     public Bus(int value)
     {
       din = value;
+      // List of all loaded IOinterfaces
       interfaces = new Vector<IOinterface>();
+      
+      // List of loaded IOdevices
+      devices = new Vector<IOdevice>();
 
       //System.out.println("HP9800 I/O bus loaded.");
     }
@@ -567,16 +574,25 @@ public class IOunit
       int selectCode = getSelectCode();
 
       if(selectCode != 0) {
-        for(devEnum = interfaces.elements(); devEnum.hasMoreElements(); ) {
-          device = (IOinterface)devEnum.nextElement();
+        for(interfaceEnum = interfaces.elements(); interfaceEnum.hasMoreElements(); ) {
+          device = (IOinterface)interfaceEnum.nextElement();
           if(device.selectCode == selectCode) {
             return(device);
           }
         }
       }
 
-      devEnum = null;
+      interfaceEnum = null;
       return(null);  // no matching device found
+    }
+    
+    public void closeAllDevices()
+    {
+    	// close all open devices one by one
+    	while(!devices.isEmpty())
+    	{
+  			devices.lastElement().close(); // close() also removes the device from the list
+    	}
     }
 
     // get next device with matching selectCode on bus
@@ -585,15 +601,15 @@ public class IOunit
       IOinterface device;
       int selectCode = getSelectCode();
 
-      if(devEnum != null) {
-        for( ; devEnum.hasMoreElements(); ) {
-          device = (IOinterface)devEnum.nextElement();
+      if(interfaceEnum != null) {
+        for( ; interfaceEnum.hasMoreElements(); ) {
+          device = (IOinterface)interfaceEnum.nextElement();
           if(device.selectCode == selectCode) {
             return(device);
           }
         }
 
-        devEnum = null;
+        interfaceEnum = null;
       }
       return(null);  // no matching device found
     }

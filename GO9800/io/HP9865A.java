@@ -113,13 +113,15 @@
         setVisible(true);
         // wait until background image has been loaded
         synchronized(hp9865aImage) {
-          try
-          {
-            hp9865aImage.wait(500);
-          } catch (InterruptedException e)
-          { }
+        	while(hp9865aImage.getWidth(this) <= 0) {
+        		try
+        		{
+        			hp9865aImage.wait(100);
+        		} catch (InterruptedException e)
+        		{ }
+        	}
         }
-        
+
         setSize(hp9865aImage.getWidth(this) + getInsets().left + getInsets().right, hp9865aImage.getHeight(this) + getInsets().top + getInsets().bottom);
       }
       
@@ -127,8 +129,11 @@
       {
         super("HP9865A"); // set window title
         loadSound();
-
-        // don't visualize window if it is a build-in 9865 (SC=10)
+        
+        /*
+        don't visualize window if it is a build-in 9865 (SC=10)
+        */
+        
         System.out.println("HP9800 Internal Tape Drive, select code " + selectCode + " loaded.");
       }
        
@@ -671,5 +676,20 @@
             // draw status indicator string 
             drawStatus();
         }
+      }
+      
+      public void close()
+      {
+      	// stop all sound and image threads
+        doorOpenSound.close();
+        doorCloseSound.close();
+        motorStartSound.close();
+        motorStopSound.close();
+        motorSlowSound.close();
+        motorFastSound.close();
+        motorRewindSound.close();
+        hp9865aImage.flush();
+
+      	super.close();
       }
     }

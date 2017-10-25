@@ -52,7 +52,6 @@ import javax.swing.text.BadLocationException;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.Insets;
-import javax.swing.SwingConstants;
 
 public class Console extends JDialog implements ActionListener
 {
@@ -66,7 +65,7 @@ public class Console extends JDialog implements ActionListener
   private JScrollPane disassemblerOutputScrollPane = null;
   private JButton stepButton = null;
   private JCheckBox disassembleCheckBox = null;
-  private JComboBox timerComboBox = null;
+  private JComboBox<String> timerComboBox = null;
   private JLabel timerLabel = null;
 
   private JButton clearButton = null;
@@ -344,11 +343,11 @@ public class Console extends JDialog implements ActionListener
    *    
    * @return javax.swing.JComboBox  
    */
-  private JComboBox getTimerComboBox()
+  private JComboBox<String> getTimerComboBox()
   {
     if (timerComboBox == null)
     {
-      timerComboBox = new JComboBox();
+      timerComboBox = new JComboBox<String>();
       timerComboBox.setEditable(true);
       timerComboBox.setName("TimerValue");
       timerComboBox.setActionCommand("timerChanged");
@@ -574,6 +573,11 @@ public class Console extends JDialog implements ActionListener
       else
         columnLabels.setText("A      B      E I      mcisKDPMCS      P       OPCODE  INSTR           AR1                     AR2");
     }
+  }
+  
+  public void dispose()
+  {
+  	
   }
 
 }  //  @jve:decl-index=0:visual-constraint="11,-154"

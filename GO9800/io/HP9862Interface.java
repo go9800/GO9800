@@ -61,9 +61,9 @@ public class HP9862Interface extends IOinterface
 
       // put plotter in ready status after delay
       if(delay) {
-        synchronized(ioReg) {
+        synchronized(ioUnit) {
           status |= IOunit.devStatusReady | HP9862A.POWER;
-          ioReg.CEO = false;
+          ioUnit.CEO = false;
           delay = false;
           hp9862a.soundStop();
           // set timer to idle
@@ -75,16 +75,16 @@ public class HP9862Interface extends IOinterface
   
   public boolean input()
   {
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       if(debug)
-        ioReg.console.append("HP9862A status input: " + Integer.toHexString(status) + "\n");
+        ioUnit.console.append("HP9862A status input: " + Integer.toHexString(status) + "\n");
       
-      if(ioReg.CEO)
+      if(ioUnit.CEO)
         // put status on IO bus
-        ioReg.bus.din = status;
+        ioUnit.bus.din = status;
       else
         // put status on IO bus
-        ioReg.bus.din = status;
+        ioUnit.bus.din = status;
 
       return(true); // hold CEO
     }
@@ -92,12 +92,12 @@ public class HP9862Interface extends IOinterface
   
   public boolean output()
   {
-    synchronized(ioReg) {
+    synchronized(ioUnit) {
       if(debug)
-        ioReg.console.append("HP9862A output: " + Integer.toHexString(ioReg.getValue()) + "\n");
+        ioUnit.console.append("HP9862A output: " + Integer.toHexString(ioUnit.getValue()) + "\n");
 
       // returns pen status and not ready -> delay for plotter output 
-      status = hp9862a.output(ioReg.getStatus(), ioReg.getData());
+      status = hp9862a.output(ioUnit.getStatus(), ioUnit.getData());
 
       // on HP9820/30 CEO is held and handshake is done 
       // by status=IOregister.devStatusReady.

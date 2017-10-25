@@ -25,7 +25,6 @@
 
 package io.HP9810A;
 
-import java.awt.*;
 
 import io.*;
 import emu98.*;

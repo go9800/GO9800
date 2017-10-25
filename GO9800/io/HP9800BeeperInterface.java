@@ -44,12 +44,20 @@ public class HP9800BeeperInterface extends HP9800MagneticCardReaderInterface
 
   public boolean output()
   {
-    synchronized(ioReg) {
-      if(ioReg.MLS) {
+    synchronized(ioUnit) {
+      if(ioUnit.MLS) {
         beepSound.start();
       }
     }
     
     return(false);
+  }
+  
+  public void stop()
+  {
+    // stop all sound threads
+  	beepSound.close();
+
+  	super.stop();
   }
 }
