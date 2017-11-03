@@ -24,6 +24,7 @@
  * 09.05.2012 Rel. 1.60 Added SO status flags for file closing
  * 09.05.2012 Rel. 1.60 Bugfix: added missing method setInterface (fixes null pointer error when canceling file dialog)
  * 11.05.2012 Rel. 1.60 Added buffered output window 
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
 */
 
 package io;
@@ -53,9 +54,11 @@ public class HP11202HostFileIO extends HostIO implements Printable
   private PageFormat pageFormat;
 
   
-  public HP11202HostFileIO(String[] parameters)
+  public HP11202HostFileIO(String[] parameters, IOinterface ioInterface)
   {
-    super("HP11202A File-I/O"); // set window title
+    super("HP11202A File-I/O", ioInterface); // set window title
+    hp11202Interface = (HP11202A)ioInterface;
+
     removeWindowListener(winListener);
     addWindowListener(new windowListener());
 
@@ -82,12 +85,6 @@ public class HP11202HostFileIO extends HostIO implements Printable
     }
   }
 
-  public void setInterface(IOinterface ioInt)
-  {
-    super.setInterface(ioInt);
-    hp11202Interface = (HP11202A)ioInt;
-  } 
-  
   class windowListener extends WindowAdapter
   {
     public void windowClosing(WindowEvent event)

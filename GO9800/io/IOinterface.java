@@ -32,17 +32,17 @@
  * 12.03.2011 Rel. 1.50 Changed to static setting of IOregister
  * 01.08.2016 Rel. 2.00 Changed to reference ioUnit instead of ioRegister
  * 25.10.2017 Rel. 2.03 Changed static access to ioUnit, removed deprecated use of ioRegister
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io;
 
-import emu98.Memory;
 import emu98.IOunit;
 
 public class IOinterface implements Runnable
 {
-  static protected IOunit ioUnit; // connection to IOunit
-  static protected Memory[] memory; // connection to HP9830A memory extension (e.g. HP11273A)
+	public HP9800Mainframe mainframe; // connection to HP9800 mainframe
+  protected IOunit ioUnit; // connection to IOunit
   public int selectCode;
   public int srqBits; // bit pattern for service request
   public boolean serviceRequested;
@@ -56,12 +56,16 @@ public class IOinterface implements Runnable
   
   public IOinterface()
   {
-
+  	
   }
   
   // constructor for internal interfaces (display, keyboard, printer, card reader)  
-  public IOinterface(int selectCode, String name)
+  public IOinterface(int selectCode, String name, HP9800Mainframe hp9800Mainframe)
   {
+  	mainframe = hp9800Mainframe; // connect to HP9800Mainframe
+  	ioUnit = mainframe.ioUnit; // connect to IOunit
+    mainframe.ioInterfaces.add(this); // connect to ioBus
+  	
     devThread = (name == null) ? new Thread(this) : new Thread(this, name);
 
     this.selectCode = selectCode;
@@ -73,14 +77,18 @@ public class IOinterface implements Runnable
       devThread.start();
   }
   
-  public IOinterface(int selectCode)
+  public IOinterface(int selectCode, HP9800Mainframe hp9800Mainframe)
   {
-    this(selectCode, null);
+    this(selectCode, null, hp9800Mainframe);
   }
   
-  // constructor for external interfaces (loaded by Emulator.loadDevice())
-  public IOinterface(Integer selectCode, String name)
+  // constructor for external interfaces (loaded by loadDevice())
+  public IOinterface(Integer selectCode, String name, HP9800Mainframe hp9800Mainframe)
   {
+  	mainframe = hp9800Mainframe; // connect to HP9800Mainframe
+  	ioUnit = mainframe.ioUnit; // connect to IOunit
+    mainframe.ioInterfaces.add(this); // connect to ioBus
+
     devThread = (name == null) ? new Thread(this) : new Thread(this, name);
 
     this.selectCode = selectCode.intValue();
@@ -88,15 +96,9 @@ public class IOinterface implements Runnable
     serviceRequested = false;
   }
 
-  public IOinterface(Integer selectCode)
+  public IOinterface(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
-    this(selectCode, null);
-  }
-  
-  // connect to IOunit for all IOinterfaces
-  static public void setIOunit(IOunit ioUnit)
-  {
-    IOinterface.ioUnit = ioUnit;
+    this(selectCode, null, hp9800Mainframe);
   }
   
   public void setDevice(IOdevice ioDev)
@@ -141,8 +143,13 @@ public class IOinterface implements Runnable
   
   public void stop()
   {
-    devThread.stop();
-  	devThread = null;
+  	if(devThread != null)
+  	{
+  		devThread.stop();
+  		devThread = null;
+  	}
+  	
+    mainframe.ioInterfaces.removeElement(this);  // remove device interface object from IObus
   }
   
   protected void requestInterrupt()

@@ -36,14 +36,21 @@
  * 18.04.2016 Rel. 1.61 Fixed displacement of keyMatrix for HP9830B
  * 25.06.2016 Rel. 1.61 Changed wait time in printOutput() and paper() to consider run-time of painting the output
  * 07.09.2016 Rel. 2.01 Changed parameters and handling of printOutput()
- * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
- * 23.10.2017 Rel. 2.04 Changed color ledRed
+ * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
+ * 23.10.2017 Rel. 2.10 Changed color ledRed
+ * 27.10.2017 Rel. 2.10: Changed drawing in displayKeyMatrix(), added methode displayClickAreas()
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 02.11.2017 Rel. 2.10: Added method imageProcessing() used to draw ROM modules and templates
+ * 02.11.2017 Rel. 2.10: Changed drawing of ROM modules and templates using imageProcessing() and RGBA images with transparency
  */
 
 package io;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.awt.print.*;
 import java.util.*;
 import javax.sound.sampled.*;
@@ -77,30 +84,39 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public int PAPER_LEFT = 548;
   public int PAPER_EDGE = 126;
 
-  public int BLOCK1_X = 23;
+  public int BLOCK1_X = 24;
   public int BLOCK1_Y = 3;
   public int BLOCK2_X = 174;
-  public int BLOCK2_Y = 3;
-  public int BLOCK3_X = 324;
-  public int BLOCK3_Y = 3;
+  public int BLOCK2_Y = 2;
+  public int BLOCK3_X = 325;
+  public int BLOCK3_Y = 1;
   public int BLOCK_W = 152;
   public int BLOCK_H = 54;
   
   public int STOP_KEYCODE = 041; // code of STOP key
   
-  public Emulator emu;
-  protected Memory[] memory;
-  protected IOunit ioUnit;
-  protected Console console;
+  // mainframe ressources used by all modules, interfaces, devices  
+  public CPU cpu;
+  public Memory[] memory;
+  public IOunit ioUnit;
+  public Console console;
+  
+  // List of all IOinterfaces and IOdevices for cleanup
+  public Vector<IOinterface> ioInterfaces; // also used by IObus
+  public Vector<IOdevice> ioDevices;
+
+  protected Emulator emu;
+  public Configuration config;
   protected HP2116Panel hp2116panel; 
   protected ROMselector romSelector;
+  protected Hashtable<String, String> hostKeyCodes, hostKeyStrings;
   public InstructionsWindow instructionsWindow;
   
   public Graphics2D g2d;
   public double aspectRatio = 1.;
 	public double widthScale = 1., heightScale = 1.;
 	
-  protected Image keyboardImage, displayImage;
+  protected Image keyboardImage, displayImage, blockImage;
   protected Image ledLargeOn, ledLargeOff;
   protected Image ledSmallOn, ledSmallOff;
 
@@ -124,25 +140,41 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     super(machine);
 
     this.emu = emu;
+    emu.setMainframe(this);
+    
+    // List of all loaded IOinterfaces
+    ioInterfaces = new Vector<IOinterface>();
+    
+    // List of loaded IOdevices
+    ioDevices = new Vector<IOdevice>();
     
     // console output of emulator (disassembler)
     console = new Console(this, emu);
     emu.setConsole(console);
 
+    // initialize complete memory to 'unused'  
+    memory = new Memory[0100000];
+    //unusedMemory = new Memory(false, -1, 0);
+    for(int i = 0; i <= 077777; i++)
+      memory[i] = new Memory(false, i, 0);
+
+    // set object variable for trace outputs
+    Memory.emu = emu;
+
+    // initialize CPU
+    cpu = new CPU(this);
+
+    // initialize IO-unit
+    ioUnit = new IOunit(cpu);
+    
+    cpu.setIOunit(ioUnit);
+    cpu.setDisassemblerOutput(console);
+    ioUnit.setDisassemblerOutput(console);
+    
     // HP2116 like lamp panel (just for fun)
-    hp2116panel = new HP2116Panel(emu.cpu);
+    hp2116panel = new HP2116Panel(cpu);
     hp2116panel.setVisible(false);
 
-    // connect memory to Mainframe
-    memory = emu.memory;
-    
-    // connect IOregister to Mainframe
-    ioUnit = emu.ioUnit;
-    ioUnit.setDisassemblerOutput(console);
-
-    // connect extended memory to Mainframe via IOinterface (e.g. HP11273A)
-    IOinterface.memory = memory;
-    
     addKeyListener(this);
     addWindowListener(new windowListener());
     
@@ -160,13 +192,13 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", false);
     fanSound.loop();
 
-    romSelector = new ROMselector(this, emu);
+    romSelector = new ROMselector(this, this);
     instructionsWindow = new InstructionsWindow(this);
     instructionsWindow.setSize(860, 800);
     ledRed = new Color(255, 120, 80);
     ledBack = new Color(31, 10, 9);
     
-    setBackground(Color.BLACK);
+    setBackground(new Color(85, 83, 81));
     setLocation(0, 100);
     
     if(!machine.startsWith("HP9830")) {
@@ -185,7 +217,11 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     }
   }
   
- 
+  public void setConfiguration(Configuration config)
+  {
+  	this.config = config;
+  }
+  
   public void setSize()
   {
   	Dimension normalSize;
@@ -235,16 +271,37 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public void setTapeDevice(HP9865A tapeDevice)
   {}
   
+  protected void closeAllDevices()
+  {
+  	// close all open devices one by one
+  	while(!ioDevices.isEmpty())
+  	{
+			ioDevices.lastElement().close(); // close() also removes the device from the list
+  	}
+  }
+
+  protected void closeAllInterfaces()
+  {
+  	// close all open devices one by one
+  	while(!ioInterfaces.isEmpty())
+  	{
+			ioInterfaces.lastElement().stop(); // close() also removes the device from the list
+  	}
+  }
+
   class windowListener extends WindowAdapter
   {
     public void windowClosing(WindowEvent event)
     {
     	System.out.println("\nHP9800 Emulator shutdown initiated ...");
-    	ioUnit.bus.closeAllDevices(); // close all loaded devices
+    	
+    	closeAllDevices(); // close all loaded devices
+    	closeAllInterfaces(); // close remaining interfaces without device (MCR, Beeper etc.)
     	emu.stop();
     	hp2116panel.stop();
       ImageMedia.disposeAll();
       SoundMedia.disposeAll();
+      config.dispose();
       setVisible(false);
       dispose();
       System.out.println("HP9800 Emulator terminated.");
@@ -272,8 +329,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   	g2d.scale(widthScale, heightScale);  // scale graphics to required size
   	
   	// enable antialiasing for higher quality of scaled graphics
-  	RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-    g2d.setRenderingHints(hints);
+    g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
   }
 
   public void displayLEDs(int keyLEDs)
@@ -429,7 +485,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       return;
     }
 
-    strCode = (String)emu.keyCodes.get(strCode + modifier);
+    strCode = (String)config.hostKeyCodes.get(strCode + modifier);
     if(strCode != null)
       keyCode = Integer.parseInt(strCode, 8);
     else if(keyChar >= 040 && keyChar <= 0172)
@@ -665,6 +721,29 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     g2d.fillRect(x, y, PAPER_WIDTH, 6);
   }
   
+  public BufferedImage imageProcessing(Image image, float factor, float offset)
+  {
+  	Graphics2D bufferedGraphics;
+  	BufferedImage bufferedImage; // for image processing
+  	RescaleOp imageOp;
+  	float[] factors;  // contrast factors (RGBA)
+  	float[] offsets;  // brightness offsets (RGBA)
+  	
+  	// processing of RGB with Alpha (RGBA) requires vector values
+  	factors = new float[]{factor, factor, factor, 1f};
+  	offsets = new float[]{offset, offset, offset, 0f};
+
+  	// created buffered RGB image with alpha channel
+  	while(image.getWidth(null) < 0); // wait for image to be loaded
+  	bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+  	bufferedGraphics = bufferedImage.createGraphics();
+  	bufferedGraphics.drawImage(image, 0, 0, null); // draw moduleImage into bufferedImage
+  	imageOp = new RescaleOp(factors, offsets, null); // image processing operation
+  	
+  	// return processed image
+  	return(imageOp.filter(bufferedImage, null));
+  }
+    
   public void displayKeyMatrix()
   {
     float[] dashArray = {2f, 2f};
@@ -690,7 +769,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       for(int col = 0; col < keyCodes[row].length; col++) {
         keyCode = keyCodes[row][col];
         if(keyCode != -1) {
-          if(emu.model.startsWith("HP9830") && col > 11)
+          if(config.model.startsWith("HP9830") && col > 11)
             x = keyOffsetX[7];
           else
             x = keyOffsetX[row];
@@ -700,7 +779,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
           
           if(keyCode < 0700) {
             strKey = Integer.toString(keyCode);
-            strKey = (String)emu.keyStrings.get(strKey);
+            strKey = (String)config.hostKeyStrings.get(strKey);
             if(strKey == null)
               strKey = String.valueOf((char)keyCode);
             g2d.drawString(strKey, x + 5, y + keyWidth - 5);

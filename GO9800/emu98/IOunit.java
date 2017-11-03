@@ -21,17 +21,16 @@
  * 30.06.2016 Rel. 2.00: class created 
  * 07.08.2016 Rel. 2.00: beta release
  * 25.10.2016 Rel. 2.03: fixed ALU operation in shift cycle
- * 24.10.2017 Rel. 2.04: Added method closeAllDevices() for forced closing of IOdevices
- */
+ * 24.10.2017 Rel. 2.10: Added method closeAllDevices() for forced closing of IOdevices
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+*/
 
 package emu98;
 
 import java.util.Enumeration;
-import java.util.Vector;
 
 import io.DisplayInterface;
 import io.HP9800MagneticCardReaderInterface;
-import io.IOdevice;
 import io.IOinterface;
 import io.KeyboardInterface;
 
@@ -114,9 +113,6 @@ public class IOunit
     time_32ms = checkTiming(32);
     time_100ms = checkTiming(100);
     System.out.print(" done.\n");
-
-    // connect IOunit to all IOinterfaces
-    IOinterface.setIOunit(this);
 
     System.out.println("HP9800 I/O unit loaded.");
   }
@@ -544,8 +540,6 @@ public class IOunit
 
   public class Bus
   {
-    public Vector<IOinterface> interfaces;
-    public Vector<IOdevice> devices;
     IOinterface device;
     public KeyboardInterface keyboard;
     public DisplayInterface display;
@@ -558,12 +552,6 @@ public class IOunit
     public Bus(int value)
     {
       din = value;
-      // List of all loaded IOinterfaces
-      interfaces = new Vector<IOinterface>();
-      
-      // List of loaded IOdevices
-      devices = new Vector<IOdevice>();
-
       //System.out.println("HP9800 I/O bus loaded.");
     }
 
@@ -574,7 +562,7 @@ public class IOunit
       int selectCode = getSelectCode();
 
       if(selectCode != 0) {
-        for(interfaceEnum = interfaces.elements(); interfaceEnum.hasMoreElements(); ) {
+        for(interfaceEnum = cpu.mainframe.ioInterfaces.elements(); interfaceEnum.hasMoreElements(); ) {
           device = (IOinterface)interfaceEnum.nextElement();
           if(device.selectCode == selectCode) {
             return(device);
@@ -586,15 +574,6 @@ public class IOunit
       return(null);  // no matching device found
     }
     
-    public void closeAllDevices()
-    {
-    	// close all open devices one by one
-    	while(!devices.isEmpty())
-    	{
-  			devices.lastElement().close(); // close() also removes the device from the list
-    	}
-    }
-
     // get next device with matching selectCode on bus
     public IOinterface nextDevice()
     {

@@ -24,7 +24,8 @@
  * 28.01.2007 Rel. 0.30: Split into pure HP11202 interface and HostIO class
  * 07.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
  * 09.05.2012 Rel. 1.60 Added SO status output to device
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -39,10 +40,10 @@ public class HP11202A extends IOinterface
   static final int INPUT_MODE = 0x0800;
   
   
-  public HP11202A(Integer selectCode)
+  public HP11202A(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
     // create named thread
-    super(selectCode, "HP11202A");
+    super(selectCode, "HP11202A", hp9800Mainframe);
   }
 
   public void setDevice(IOdevice ioDev)

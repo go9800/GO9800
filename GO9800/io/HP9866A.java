@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,7 +21,8 @@
  * 12.02.2011 Class completely reworked and adopted from HP9866B.java 
  * 19.03.2011 Rel. 1.50 Added method print()
  * 20.11.2011 Rel. 1.51 SHIFT+DELETE key resizes window to default
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -180,9 +181,10 @@ public class HP9866A extends IOdevice implements Printable
   private PrinterJob printJob;
   private PageFormat pageFormat;
 
-  public HP9866A()
+  public HP9866A(IOinterface ioInterface)
   {
-    super("HP9866A"); // set window title
+    super("HP9866A", ioInterface); // set window title
+    hp9866Interface = (HP9866Interface)ioInterface;
     addWindowListener(new windowListener());
 
     //fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", true);
@@ -205,14 +207,9 @@ public class HP9866A extends IOdevice implements Printable
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
     
+    setState(ICONIFIED);
     setVisible(true);
   }
-
-  public void setInterface(IOinterface ioInt)
-  {
-    super.setInterface(ioInt);
-    hp9866Interface = (HP9866Interface)ioInt;
-  } 
 
   class windowListener extends WindowAdapter
   {
@@ -438,6 +435,7 @@ public class HP9866A extends IOdevice implements Printable
       numLines++;
       printBuffer.addElement(lineBuffer);
       lineBuffer = new StringBuffer();
+      setVisible(true);
       repaint();
 
       // status=not ready -> delay for line output

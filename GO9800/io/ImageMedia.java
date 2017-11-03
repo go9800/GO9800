@@ -20,7 +20,7 @@
 /*
  * 24.11.2006 Class created 
  * 12.07.2007 Rel. 1.20 Changed JAR-file access to Class.getResourceAsStream()
- * 25.10.2017 Rel. 2.04 Added method disposeAll() to close all loaded images
+ * 25.10.2017 Rel. 2.10 Added method disposeAll() to close all loaded images
  */
 
 package io;

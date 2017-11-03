@@ -1,21 +1,21 @@
-    /*
-     * HP9800 Emulator
-     * Copyright (C) 2006-2011 Achim Buerger
-     * 
-     * This program is free software; you can redistribute it and/or
-     * modify it under the terms of the GNU General Public License
-     * as published by the Free Software Foundation; either version 2
-     * of the License, or (at your option) any later version.
-     * 
-     * This program is distributed in the hope that it will be useful,
-     * but WITHOUT ANY WARRANTY; without even the implied warranty of
-     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     * GNU General Public License for more details.
-     * 
-     * You should have received a copy of the GNU General Public License
-     * along with this program; if not, write to the Free Software
-     * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-     */
+		/*
+		 * HP9800 Emulator
+		 * Copyright (C) 2006-2018 Achim Buerger
+		 * 
+		 * This program is free software; you can redistribute it and/or
+		 * modify it under the terms of the GNU General Public License
+		 * as published by the Free Software Foundation; either version 2
+		 * of the License, or (at your option) any later version.
+		 * 
+		 * This program is distributed in the hope that it will be useful,
+		 * but WITHOUT ANY WARRANTY; without even the implied warranty of
+		 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+		 * GNU General Public License for more details.
+		 * 
+		 * You should have received a copy of the GNU General Public License
+		 * along with this program; if not, write to the Free Software
+		 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+		 */
 
     /*
      * 05.07.2006 Class created 
@@ -93,9 +93,10 @@
       private int xStatus = 210;
       private int yStatus = 160;
 
-      public HP9865A()
+      public HP9865A(IOinterface ioInterface)
       {
-        super("HP9865A"); // set window title
+        super("HP9865A", ioInterface); // set window title
+        hp9865Interface = (HP9865Interface)ioInterface;
 
         loadSound();
         statusFrame = this;
@@ -122,12 +123,14 @@
         	}
         }
 
+        setState(ICONIFIED);
         setSize(hp9865aImage.getWidth(this) + getInsets().left + getInsets().right, hp9865aImage.getHeight(this) + getInsets().top + getInsets().bottom);
       }
       
-      public HP9865A(int selectCode)
+      public HP9865A(int selectCode, IOinterface ioInterface)
       {
-        super("HP9865A"); // set window title
+        super("HP9865A", ioInterface); // set window title
+        hp9865Interface = (HP9865Interface)ioInterface;
         loadSound();
         
         /*
@@ -136,12 +139,6 @@
         
         System.out.println("HP9800 Internal Tape Drive, select code " + selectCode + " loaded.");
       }
-       
-      public void setInterface(IOinterface ioInt)
-      {
-        super.setInterface(ioInt);
-        hp9865Interface = (HP9865Interface)ioInt;
-      } 
       
       private void loadSound()
       {
@@ -476,7 +473,7 @@
           return(driveStatus);
         }
 
-        debug = IOinterface.ioUnit.console.getDebugMode();
+        debug = ioInterface.mainframe.console.getDebugMode();
 
         // write mode?
         if((tapeCommand & WRITE) != 0) {
@@ -497,7 +494,7 @@
 
             if(pos < 0) {
               if(debug)
-                IOinterface.ioUnit.console.append("HP9865A Begin of tape\n");
+              	ioInterface.mainframe.console.append("HP9865A Begin of tape\n");
 
               // generate SRQ only in control mode
               if((tapeCommand & CONTROL) != 0) {
@@ -524,16 +521,16 @@
             tapeFile.writeShort(ioByte);
             outByteReady = false;
             // clear CEO when byte is written
-            IOinterface.ioUnit.CEO = false;
+            ioInterface.ioUnit.CEO = false;
             
             if(debug)
-              IOinterface.ioUnit.console.append("HP9865A write " + pos + ": " + Integer.toHexString(ioByte) + "\n");
+            	ioInterface.mainframe.console.append("HP9865A write " + pos + ": " + Integer.toHexString(ioByte) + "\n");
             
           } else { // READ
 
             ioByte = tapeFile.readShort();
             if(debug)
-              IOinterface.ioUnit.console.append("HP9865A  read " + pos + ": " + Integer.toHexString(ioByte) + "\n");
+            	ioInterface.mainframe.console.append("HP9865A  read " + pos + ": " + Integer.toHexString(ioByte) + "\n");
 
             // in control mode read until control byte found
             if(((tapeCommand & CONTROL) != 0) && ((ioByte & 0x100) == 0)) {
@@ -557,7 +554,7 @@
         } catch (EOFException e) {
           // at EOF set status to end-of-tape, tape will be stopped by mainframe command
           if(debug)
-            IOinterface.ioUnit.console.append("HP9865A End of tape\n");
+          	ioInterface.mainframe.console.append("HP9865A End of tape\n");
           
           // generate SRQ only in control mode
           if((tapeCommand & CONTROL) != 0) {
@@ -565,7 +562,7 @@
           }
           
           // clear CEO required
-          IOinterface.ioUnit.CEO = false;
+          ioInterface.mainframe.ioUnit.CEO = false;
 
           // return CLEAR_LEADER only once
           driveStatus |= CLEAR_LEADER;
@@ -591,10 +588,10 @@
           motorStopSound.start();
         }
         
-        debug = IOinterface.ioUnit.console.getDebugMode();
+        debug = ioInterface.mainframe.console.getDebugMode();
         if(debug)
-          IOinterface.ioUnit.console.append("HP9865A Stop\n");
-
+        	ioInterface.mainframe.console.append("HP9865A Stop\n");
+        
         hp9865Interface.timerValue = hp9865Interface.IDLE_TIMER;
         hp9865Interface.tapeValue = 0; // input 0
         prevCommand = tapeCommand;
@@ -608,9 +605,9 @@
       
       public void output(int status)
       {
-        debug = IOinterface.ioUnit.console.getDebugMode();
+        debug = ioInterface.mainframe.console.getDebugMode();
         if(debug)
-          IOinterface.ioUnit.console.append("HP9865A Commmand: " + Integer.toHexString(status >> 8) + "\n");
+        	ioInterface.mainframe.console.append("HP9865A Commmand: " + Integer.toHexString(status >> 8) + "\n");
         
         rewindFlag = false;
         driveStatus &= ~CLEAR_LEADER;
@@ -688,7 +685,7 @@
         motorSlowSound.close();
         motorFastSound.close();
         motorRewindSound.close();
-        hp9865aImage.flush();
+        if(hp9865aImage != null) hp9865aImage.flush();
 
       	super.close();
       }

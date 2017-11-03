@@ -21,7 +21,8 @@
  * 18.03.2008 Rel. 1.30 Class created based on HP9866Interface
  * 26.03.2010 Rel. 1.42 Changed to asynchronous output mode (method run())
  * 03.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -33,10 +34,10 @@ public class HP11201A extends IOinterface
   protected boolean delay = false;
   protected boolean debug = false;
 
-  public HP11201A(Integer selectCode)
+  public HP11201A(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
     // create named thread
-    super(selectCode, "HP11201A");
+    super(selectCode, "HP11201A", hp9800Mainframe);
   }
 
   public void setDevice(IOdevice ioDev)

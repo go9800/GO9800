@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2012 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,9 +24,9 @@ public abstract class HostIO extends IOdevice
 {
   private static final long serialVersionUID = 1L;
 
-  public HostIO(String hpName)
+  public HostIO(String hpName, IOinterface ioInterface)
   {
-    super(hpName);
+    super(hpName, ioInterface);
   }
 
   abstract void timerCallback();

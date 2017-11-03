@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,7 @@
  * 23.08.2007 Rel. 1.20 Class renamed to Console
  * 28.10.2007 Rel. 1.20 Added infinite WAIT and breakpoint() method
  * 05.08.2016 Rel. 2.00 Added micro-code select box
+ * 03.11.2017 Rel. 2.10 Changed background color
  */
 
 package emu98;
@@ -135,7 +136,7 @@ public class Console extends JDialog implements ActionListener
       columnLabels.setFont(new Font("Monospaced", Font.PLAIN, 12));
       jContentPane = new JPanel();
       jContentPane.setLayout(new GridBagLayout());
-      jContentPane.setBackground(new Color(87, 87, 75));
+      jContentPane.setBackground(new Color(85, 83, 81));
       jContentPane.add(columnLabels, gridBagConstraints2);
       jContentPane.add(getDisassemblerOutputScrollPane(), gridBagConstraints5);
       jContentPane.add(getButtons(), gridBagConstraints4);
@@ -240,7 +241,7 @@ public class Console extends JDialog implements ActionListener
       //buttons.setMinimumSize(new Dimension(650,80));
       buttons.setLayout(new GridBagLayout());
       //buttons.setPreferredSize(new Dimension(550, 10));
-      buttons.setBackground(new Color(87, 87, 75));
+      buttons.setBackground(new Color(85, 83, 81));
       buttons.add(getTraceButton(), gridBagConstraints24);
       buttons.add(getDisassembleCheckBox(), gridBagConstraints12);
       buttons.add(getKeyLogButton(), gridBagConstraints13);
@@ -309,7 +310,7 @@ public class Console extends JDialog implements ActionListener
       disassembleCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
       disassembleCheckBox.setSelectedIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg").getImage()));
       disassembleCheckBox.setFont(new Font("Dialog", Font.PLAIN, 12));
-      disassembleCheckBox.setBackground(new Color(87, 87, 75));
+      disassembleCheckBox.setBackground(new Color(85, 83, 81));
       disassembleCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
       disassembleCheckBox.setActionCommand("TraceLED");
       disassembleCheckBox.addActionListener(this);
@@ -327,7 +328,7 @@ public class Console extends JDialog implements ActionListener
     if (keyLogCheckBox == null)
     {
       keyLogCheckBox = new JCheckBox();
-      keyLogCheckBox.setBackground(new Color(87, 87, 75));
+      keyLogCheckBox.setBackground(new Color(85, 83, 81));
       keyLogCheckBox.setForeground(new Color(253, 253, 253));
       keyLogCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
       keyLogCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
@@ -351,7 +352,7 @@ public class Console extends JDialog implements ActionListener
       timerComboBox.setEditable(true);
       timerComboBox.setName("TimerValue");
       timerComboBox.setActionCommand("timerChanged");
-      timerComboBox.setBackground(new Color(87, 87, 75));
+      timerComboBox.setBackground(new Color(85, 83, 81));
       timerComboBox.setPreferredSize(new Dimension(30, 20));
 
       timerComboBox.addItem("INFINITE");
@@ -445,7 +446,7 @@ public class Console extends JDialog implements ActionListener
   private JCheckBox getMicroCodeCheckBox() {
     if (microCodeCheckBox == null) {
       microCodeCheckBox = new JCheckBox();
-      microCodeCheckBox.setBackground(new Color(87, 87, 75));
+      microCodeCheckBox.setBackground(new Color(85, 83, 81));
       microCodeCheckBox.setForeground(new Color(253, 253, 253));
       microCodeCheckBox.setActionCommand("MicroCodeLED");
       microCodeCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));

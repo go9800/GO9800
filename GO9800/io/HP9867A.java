@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,8 @@
  * 16.10.2007 Rel. 1.20 Changed frame size control
  * 22.01.2009 Rel. 1.40 Added high-speed mode and keyPressed()
  * 20.03.2009 Rel. 1.40 Added synchronized(keyboardImage) before visualizing main window to avoid flickering
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -83,9 +84,9 @@ public class HP9867A extends IOdevice //Frame implements KeyListener
   private boolean highSpeed;
   static int time_10ms = 10;
 
-  public HP9867A(int unit, int numDiscs, HP9867A dispFrame)
+  public HP9867A(int unit, int numDiscs, HP9867A dispFrame, IOinterface ioInterface)
   {
-    super("HP9867A Unit " + unit);
+    super("HP9867A Unit " + unit, ioInterface);
     windowTitle = "HP9867A Unit " + unit;
 
     this.unit = unit;
@@ -121,6 +122,8 @@ public class HP9867A extends IOdevice //Frame implements KeyListener
       		{ }
       	}
       }
+
+      setState(ICONIFIED);
       setSize(hp9867Image.getWidth(this) + getInsets().left + getInsets().right, hp9867Image.getHeight(this) + getInsets().top + getInsets().bottom);
     } else {
         statusFrame = dispFrame;
@@ -348,7 +351,7 @@ public class HP9867A extends IOdevice //Frame implements KeyListener
       for(address = 0; address < 0400; address++) {
         if((mode & 1) != 0) {
           // read mode
-          IOinterface.memory[077000 + address].setValue(diskFile.readShort());
+          ioInterface.mainframe.memory[077000 + address].setValue(diskFile.readShort());
         } else {
           // write mode
           // is drive write protected?
@@ -360,7 +363,7 @@ public class HP9867A extends IOdevice //Frame implements KeyListener
               return(HP11305A.POWER_ON);
           }
           
-          diskFile.writeShort(IOinterface.memory[077000 + address].getValue());
+          diskFile.writeShort(ioInterface.mainframe.memory[077000 + address].getValue());
         }
       }
     } catch (IOException e) {
@@ -374,7 +377,7 @@ public class HP9867A extends IOdevice //Frame implements KeyListener
   {
     setVisible(false);  // close window
     dispose();  // and remove it
-    IOinterface.ioUnit.bus.devices.removeElement(this);  // remove device object from devices list
+    ioInterface.mainframe.ioDevices.removeElement(this);  // remove device object from devices list
 
     System.out.println("HP9867 Unit " + unit + " unloaded.");
   }

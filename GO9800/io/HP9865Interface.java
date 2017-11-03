@@ -30,6 +30,7 @@
  * 19.11.2006 Asynchronous IO completely reworked for HP9820A
  * 03.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
  * 08.11.2014 Rel. 1.61 Timing problem on some hosts fixed (too small SLOW_TIMER may result in ERROR 59)
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io;
@@ -43,10 +44,10 @@ public class HP9865Interface extends IOinterface
   public int FAST_TIMER;
 
 
-  public HP9865Interface(Integer selectCode)
+  public HP9865Interface(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
     // create named thread
-    super(selectCode, "HP9865Interface");
+    super(selectCode, "HP9865Interface", hp9800Mainframe);
     status = HP9865A.POWER_ON | HP9865A.CASSETTE_OUT | HP9865A.WRITE_PROTECT;
 
     IDLE_TIMER = 5 * ioUnit.time_100ms;

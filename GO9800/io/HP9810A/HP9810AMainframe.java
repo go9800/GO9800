@@ -48,14 +48,16 @@
  * 18.01.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on ROM block
  * 18.03.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on handle of top cover
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
- * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
- * 24.10.2017 Rel. 2.04 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
+ * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
+ * 24.10.2017 Rel. 2.10 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io.HP9810A;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 
 import io.*;
 import emu98.*;
@@ -79,10 +81,10 @@ public class HP9810AMainframe extends HP9800Mainframe
   // the following constants are used in HP9810A only
   
   // ROM template size
-  static int TEMPLATE_X = 100;
-  static int TEMPLATE_Y = 269;
-  static int TEMPLATE_W = 162;
-  static int TEMPLATE_H = 260;
+  static int TEMPLATE_X = 117; //100;
+  static int TEMPLATE_Y = 271; //269;
+  static int TEMPLATE_W = 147; //162;
+  static int TEMPLATE_H = 254; //260;
   
   // click area for ROM block exchange
   static int ROM_X = 25;
@@ -117,7 +119,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   static int LED_LARGE_Y = 274;
   static int LED_LARGE_WH = 18;
   
-  static int LED_SEGMENT_SIZE = 4;
+  public static int LED_SEGMENT_SIZE = 4;
 
 
   public HP9810AMainframe(Emulator emu)
@@ -137,8 +139,7 @@ public class HP9810AMainframe extends HP9800Mainframe
     // create keyboard
     // use pseudo select code 16 for SSI interrupt line
     // HP9810A keyboard has in fact no select code
-    ioUnit.bus.keyboard = new HP9810KeyboardInterface(16);
-    ioUnit.bus.interfaces.add((IOinterface)ioUnit.bus.keyboard);
+    ioUnit.bus.keyboard = new HP9810KeyboardInterface(16, this);
 
     romSelector.addRomButton("media/HP9810A/HP11XXXX_Block.jpg", "HP11XXXX");
     romSelector.addRomButton("media/HP9810A/HP11210A_Block.jpg", "HP11210A");
@@ -152,8 +153,9 @@ public class HP9810AMainframe extends HP9800Mainframe
     romSelector.addRomButton("media/HP9810A/HP11266A_Block.jpg", "HP11266A");
     romSelector.addRomButton("media/HP9810A/HP11267A_Block.jpg", "HP11267A");
 
-    keyboardImage = new ImageMedia("media/HP9810A/HP9810A_Keyboard.jpg").getImage();
+    keyboardImage = new ImageMedia("media/HP9810A/HP9810A_Keyboard.png").getImage();
     displayImage = new ImageMedia("media/HP9810A/HP9810A_Display.jpg").getImage();
+    blockImage = new ImageMedia("media/HP9810A/HP9810A_Module.png").getImage();
 
     ledLargeOn = new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg").getImage();
     ledLargeOff = new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage();
@@ -180,7 +182,7 @@ public class HP9810AMainframe extends HP9800Mainframe
           romSelector.setTitle("HP9810A ROM Blocks Slot " + Integer.toString(block));
           romSelector.setVisible(true);
         } else {
-          MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Slot" + Integer.toString(block));
+          MemoryBlock romBlock = (MemoryBlock)config.memoryBlocks.get("Slot" + Integer.toString(block));
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
             instructionsWindow.showInstructions();
@@ -193,7 +195,7 @@ public class HP9810AMainframe extends HP9800Mainframe
       // Overlay block click area
       if((y >= OVERLAY_Y && y <= OVERLAY_Y + OVERLAY_H) && (x >= OVERLAY_X && x <= OVERLAY_X + OVERLAY_W)) {
         if(event.getButton() == MouseEvent.BUTTON1) {
-          MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Slot" + Integer.toString(1));
+          MemoryBlock romBlock = (MemoryBlock)config.memoryBlocks.get("Slot" + Integer.toString(1));
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
             instructionsWindow.showInstructions();
@@ -206,7 +208,7 @@ public class HP9810AMainframe extends HP9800Mainframe
       // instructions window click area
       if((y >= INSTRUCTIONS_Y && y <= INSTRUCTIONS_Y + INSTRUCTIONS_H) && (x >= INSTRUCTIONS_X && x <= INSTRUCTIONS_X + INSTRUCTIONS_W)) {
         if(event.getButton() == MouseEvent.BUTTON1) {
-          MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Block0");
+          MemoryBlock romBlock = (MemoryBlock)config.memoryBlocks.get("Block0");
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
             instructionsWindow.showInstructions();
@@ -261,9 +263,11 @@ public class HP9810AMainframe extends HP9800Mainframe
       }
     }
   }
-    
+  
   public void paint(Graphics g)
   {
+  	AffineTransform g2dSaveTransform;
+  	Image moduleImage;
     int i, j;
     int x = 0, y = 0; // positioning is done by g2d.translate()
     
@@ -274,23 +278,57 @@ public class HP9810AMainframe extends HP9800Mainframe
     backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
 
     if(backgroundImage) {
+      g2dSaveTransform = g2d.getTransform();  // save current transformation, changed by ROM blocks
+
       // get images of ROM modules and template
-      MemoryBlock block = (MemoryBlock)emu.memoryBlocks.get("Slot1");
+      MemoryBlock block = (MemoryBlock)config.memoryBlocks.get("Slot1");
 
       if(block != null) {
-        g2d.drawImage(block.getModule(), x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);
-        // draw ROM template
-        g2d.drawImage(block.getTemplate(), x + TEMPLATE_X, y + TEMPLATE_Y, TEMPLATE_W, TEMPLATE_H, this);
+      	// draw universal ROM module
+      	moduleImage = block.getUniModule();
+      	
+      	if(moduleImage != null) {
+      		g2d.shear(-0.06, 0.);  // negative horizontal shear for correct perspective
+      		g2d.drawImage(blockImage, x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
+      		
+      		g2d.drawImage(imageProcessing(moduleImage, 1.17f, 10f) , x + BLOCK1_X + 1, y + BLOCK1_Y + 1, BLOCK_W - 2, BLOCK_H - 13, this);  // draw processed module label
+      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
+
+      		// draw ROM template
+      		g2d.shear(-0.026, 0.);  // negative horizontal shear for correct perspective
+      		// draw template with transparence
+      		g2d.drawImage(imageProcessing(block.getTemplate(), 1f, 50f), x + TEMPLATE_X, y + TEMPLATE_Y, TEMPLATE_W, TEMPLATE_H, this);
+
+      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
+      	}
       }
         
-      block = (MemoryBlock)emu.memoryBlocks.get("Slot2");
+      block = (MemoryBlock)config.memoryBlocks.get("Slot2");
       if(block != null) {
-        g2d.drawImage(block.getModule(), x + BLOCK2_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);
+      	// draw universal ROM module
+      	moduleImage = block.getUniModule();
+      	if(moduleImage != null) {
+      		g2d.shear(-0.03, 0.);  // negative horizontal shear for correct perspective
+      		g2d.drawImage(blockImage, x + BLOCK2_X, y + BLOCK2_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
+      		g2d.drawImage(imageProcessing(moduleImage, 1.17f, 10f), x + BLOCK2_X + 1, y + BLOCK2_Y + 1, BLOCK_W - 2, BLOCK_H - 13, this);  // draw module label
+      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
+
+      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
+      	}
       }
         
-      block = (MemoryBlock)emu.memoryBlocks.get("Slot3");
+      block = (MemoryBlock)config.memoryBlocks.get("Slot3");
       if(block != null) {
-        g2d.drawImage(block.getModule(), x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);
+      	// draw universal ROM module
+      	moduleImage = block.getUniModule();
+      	if(moduleImage != null) {
+      		g2d.shear(-0.01, 0.);  // negative horizontal shear for correct perspective
+      		g2d.drawImage(blockImage, x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
+      		g2d.drawImage(imageProcessing(moduleImage, 1.17f, 10f), x + BLOCK3_X + 1, y + BLOCK3_Y + 1, BLOCK_W - 2, BLOCK_H - 13, this);  // draw module label
+      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
+
+      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
+      	}
       }
 
       // draw display area
@@ -374,7 +412,7 @@ public class HP9810AMainframe extends HP9800Mainframe
     }
     
     // check if ROM template is present
-     if(((MemoryBlock)emu.memoryBlocks.get("Slot1")).getTemplate() == null) {
+     if(((MemoryBlock)config.memoryBlocks.get("Slot1")).getTemplate() == null) {
       if((keyLEDs & 0x20) != 0) {
         g2d.drawImage(ledLargeOn, x + LED1_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
       }

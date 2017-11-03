@@ -35,8 +35,9 @@
  * 10.05.2010 Rel. 1.50 Create instance of calculator mainframe class dynamically using Reflection API 
  * 01.08.2016 Rel. 2.00 Changed to emulation of CPU micro-code
  * 15.08.2016 Rel. 2.01 Added debug mode (command line option -d) for output of ROM decoding
- * 21.10.2017 Rel. 2.04 Added scalability of calculator window
- * 24.10.2017 Rel. 2.04 Added main window and redirection of System.out
+ * 21.10.2017 Rel. 2.10 Added scalability of calculator window
+ * 24.10.2017 Rel. 2.10 Added main window and redirection of System.out
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package emu98;
@@ -56,8 +57,8 @@ import javax.swing.*;
 class GO9800Window extends JDialog implements ActionListener
 {
 	private static final long serialVersionUID = 1L;
-  HP9800Mainframe mainframe = null;
-	private boolean isRunning = false;
+  private HP9800Mainframe mainframe = null;
+  private Configuration config;
 
 	class JTextAreaOutputStream extends OutputStream
 	{
@@ -93,25 +94,24 @@ class GO9800Window extends JDialog implements ActionListener
 	public void actionPerformed(ActionEvent event)
 	{
 		String cmd = event.getActionCommand();
-
-		//if(mainframe == null || !mainframe.isVisible()) {
-			isRunning = true;
-			start(cmd, false);
-		//}
+  	start(cmd, false);
 	}
 
 	public GO9800Window()
 	{
+		Color gray = new Color(230, 230, 230);
+		Color brown = new Color(87, 87, 75);
+		
 		// Frame for main window and stdout
 		JFrame frame = new JFrame("GO9800 Emulator");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container contentPane = frame.getContentPane();
 		contentPane.setLayout (new BorderLayout());
-		contentPane.setBackground(new Color(87, 87, 75));
+		contentPane.setBackground(brown);
 
 		// Menu bar
 		JMenuBar menuBar = new JMenuBar();
-		JMenu fileMenu = new JMenu("Calculator");
+		JMenu fileMenu = new JMenu("Startup");
 		JMenuItem hp9810a = new JMenuItem("HP9810A");
 		JMenuItem hp9810a2 = new JMenuItem("HP9810A2");
 		JMenuItem hp9820a = new JMenuItem("HP9820A");
@@ -126,8 +126,14 @@ class GO9800Window extends JDialog implements ActionListener
 		fileMenu.add(hp9830a);
 		fileMenu.add(hp9830b);
 		menuBar.add(fileMenu);
+		menuBar.setBackground(gray);
 		contentPane.add(menuBar, BorderLayout.NORTH);
-
+		
+    JButton logo = new JButton();
+    logo.setIcon(new ImageIcon(new ImageMedia("media/HP9800/HP9800_Emulator.jpg").getImage()));
+    logo.setBackground(gray);
+		contentPane.add(logo, BorderLayout.CENTER);
+		
 		hp9810a.addActionListener(this);
 		hp9810a2.addActionListener(this);
 		hp9820a.addActionListener(this);
@@ -139,12 +145,12 @@ class GO9800Window extends JDialog implements ActionListener
 		JTextArea textArea = new JTextArea(25, 80);
 		textArea.setEditable(false);
 		textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
-		textArea.setBackground(new Color(230, 230, 230));
+		textArea.setBackground(gray);
 		textArea.setForeground(Color.blue);
 
 		// ScrollPane for textArea
 		JScrollPane scrollPane = new JScrollPane (textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		contentPane.add(scrollPane, BorderLayout.CENTER);
+		contentPane.add(scrollPane, BorderLayout.SOUTH);
 
 		frame.pack();
 		frame.setVisible(true);
@@ -163,7 +169,7 @@ class GO9800Window extends JDialog implements ActionListener
 	  Constructor<?> cons;  // constructor method
 
     Emulator emu = new Emulator(machine);
-    SoundMedia.enable(true);
+		SoundMedia.enable(true);
 
     // create object for mainframe class dynamically using Reflection API
     formpara = new Class[]{Emulator.class};
@@ -171,7 +177,7 @@ class GO9800Window extends JDialog implements ActionListener
     
     try {
       // find Class for calculator mainframe by name
-      calc = Class.forName("io." + emu.model + "." + emu.model + "Mainframe" + emu.version);
+      calc = Class.forName("io." + machine + "." + machine + "Mainframe");
       
       // find constructor for formal parameters
       cons = calc.getConstructor(formpara);
@@ -181,14 +187,24 @@ class GO9800Window extends JDialog implements ActionListener
       
     } catch(Exception e) {
       e.printStackTrace();
-      System.err.println(emu.model + emu.version + " not implemented.");
+      System.err.println(machine + " not implemented.");
       System.exit(1);      
     }
     
-    mainframe.emu.console.setDebugMode(debug);
-    if(debug)
-      emu.cpu.outputDecoderToConsole(); // transfer decoded micro code to console 
+    emu.setMainframe(mainframe);
+		config = new Configuration(machine, mainframe);
+		mainframe.setConfiguration(config);
 
+		// load configuration files, memory blocks, interfaces, and devices
+    config.loadConfig(machine);
+    // load host keyboard configuration
+    config.loadKeyConfig(machine);
+
+    mainframe.console.setDebugMode(debug);
+    if(debug)
+      mainframe.cpu.outputDecoderToConsole(); // transfer decoded micro code to console 
+
+    mainframe.setVisible(true);
     emu.start();
 	}
 }
@@ -223,7 +239,7 @@ public class GO9800
     
     GO9800Window go9800 = new GO9800Window();
     
-    System.out.println("HP Series 9800 Emulator Release 2.04, Copyright (C) 2006-2018 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.1, Copyright (C) 2006-2018 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to");
     System.out.println("redistribute it under certain conditions.\n");

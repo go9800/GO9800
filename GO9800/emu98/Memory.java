@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,7 +28,6 @@ package emu98;
 public class Memory
 {
   static final int MASK = 0177777;
-//  static int registerM, registerT; // for HP2116Panel
   public static Emulator emu;
   public static boolean trace = false;
   public boolean isRW;
@@ -87,25 +86,18 @@ public class Memory
     if(isRW)
       this.value = value & MASK;
     
-//    registerT = value;
-//    registerM = address;
-    
     doWatchPoint();
     return(this.value);  // return masked value
   }
   
   public int getValue()
   {
-//    registerT = value;
-//    registerM = address;
     doWatchPoint();
     return(value);
   }
   
   public int fetchOpcode()
   {
-//    registerT = value;
-//    registerM = address;
     doWatchPoint();
     return(value);
   }  

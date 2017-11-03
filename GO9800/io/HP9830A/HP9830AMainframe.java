@@ -47,8 +47,9 @@
  * 17.07.2007 Rel. 1.20 Added use of keyCode Hashtable
  * 24.09.2007 Rel. 1.20 Changed display blanking control from fixed timer to instruction counter
  * 13.12.2007 Rel. 1.20 Don't release keyboard by mouseReleased() or keyReleased(). This is now done after 5ms by KeyboardInterface.run()
- * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
- * 24.10.2017 Rel. 2.04 Added display of click areas, changed size ROM click area
+ * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
+ * 24.10.2017 Rel. 2.10 Added display of click areas, changed size ROM click area
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io.HP9830A;
@@ -186,19 +187,20 @@ public class HP9830AMainframe extends HP9800Mainframe
 
     // create beeper (card reader)
     ioUnit.bus.cardReader = new HP9800BeeperInterface(this);
+    // don't add this interface to list ioInterfaces since it is adressed directly, not by select code
 
     // create display
     ioUnit.bus.display = new HP9830DisplayInterface(this);
+    // don't add this interface to list ioInterfaces since it is adressed directly, not by select code
 
     // create keyboard
-    ioUnit.bus.keyboard = new HP9830KeyboardInterface(12);
-    ioUnit.bus.interfaces.add((IOinterface)ioUnit.bus.keyboard);
+    ioUnit.bus.keyboard = new HP9830KeyboardInterface(12, this);
 
     // create internal tape drive
-    hp9865Interface = new HP9865Interface(Integer.valueOf(10));
-    tapeDevice = new HP9865A(10);
+    hp9865Interface = new HP9865Interface(Integer.valueOf(10), this);
+    tapeDevice = new HP9865A(10, hp9865Interface);
     hp9865Interface.setDevice(tapeDevice); 
-    tapeDevice.setInterface(hp9865Interface);
+
     tapeDevice.setStatusFrame(this, 820, 70);
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
@@ -254,7 +256,7 @@ public class HP9830AMainframe extends HP9800Mainframe
         if(event.getButton() == MouseEvent.BUTTON1) {
           romSlots.setVisible(true);
         } else {
-          MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Block0");
+          MemoryBlock romBlock = (MemoryBlock)config.memoryBlocks.get("Block0");
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
             instructionsWindow.showInstructions();

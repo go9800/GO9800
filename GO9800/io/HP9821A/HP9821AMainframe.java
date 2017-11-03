@@ -27,8 +27,9 @@
  * 30.10.2011 Rel. 1.50 Added original HP9821A system ROMs (finally!)
  * 30.10.2011 Rel. 1.50 Added beeper, changed internal tape select code to 10
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
- * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
- * 24.10.2017 Rel. 2.04 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
+ * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
+ * 24.10.2017 Rel. 2.10 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io.HP9821A;
@@ -115,27 +116,14 @@ public class HP9821AMainframe extends HP9820AMainframe
 
 
     addMouseListener(new mouseListener());
-
-    // check if RW memory extension is installed
-    int MAW;
-    // check every block of 04000 words
-    for(MAW = 032000; MAW > 022000; MAW -= 004000)
-    {
-      if(memory[MAW-1].isRW)
-        break;
-    }
-
-    // set MAW
-    memory[01377] = new Memory(false, 01377, MAW);
     
     // create beeper (card reader)
     ioUnit.bus.cardReader = new HP9800BeeperInterface(this);
     
     // create internal tape drive
-    hp9865Interface = new HP9865Interface(Integer.valueOf(10));
-    tapeDevice = new HP9865A(5);
+    hp9865Interface = new HP9865Interface(Integer.valueOf(10), this);
+    tapeDevice = new HP9865A(5, hp9865Interface);
     hp9865Interface.setDevice(tapeDevice); 
-    tapeDevice.setInterface(hp9865Interface);
     tapeDevice.setStatusFrame(this, 880, 177);
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
@@ -168,7 +156,7 @@ public class HP9821AMainframe extends HP9820AMainframe
           romSelector.setTitle("HP9821A ROM Blocks Slot " + Integer.toString(block));
           romSelector.setVisible(true);
         } else {
-          MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Slot" + Integer.toString(block));
+          MemoryBlock romBlock = (MemoryBlock)config.memoryBlocks.get("Slot" + Integer.toString(block));
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
             instructionsWindow.showInstructions();
@@ -182,7 +170,7 @@ public class HP9821AMainframe extends HP9820AMainframe
       if((y >= OVERLAY_Y && y <= OVERLAY_Y + OVERLAY_H) && (x >= OVERLAY_X && x <= OVERLAY_X + 3 * OVERLAY_W)) {
         int block = (x - OVERLAY_X) / OVERLAY_W + 1;
         if(event.getButton() == MouseEvent.BUTTON1) {
-          MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Slot" + Integer.toString(block));
+          MemoryBlock romBlock = (MemoryBlock)config.memoryBlocks.get("Slot" + Integer.toString(block));
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
             instructionsWindow.showInstructions();
@@ -196,7 +184,7 @@ public class HP9821AMainframe extends HP9820AMainframe
       if((y >= INSTRUCTIONS_Y && y <= INSTRUCTIONS_Y + INSTRUCTIONS_H) && (x >= INSTRUCTIONS_X && x <= INSTRUCTIONS_X + INSTRUCTIONS_W)) {
         if(event.getButton() == MouseEvent.BUTTON1) {
         } else {
-          MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Block0");
+          MemoryBlock romBlock = (MemoryBlock)config.memoryBlocks.get("Block0");
           if(romBlock != null) {
             instructionsWindow.setROMblock(romBlock);
             instructionsWindow.showInstructions();

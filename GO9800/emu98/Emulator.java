@@ -66,26 +66,20 @@
  * 24.05.2016 Rel. 1.61 Change: value of program counter is now also stored in systemProgramCounter (memory address 0001700)
  * 02.08.2016 Rel. 2.00 Change: use class CPU for micro-code emulation and class IOunit instead of IOregister 
  * 15.10.2016 Rel. 2.03 Bugfix: Values of A, B, and P register in disassembly output now 6 octal digits wide 
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 28.10.2017 Rel. 2.10: Moved Configuration to class Configuration and initialization of CPU and memory to class HP9800Mainframe
  */
 
 package emu98;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
-import java.util.*;
-
-import io.IOinterface;
-import io.IOdevice;
+import io.HP9800Mainframe;
 
 public class Emulator implements Runnable 
 {
-  public String model, version;
-  public CPU cpu;
-  public IOunit ioUnit;
-  public Memory[] memory;
-  public Hashtable<String, MemoryBlock> memoryBlocks;
-  public Hashtable<String, String> keyCodes, keyStrings;
-
+  private HP9800Mainframe mainframe; // connection to HP9800 mainframe
+  private CPU cpu;
+  
   Thread emuThread;
   public Console console;
   DataInputStream asmFile;
@@ -107,37 +101,20 @@ public class Emulator implements Runnable
 
   public Emulator(String machine)
   {
-    // initialize complete memory to 'unused'  
-    memory = new Memory[0100000];
-    //unusedMemory = new Memory(false, -1, 0);
-    for(int i = 0; i <= 077777; i++)
-      memory[i] = new Memory(false, i, 0);
-
-    // set object variable for trace outputs
-    Memory.emu = this;
-
-    // initialize CPU
-    cpu = new CPU(memory);
-
-    // initialize IO-unit
-    ioUnit = new IOunit(cpu);
-    cpu.setIOunit(ioUnit);
-    
-    disassemble = dumpRegisters = dumpFPregisters = dumpMicroCode = false;
-    emuThread = new Thread(this, "HP9800 CPU");
+    emuThread = new Thread(this, "HP9800 Emulator");
+    dumpMicroCode = false;
+    setDisassemblerMode(false);
 
     // Set emulator priority lower to guarantee that events such as keypresses
     // and device thread timer expirations get service immediately
     emuThread.setPriority(Thread.NORM_PRIORITY - 1);
+  }
 
-    memoryBlocks = new Hashtable<String, MemoryBlock>();
-    loadConfig(machine);
-
-    keyCodes = new Hashtable<String, String>();
-    keyStrings = new Hashtable<String, String>();
-    loadKeyConfig(machine);
-
-    setDisassemblerMode(false);
+  public void setMainframe(HP9800Mainframe hp9800Mainframe)
+  {
+    // connect mainframe
+    mainframe = hp9800Mainframe;
+    cpu = mainframe.cpu;
   }
 
   public void start()
@@ -147,12 +124,9 @@ public class Emulator implements Runnable
 
   public void stop()
   {
-    emuThread.stop();
-  	emuThread = null;
-  	
-  	// unload all memory block and free ressources
-  	for(Enumeration<MemoryBlock> enumBlock = memoryBlocks.elements(); enumBlock.hasMoreElements(); ) {
-  		enumBlock.nextElement().unload();
+  	if(emuThread != null)	{
+  		emuThread.stop();
+  		emuThread = null;
   	}
   }
 
@@ -164,7 +138,6 @@ public class Emulator implements Runnable
   public void setConsole(Console console)
   {
     this.console = console;
-    cpu.setDisassemblerOutput(console);
   }
 
   public void startMeasure()
@@ -217,13 +190,11 @@ public class Emulator implements Runnable
     if(indirect) {
       // nested indirect addressing if bit15 = 1
       do {
-        memory_address = memory[memory_address & 0077777].getValue();
+        memory_address = mainframe.memory[memory_address & 0077777].getValue();
       } while((memory_address & 0100000) != 0);
     }
 
     indStr = indirect? ",I [" + intToOctalString(memory_address, 6) + "]" : "";
-
-    Memory m = memory[memory_address];
 
     switch(opcode & 0074000) {
     case 0000000:
@@ -410,10 +381,10 @@ public class Emulator implements Runnable
     {
       // nested indirect addressing if address-bit15 = 1
       while((memory_address & 0100000) != 0) {
-        memory_address = memory[memory_address & 0077777].getValue();
+        memory_address = mainframe.memory[memory_address & 0077777].getValue();
       }
 
-      m = memory[memory_address];
+      m = mainframe.memory[memory_address];
       regValue = m.getValue();     // this is also correct for STx, although existing memory value will not be used
 
       indStr = ",I [" + intToOctalString(memory_address, 6) + "]";
@@ -642,7 +613,7 @@ public class Emulator implements Runnable
     StringBuffer out = new StringBuffer("\t");
 
     for(int i = 0; i <= 3; i++) {
-      out.append(intToHexString(memory[address+i].getValue(), 4) + " ");
+      out.append(intToHexString(mainframe.memory[address+i].getValue(), 4) + " ");
     }
 
     return(out.toString());
@@ -683,18 +654,18 @@ public class Emulator implements Runnable
       line.append("\t");
 
       // control select codes 2=MLS, 2=MCR, 1=SIH, SSF
-      line.append(ioUnit.MLS? "1":".");
-      line.append(ioUnit.MCR? "1":".");
-      line.append(ioUnit.SIH? "1":".");
-      line.append(ioUnit.SSF? "1":".");
+      line.append(mainframe.ioUnit.MLS? "1":".");
+      line.append(mainframe.ioUnit.MCR? "1":".");
+      line.append(mainframe.ioUnit.SIH? "1":".");
+      line.append(mainframe.ioUnit.SSF? "1":".");
 
       // flag select codes 16=KLS, 8=DEN, 4=PEN, 2=MFL, 1=CEO, 0=STP
-      line.append(ioUnit.KLS? "1":".");   
-      line.append(ioUnit.DEN? "1":".");   
-      line.append(ioUnit.PEN? "1":".");   
-      line.append(ioUnit.MFL? "1":".");   
-      line.append(ioUnit.CEO? "1":".");   
-      line.append(ioUnit.STP? "1":".");   
+      line.append(mainframe.ioUnit.KLS? "1":".");   
+      line.append(mainframe.ioUnit.DEN? "1":".");   
+      line.append(mainframe.ioUnit.PEN? "1":".");   
+      line.append(mainframe.ioUnit.MFL? "1":".");   
+      line.append(mainframe.ioUnit.CEO? "1":".");   
+      line.append(mainframe.ioUnit.STP? "1":".");   
       line.append("\t");
     }
 
@@ -739,7 +710,7 @@ public class Emulator implements Runnable
       console.append(line.toString());
     }
   }
-
+/*
   private DataInputStream openConfigFile(String fileName, boolean logging)
   {
     DataInputStream cfgFile = null;
@@ -914,8 +885,8 @@ public class Emulator implements Runnable
     }
 
     // create object for device interface dynamically
-    formpara = new Class[]{Integer.class};
-    actpara = new Object[]{Integer.valueOf(selectCode)};
+    formpara = new Class[]{Integer.class, HP9800Mainframe.class};
+    actpara = new Object[]{Integer.valueOf(selectCode), mainframe};
     try {
       // find Class for device interface by name
       ioInt = Class.forName("io." + hpInterface);
@@ -935,11 +906,13 @@ public class Emulator implements Runnable
     if(hpDevice != "") {
       // create object for peripheral device dynamically
       if(parameters != null) { // additional parameters?
-        formpara = new Class[]{String[].class}; // parameters for HP11202A, HP11305A etc.
-        actpara = new Object[]{parameters};
+        formpara = new Class[]{String[].class, IOinterface.class}; // parameters for HP11202A, HP11305A etc.
+        actpara = new Object[]{parameters, ioInterface};
+        
       } else { // no parameters
-        formpara = new Class[]{}; // no parameters for other devices
-        actpara = new Object[]{};
+      	
+        formpara = new Class[]{IOinterface.class}; // IOinterface, no additional parameters for other devices
+        actpara = new Object[]{ioInterface};
       }
 
       try {
@@ -949,23 +922,17 @@ public class Emulator implements Runnable
         constr = ioDev.getConstructor(formpara);
         // create new object instance of device
         ioDevice = (IOdevice)constr.newInstance(actpara);
+        
       } catch(Exception e) {
-        System.err.println("\nClass for device " + hpDevice + " not found.");
+      	e.printStackTrace();
+        //System.err.println("\nClass for device " + hpDevice + " not found.");
         System.exit(1);      
       }
     }
 
-    // set link from device to interface
-    if(ioDevice != null) {
-      ioDevice.setInterface(ioInterface);
-      ioDevice.hpName = hpDevice;
-      ioUnit.bus.devices.add(ioDevice); // add device to list
-    }
-
-    // set link from interface to device
     if(ioInterface != null) {
+      // set link from interface to device
       ioInterface.setDevice(ioDevice);
-      ioInterface.setIOunit(ioUnit);
       
       // start IOinterface thread at last 
       ioInterface.start();
@@ -1183,14 +1150,14 @@ public class Emulator implements Runnable
             else
               modifier = "";
 
-            keyCodes.put(Integer.toString(scanCode) + modifier, Integer.toOctalString(keyCode));
+            hostKeyCodes.put(Integer.toString(scanCode) + modifier, Integer.toOctalString(keyCode));
 
             keyString = Integer.toString(scanCode);
             keyName = (String)keyNames.get(keyString);
             if(keyName == null)
               keyName = String.valueOf((char)scanCode);
             keyString = (modifier != "")? modifier + "+" + keyName : keyName;
-            keyStrings.put(Integer.toString(keyCode), keyString);
+            hostKeyStrings.put(Integer.toString(keyCode), keyString);
 
           } catch (NumberFormatException e) {
             // format error
@@ -1207,7 +1174,7 @@ public class Emulator implements Runnable
       System.exit(1);
     }
   }
-
+*/
   public void run()
   {
     int address;
@@ -1223,9 +1190,9 @@ public class Emulator implements Runnable
 
     while(true) {
       // reset machine
-      synchronized(ioUnit) {
-        if(ioUnit.reset) {
-          ioUnit.reset = false;
+      synchronized(mainframe.ioUnit) {
+        if(mainframe.ioUnit.reset) {
+        	mainframe.ioUnit.reset = false;
           cpu.setDecode(true);
           cpu.POP(); // Power On Preset
         }
@@ -1267,7 +1234,7 @@ public class Emulator implements Runnable
       // check for ASM-level breakpoints
       address = cpu.Pregister.getValue();
 
-      if(memory[address].breakPoint) {
+      if(mainframe.memory[address].breakPoint) {
         console.append("> Breakpoint\n");
         console.breakpoint();
       }
@@ -1275,14 +1242,14 @@ public class Emulator implements Runnable
       // disassemble opcode
       if(disassemble) {
         dumpFPregisters = dumpRegisters = !dumpMicroCode;
-        decode(memory[address].fetchOpcode(), address);
+        decode(mainframe.memory[address].fetchOpcode(), address);
       }
 
       if(Memory.trace) {
         disassemble = true;
         dumpFPregisters = dumpRegisters = !dumpMicroCode;
 
-        decode(memory[address].fetchOpcode(), address);
+        decode(mainframe.memory[address].fetchOpcode(), address);
 
         dumpFPregisters = dumpRegisters = disassemble = false;
 
@@ -1307,7 +1274,7 @@ public class Emulator implements Runnable
       }
 
       // decrement instruction counter for display blanking and key release
-      ioUnit.instructionCounter();
+      mainframe.ioUnit.instructionCounter();
 
       // measure opcode execution time
       if(measure)

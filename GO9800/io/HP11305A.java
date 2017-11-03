@@ -21,6 +21,7 @@
  * 26.05.2007 Class created 
  * 05.04.2010 Rel. 1.50 Class now inherited from IOdevice and completely reworked
  * 25.10.2017 Rel. 2.03 Changed static access to ioUnit, removed deprecated use of ioRegister
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io;
@@ -53,9 +54,9 @@ public class HP11305A extends IOdevice
   private int accessMode = 0, initialize = 0;
   private boolean debug = false;
 
-  public HP11305A(String[] parameters)
+  public HP11305A(String[] parameters, IOinterface ioInterface)
   {
-    super("HP11305A");
+    super("HP11305A", ioInterface);
 
     int numDiscs = 1;
     int numUnits = 1;
@@ -67,27 +68,26 @@ public class HP11305A extends IOdevice
       System.out.println(e.toString());
     }
 
-    BUSY_TIMER = IOinterface.ioUnit.time_10ms;
+    BUSY_TIMER = ioInterface.ioUnit.time_10ms;
     
     hp9867a = new HP9867A[4];
     numUnits *= numDiscs;
     HP9867A.time_10ms = BUSY_TIMER;
     
     for(int unit = 0; unit < numUnits && unit < 4; unit++) {
-      hp9867a[unit] = new HP9867A(unit, numDiscs, null); 
-      IOinterface.ioUnit.bus.devices.add(hp9867a[unit]);
+      hp9867a[unit] = new HP9867A(unit, numDiscs, null, ioInterface); 
       
       if(numDiscs != 1) {
         // create fixed disc of HP9867B
         unit++;
-        hp9867a[unit] = new HP9867A(unit, numDiscs, hp9867a[unit-1]);
+        hp9867a[unit] = new HP9867A(unit, numDiscs, hp9867a[unit-1], ioInterface);
       }
     }
   }
 
   public int output(int status)
   {
-    debug = IOinterface.ioUnit.console.getDebugMode();
+    debug = ioInterface.ioUnit.console.getDebugMode();
     if((status & FIRST) != 0) {
       platter = (status & PLATTER) >> 8;
       initialize = (status & INITIALIZE) >> 7;
@@ -99,7 +99,7 @@ public class HP11305A extends IOdevice
     } else {
       cylinder = status & CYLINDER;
       if(debug)
-        IOinterface.ioUnit.console.append("HP9880A Commmand: init=" + initialize + " read=" + accessMode + " unit=" + platter + " head=" + head + " cylinder=" + cylinder + " sector=" + sector + "\n");
+        ioInterface.ioUnit.console.append("HP9880A Commmand: init=" + initialize + " read=" + accessMode + " unit=" + platter + " head=" + head + " cylinder=" + cylinder + " sector=" + sector + "\n");
       
       // put initialize flag in bit 1, read flag in bit 0
       accessMode += initialize << 1;

@@ -48,17 +48,16 @@ public class HP9860A extends IOdevice
   DataInputStream inFile;
   String cardType;
 
-  static int WAIT_CHAR = 30;   // time value for one character
   static final int WAIT_CARD = 300;  // wait for 1st character on card
   static final int WAIT_IDLE = 5000; // nothing to do
 
-  public HP9860A()
+  public HP9860A(IOinterface ioInterface)
   {
-    super("HP9860A");
+    super("HP9860A", ioInterface);
+    hp11200a = (HP11200A)ioInterface;
 
     // generate motor sound
     cardReaderSound = new SoundMedia("media/HP9860A/HP9860_CARD.wav", false);
-    WAIT_CHAR = IOinterface.ioUnit.time_30ms;
     hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg").getImage();
     setResizable(false);
     setLocation(740,0);
@@ -76,14 +75,9 @@ public class HP9860A extends IOdevice
     	}
     }
     
+    setState(ICONIFIED);
     setSize(hp9860aImage.getWidth(this) + getInsets().left + getInsets().right, hp9860aImage.getHeight(this) + getInsets().top + getInsets().bottom);
   }
-
-  public void setInterface(IOinterface ioInt)
-  {
-    super.setInterface(ioInt);
-    hp11200a = (HP11200A)ioInt;
-  } 
 
   boolean openInputFile()
   {
@@ -138,7 +132,7 @@ public class HP9860A extends IOdevice
       }
 
       // set timer value for next character
-      hp11200a.timerValue = WAIT_CHAR;
+      hp11200a.timerValue = ioInterface.ioUnit.time_30ms;
 
       if(cardType.equals("BAS")) {
         inByte = inFile.readUnsignedByte();
@@ -194,10 +188,10 @@ public class HP9860A extends IOdevice
     if(hp11200a.reading) {
       hp11200a.reading = false;
 
-      synchronized(IOinterface.ioUnit) {
+      synchronized(ioInterface.ioUnit) {
         // cancel pending service request
-        IOinterface.ioUnit.SSI &= ~(1 << 11);
-        IOinterface.ioUnit.SIH = IOinterface.ioUnit.SSF = false;
+        ioInterface.ioUnit.SSI &= ~(1 << 11);
+        ioInterface.ioUnit.SIH = ioInterface.ioUnit.SSF = false;
       }
 
       try {

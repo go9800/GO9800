@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@
  * 24.09.2007 Rel. 1.20 Changed display blanking control from fixed timer to instruction counter
  * 09.01.2009 Rel. 1.33 Changed Thread.sleep() to ioUnit.wait() for SRQ notification 
  * 22.04.2009 Rel. 1.41 Changed display timing to use ioUnitister.time_xx() and use only one wait() per complete scan
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io.HP9820A;
@@ -38,15 +39,12 @@ import io.HP9800Mainframe;
 
 public class HP9820DisplayInterface extends IOinterface implements DisplayInterface
 {
-  HP9800Mainframe mainframe;
   int[][] displayBuffer;
   boolean equal;  // false if display contents has changed
   
-  public HP9820DisplayInterface(HP9800Mainframe mainframe)
+  public HP9820DisplayInterface(HP9800Mainframe hp9800Mainframe)
   {
-    super(0);
-
-    this.mainframe = mainframe;
+    super(0, hp9800Mainframe);
     
     displayBuffer = new int[5][16];
     

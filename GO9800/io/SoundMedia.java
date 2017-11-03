@@ -28,9 +28,9 @@
  * 01.09.2007 Rel. 1.20 Added method isEnabled()
  * 13.08.2008 Rel. 1.30 Bugfix: handle exception if sound output completely unvailable.
  * 19.11.2011 Rel. 1.51 Bugfix: added BufferedInputStream to creation of AudioInputStream for OpenJDK
- * 01.11.2016 Rel. 2.04 Added methods close() and getMaxLines()
- * 01.11.2016 Rel. 2.04 Added class parameter 'discardable' to ignore sounds on hosts with a limited number of mixer lines 
- * 25.10.2017 Rel. 2.04 Added method disposeAll() to close all loaded sound clips
+ * 01.11.2016 Rel. 2.10 Added methods close() and getMaxLines()
+ * 01.11.2016 Rel. 2.10 Added class parameter 'discardable' to ignore sounds on hosts with a limited number of mixer lines 
+ * 25.10.2017 Rel. 2.10 Added method disposeAll() to close all loaded sound clips
  */
 
 package io;

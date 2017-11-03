@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,7 +24,8 @@
  * 18.03.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on ROM block
  * 22.03.2009 Rel. 1.40 Bugfix: call blockImage.getHeight(this) not blockImage.getHeight(null) to avoid incomplete drawing
  * 31.10.2011 Rel. 1.50 Added ROM block HP11296B (DATA COMM I), Infotek FAST BASIC IV
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io.HP9830A;
 
@@ -40,7 +41,6 @@ public class HP9830ROMslots extends Frame
 
   Image romSlotImage;
   HP9830AMainframe hp9830;
-  Emulator emu;
   ROMselector romSelector;
   boolean backgroundImage = false;
 
@@ -52,7 +52,6 @@ public class HP9830ROMslots extends Frame
     addMouseListener(new mouseListener());
     
     this.hp9830 = hp9830;
-    this.emu = hp9830.emu;
 
     setSize(264, 345);
     setLocation(20, 120);
@@ -61,7 +60,7 @@ public class HP9830ROMslots extends Frame
     
     romSlotImage = new ImageMedia("media/HP9830A/HP9830A_ROMslot.jpg").getImage();
 
-    romSelector = new ROMselector(this, emu);
+    romSelector = new ROMselector(this, hp9830);
     romSelector.addRomButton("media/HP9830A/HP11XXXX_Block.jpg", "HP11XXXX");
     romSelector.addRomButton("media/HP9830A/HP11270B_Block.jpg", "HP11270B");
     romSelector.addRomButton("media/HP9830A/HP11271B_Block.jpg", "HP11271B");
@@ -106,7 +105,7 @@ public class HP9830ROMslots extends Frame
           romSelector.setTitle("HP9830A ROM Blocks Slot " + Integer.toString(block));
           romSelector.setVisible(true);
         } else {
-          MemoryBlock romBlock = (MemoryBlock)emu.memoryBlocks.get("Slot" + Integer.toString(block));
+          MemoryBlock romBlock = (MemoryBlock)hp9830.config.memoryBlocks.get("Slot" + Integer.toString(block));
           if(romBlock != null) {
             hp9830.instructionsWindow.setROMblock(romBlock);
             hp9830.instructionsWindow.showInstructions();
@@ -139,7 +138,7 @@ public class HP9830ROMslots extends Frame
     if(backgroundImage) {
       for(int i = 1; i <= 5; i++) {
         // get images of ROM modules
-        block = (MemoryBlock)emu.memoryBlocks.get("Slot" + i);
+        block = (MemoryBlock)hp9830.config.memoryBlocks.get("Slot" + i);
 
         if(block != null) {
           blockImage = block.getUniModule();

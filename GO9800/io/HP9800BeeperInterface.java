@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,9 +32,11 @@ public class HP9800BeeperInterface extends HP9800MagneticCardReaderInterface
 {
   SoundMedia beepSound;
 
-  public HP9800BeeperInterface(HP9800Mainframe mainframe)
+  public HP9800BeeperInterface(HP9800Mainframe hp9800Mainframe)
   {
-    this.mainframe = mainframe;
+  	mainframe = hp9800Mainframe; // connect to HP9800Mainframe
+  	ioUnit = mainframe.ioUnit; // connect to IOunit
+    mainframe.ioInterfaces.add(this); // connect to ioBus
 
     // generate beep sound
     beepSound = new SoundMedia("media/HP9800/HP9800_BEEP.wav", false);

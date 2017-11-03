@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2010 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,10 +23,12 @@
 
 package emu98;
 
+import io.HP9800Mainframe;
 import io.ImageMedia;
 
 import javax.swing.JPanel;
 import java.awt.Frame;
+import java.awt.Image;
 import java.awt.BorderLayout;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
@@ -49,19 +51,19 @@ public class ROMselector extends JDialog implements ActionListener
   private JPanel romPanel = null;
   private JButton romButton = null;
   
+  private HP9800Mainframe mainframe;
   private Frame owner;
-  private Emulator emu;
   private String romSlot = "";  //  @jve:decl-index=0:
 
   
   /**
    * @param owner
    */
-  public ROMselector(Frame owner, Emulator emu)
+  public ROMselector(Frame owner, HP9800Mainframe hp9800Mainframe)
   {
     super(owner);
     this.owner = owner;
-    this.emu = emu;
+    mainframe = hp9800Mainframe;
     initialize();
   }
 
@@ -168,7 +170,7 @@ public class ROMselector extends JDialog implements ActionListener
   public void actionPerformed(ActionEvent event)
   {
     String cmd = event.getActionCommand();
-    emu.setROM(romSlot, cmd);
+    mainframe.config.setROM(romSlot, cmd);
     setVisible(false);
     owner.repaint();
   }

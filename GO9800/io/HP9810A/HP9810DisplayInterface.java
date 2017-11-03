@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,7 +31,8 @@
  * 09.01.2009 Rel. 1.33 Changed Thread.sleep() to ioUnit.wait() for SRQ notification 
  * 22.04.2009 Rel. 1.41 Changed display timing to use ioUnitister.time_xx() and use only one wait() per complete scan
  * 07.09.2016 Rel. 2.01 Changed parameters for output() to internal printer
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io.HP9810A;
 
@@ -41,15 +42,13 @@ import io.HP9800Mainframe;
 
 public class HP9810DisplayInterface extends IOinterface implements DisplayInterface
 {
-  HP9800Mainframe mainframe;
   int[][] displayBuffer;
   int keyLEDs = 0;
   boolean equal;  // false if display contents has changed
   
-  public HP9810DisplayInterface(HP9800Mainframe mainframe)
+  public HP9810DisplayInterface(HP9800Mainframe hp9800Mainframe)
   {
-    super(0);
-    this.mainframe = mainframe;
+    super(0, hp9800Mainframe);
 
     displayBuffer = new int[3][16];
     

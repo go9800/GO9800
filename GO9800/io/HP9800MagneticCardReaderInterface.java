@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -62,7 +62,6 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   // asynchronous reading
   static final boolean asyncMode = true;
   
-  public HP9800Mainframe mainframe;
   int outBuffer = 0;
   int dataStrobe = 0;
   int sensors = 0;
@@ -81,10 +80,9 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   
   public HP9800MagneticCardReaderInterface(HP9800Mainframe mainframe)
   {
-    super(0, "MCR");
+    super(0, "MCR", mainframe);
 
     // store references and start thread
-    this.mainframe = mainframe;
     WAIT_BYTE = ioUnit.time_3ms;
     WAIT_INSERT = 2 * ioUnit.time_100ms;
 
@@ -98,7 +96,7 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   
   public void run()
   {
-    debug = IOinterface.ioUnit.console.getDebugMode();
+    debug = mainframe.console.getDebugMode();
     
     while(true) {
       // sleep until interrupted by IO-instruction
@@ -335,7 +333,7 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
 
   public boolean output()
   {
-    debug = IOinterface.ioUnit.console.getDebugMode();
+    debug = mainframe.console.getDebugMode();
     
     synchronized(ioUnit) {
       int value = ioUnit.getValue();
@@ -402,7 +400,7 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   
   public boolean input()
   {
-    debug = IOinterface.ioUnit.console.getDebugMode();
+    debug = mainframe.console.getDebugMode();
     
     if(!asyncMode && readMode && cardFile != null) {
       // read from magn. card
@@ -433,10 +431,12 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   
   public void stop()
   {
+  	if(devThread != null)	devThread.stop();
+  	
     // stop all sound threads
-  	startSound.close();
-  	loopSound.close();
-  	cardSound.close();
+  	if(startSound != null) startSound.close();
+  	if(loopSound != null) loopSound.close();
+  	if(cardSound != null) cardSound.close();
 
   	super.stop();
   }

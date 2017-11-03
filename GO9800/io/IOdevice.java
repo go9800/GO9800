@@ -19,10 +19,11 @@
 
 /*
  * 01.04.2010 Class created 
- * 24.10.2017 Rel. 2.04: Added method close()
+ * 24.10.2017 Rel. 2.10: Added method close()
  * 25.10.2017 Rel. 2.03 Changed static access to IOregister
- * 25.10.2017 Rel. 2.04 Added method close() to stop thread
-*/
+ * 25.10.2017 Rel. 2.10 Added method close() to stop thread
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -42,10 +43,16 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
     // dummy constructor for Reflection API
   }
   
-  public IOdevice(String hpName)
+  public IOdevice(String hpName, IOinterface ioInterface)
   {
     super(hpName);
     this.hpName = hpName; // device name comes from child class
+    
+    // connection to ioInterface
+    this.ioInterface = ioInterface;
+    
+    // add device to list for later cleanup
+    ioInterface.mainframe.ioDevices.add(this);
     
     addKeyListener(this);
     addMouseListener(this);
@@ -56,12 +63,6 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
     setForeground(Color.BLACK);
   }
   
-  public void setInterface(IOinterface ioInt)
-  {
-    ioInterface = ioInt;
-    IOinterface.ioUnit.bus.interfaces.add(ioInterface);
-  } 
-
   class windowListener extends WindowAdapter
   {
     public void windowClosing(WindowEvent event)
@@ -169,8 +170,7 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
   {
   	// stop all threads including sounds and images and free all ressources
     ioInterface.stop();  // stop interface thread
-    IOinterface.ioUnit.bus.interfaces.removeElement(ioInterface);  // remove device interface object from IObus
-    IOinterface.ioUnit.bus.devices.removeElement(this);  // remove device object from devices list
+    ioInterface.mainframe.ioDevices.removeElement(this);  // remove device object from devices list
     setVisible(false);  // close window
     dispose();  // and remove it
     

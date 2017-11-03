@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2010 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -105,8 +105,11 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
   
   public void stop()
   {
-  	panelThread.stop();
-  	panelThread = null;
+  	if(panelThread != null) {
+  		panelThread.stop();
+  		panelThread = null;
+  	}
+  	dispose();
   }
 
   class windowListener extends WindowAdapter

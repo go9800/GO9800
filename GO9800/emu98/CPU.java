@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2016 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,8 +23,9 @@
  * 13.08.2016 Rel. 2.01: change ALU operation to use ROM codes 
  * 04.10.2016 Rel. 2.02: optimizing BCD operations
  * 04.10.2016 Rel. 2.02: performance optimization by suppressing useless shift loops
- * 25.10.2016 Rel. 2.04: ALU operations transfered to new class ALU
- * 06.11.2016	Rel. 2.04: Further performance optimizations in ALU 
+ * 25.10.2016 Rel. 2.10: ALU operations transfered to new class ALU
+ * 06.11.2016	Rel. 2.10: Further performance optimizations in ALU 
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package emu98;
@@ -32,6 +33,8 @@ package emu98;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Vector;
+
+import io.HP9800Mainframe;
 
 public class CPU
 {
@@ -45,13 +48,16 @@ public class CPU
   Console console;
   Vector<StringBuffer> printBuffer;
   boolean decode = false;
+  
+  // Connection to Mainframe
+  HP9800Mainframe mainframe;
+
+  // Connection to main memory
+  Memory memory[];
 
   // ALU
   ALU alu;
   
-  // main memory
-  Memory memory[];
-
   // I/O-unit
   IOunit ioUnit;
 
@@ -109,15 +115,18 @@ public class CPU
   // micro code storage, each instruction has 28 bits
   int[] microCode_ROM;
 
-  public CPU(Memory memory[])
+  public CPU(HP9800Mainframe hp9800Mainframe)
   {
     MicroInstruction instr;
     int ac;
     int code, i;
     StringBuffer line;
 
+    // connect CPU to mainframe and memory
+    mainframe = hp9800Mainframe;
+    memory = hp9800Mainframe.memory;
+    
     printBuffer = new Vector<StringBuffer>();
-    this.memory = memory;
 
     Aregister = new Register("A", 16, 0177777);
     Bregister = new Register("B", 16, 0177777);
@@ -256,9 +265,9 @@ public class CPU
     // initialize ALU
     alu = new ALU();
 
-    System.out.println("\nHP9800 CPU loaded.");
+    System.out.println("HP9800 CPU loaded.");
   }
-
+  
   public void setIOunit(IOunit ioUnit)
   {
     this.ioUnit = ioUnit;
@@ -627,7 +636,7 @@ public class CPU
 
               printBuffer.add(line);
             }
-
+      /*
       System.out.print("HP9800 ALU test:");
 
       for(int c = 0; c < 2; c++) {
@@ -669,6 +678,7 @@ public class CPU
           }
         }
       }
+      */
     }
     
     public void init(int BC, int utr, int ac, int bcd)

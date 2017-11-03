@@ -28,7 +28,8 @@
  * 12.12.2007 Rel. 1.20 don't input IO-bus value to IO-register in requestInterrupt(). This is now done by IOregister.serviceRequestAcknowledge() 
  * 03.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
  * 25.10.2017 Rel. 2.03 Changed static access to ioUnit, removed deprecated use of ioRegister
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -38,10 +39,10 @@ public class HP11200A extends IOinterface
   protected boolean reading = false;
   protected int keyCode = -1;
   
-  public HP11200A(Integer selectCode)
+  public HP11200A(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
     // create named thread
-    super(selectCode, "HP11200A");
+    super(selectCode, "HP11200A", hp9800Mainframe);
     timerValue = HP9860A.WAIT_IDLE;  // value for idle loop
   }
 

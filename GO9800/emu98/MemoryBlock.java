@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -86,7 +86,7 @@ public class MemoryBlock
   public Image getUniModule()
   {
     if(moduleImage == null)
-      moduleImage = new ImageMedia(makeFileName("_Module.jpg")).getImage();
+      moduleImage = new ImageMedia(makeFileName("_Module.png")).getImage();
 
     return(moduleImage);
   }
@@ -94,7 +94,7 @@ public class MemoryBlock
   public Image getTemplate()
   {
     if(templateImage == null) {
-      templateImage = new ImageMedia(makeFileName("_Template_" + blockSlot + ".jpg")).getImage();
+      templateImage = new ImageMedia(makeFileName("_Template_" + blockSlot + ".png")).getImage();
     }
     
     return(templateImage);
@@ -132,7 +132,7 @@ public class MemoryBlock
   public void unload()
   {
     if(blockName != null && !blockName.equals("HP11XXXX")) {
-      // dismiss previous images, stop image threads and free all ressources
+      // dismiss previous images, stop image threads and free all resources
     	if(moduleImage != null) moduleImage.flush();
     	if(templateImage != null) templateImage.flush();
     	if(instructionsImage != null) instructionsImage.flush();

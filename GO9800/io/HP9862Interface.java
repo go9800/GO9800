@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@
  * 10.01.2009 Rel. 1.33 Added speed toggle
  * 22.12.2009 Rel. 1.42 Changed plotter movement delay and sound output
  * 03.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io;
@@ -35,10 +36,10 @@ public class HP9862Interface extends IOinterface
   protected boolean delay = false;
   protected boolean debug = false;
   
-  public HP9862Interface(Integer selectCode)
+  public HP9862Interface(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
     // create named thread
-    super(selectCode, "HP9862Interface");
+    super(selectCode, "HP9862Interface", hp9800Mainframe);
     status = IOunit.devStatusReady | HP9862A.POWER;
   }
 

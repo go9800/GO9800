@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2010 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,7 +27,8 @@
  * 21.01.2008 Rel. 1.20 Delay CEO on line feed to comply with HP9810A Typewriter ROM 
  * 10.01.2009 Rel. 1.33 Added speed toggle
  * 03.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
- */
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+*/
 
 package io;
 
@@ -39,10 +40,10 @@ public class HP9866Interface extends IOinterface
   protected boolean delay = false;
   protected boolean debug = false;
   
-  public HP9866Interface(Integer selectCode)
+  public HP9866Interface(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
     // create named thread
-    super(selectCode, "HP9866AB");
+    super(selectCode, "HP9866AB", hp9800Mainframe);
   }
   
   public void setDevice(IOdevice ioDev)

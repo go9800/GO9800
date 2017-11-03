@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,7 +27,8 @@
  * 12.02.2011 Rel. 1.50 Scrolling and paint method reworked
  * 19.03.2011 Rel. 1.50 Added method print()
  * 20.11.2011 Rel. 1.51 SHIFT+DELETE key resizes window to default
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -68,18 +69,16 @@ public class HP9861A extends IOdevice implements Printable
   static final int TAB_CLR = 0x0c;
   
   
-  public HP9861A()
+  public HP9861A(IOinterface ioInterface)
   {
-    super("HP9861A"); // set window title
+    super("HP9861A", ioInterface); // set window title
+    hp11201a = (HP11201A)ioInterface;
 
     // load print sound
     typeSound = new SoundMedia("media/HP9861A/HP9861_TYPE.wav", true);
     spaceSound = new SoundMedia("media/HP9861A/HP9861_SPC.wav", true);
     crSound = new SoundMedia("media/HP9861A/HP9861_CR.wav", true);
     lfSound = new SoundMedia("media/HP9861A/HP9861_LF.wav", true);
-    /*
-    fanSound.loop();
-     */
 
     setSize(1010, 250);
     setLocation(0, 0);
@@ -103,15 +102,10 @@ public class HP9861A extends IOdevice implements Printable
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
 
+    setState(ICONIFIED);
     setVisible(true);
   }
 
-  public void setInterface(IOinterface ioInt)
-  {
-    super.setInterface(ioInt);
-    hp11201a = (HP11201A)ioInt;
-  } 
-  
   public void keyPressed(KeyEvent event)
   {
     int keyCode = event.getKeyCode();
@@ -286,7 +280,7 @@ public class HP9861A extends IOdevice implements Printable
     int i;
     
     if(debug)
-      IOinterface.ioUnit.console.append("HP9861A out: " + Integer.toHexString(value) + "\n");
+      ioInterface.ioUnit.console.append("HP9861A out: " + Integer.toHexString(value) + "\n");
     
     hp11201a.timerValue = 30;
     status = IOunit.devStatusReady;

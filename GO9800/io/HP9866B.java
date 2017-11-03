@@ -21,7 +21,8 @@
  * 29.01.2011 Class created based on HP9866A.java 
  * 19.03.2011 Rel. 1.50 Added method print()
  * 20.11.2011 Rel. 1.51 SHIFT+DELETE key resizes window to default
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -181,9 +182,10 @@ public class HP9866B extends IOdevice implements Printable
   private PrinterJob printJob;
   private PageFormat pageFormat;
 
-  public HP9866B()
+  public HP9866B(IOinterface ioInterface)
   {
-    super("HP9866B"); // set window title
+    super("HP9866B", ioInterface); // set window title
+    hp9866Interface = (HP9866Interface)ioInterface;
     addWindowListener(new windowListener());
 
     //fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", true);
@@ -206,14 +208,9 @@ public class HP9866B extends IOdevice implements Printable
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
 
+    setState(ICONIFIED);
     setVisible(true);
   }
-
-  public void setInterface(IOinterface ioInt)
-  {
-    super.setInterface(ioInt);
-    hp9866Interface = (HP9866Interface)ioInt;
-  } 
 
   class windowListener extends WindowAdapter
   {

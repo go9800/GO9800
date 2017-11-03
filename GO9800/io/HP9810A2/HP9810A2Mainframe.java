@@ -20,20 +20,21 @@
 /*
  * 07.04.2007 Class derived from HP9810A mainframe 
  * 05.03.2008 Rel. 1.21 Bugfix: DEN is now longer evaluated in display() method
- * 21.10.2017 Rel. 2.04 Added Graphics scaling using class Graphics2D
+ * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
  */
 
-package io.HP9810A;
+package io.HP9810A2;
 
 
 import io.*;
+import io.HP9810A.HP9810AMainframe;
 import emu98.*;
 
-public class HP9810AMainframe2 extends HP9810AMainframe
+public class HP9810A2Mainframe extends HP9810AMainframe
 {
   private static final long serialVersionUID = 1L;
 
-  public HP9810AMainframe2(Emulator emu)
+  public HP9810A2Mainframe(Emulator emu)
   {
     super(emu);
 

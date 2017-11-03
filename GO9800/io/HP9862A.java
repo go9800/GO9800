@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,6 +33,7 @@
  * 01.04.2010 Rel. 1.50 Class now inherited from IOdevice and completely reworked
  * 19.03.2011 Rel. 1.50 Added method print()
  * 20.11.2011 Rel. 1.51 SHIFT+DELETE key resizes window to default
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io;
@@ -89,9 +90,10 @@ public class HP9862A extends IOdevice implements Printable
     }
   }
 
-  public HP9862A()
+  public HP9862A(IOinterface ioInterface)
   {
-    super("HP9862A"); // set window title
+    super("HP9862A", ioInterface); // set window title
+    hp9862Interface = (HP9862Interface)ioInterface;
 
     plotSound = new SoundMedia("media/HP9862A/HP9862_PLOT.wav", true);
     moveSound = new SoundMedia("media/HP9862A/HP9862_MOVE.wav", true);
@@ -113,14 +115,9 @@ public class HP9862A extends IOdevice implements Printable
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
 
+    setState(ICONIFIED);
     setVisible(true);
   }
-  
-  public void setInterface(IOinterface ioInt)
-  {
-    super.setInterface(ioInt);
-    hp9862Interface = (HP9862Interface)ioInt;
-  } 
   
   public void keyPressed(KeyEvent event)
   {

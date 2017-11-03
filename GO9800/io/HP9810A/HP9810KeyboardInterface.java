@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2011 Achim Buerger
+ * Copyright (C) 2006-2018 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,10 +27,12 @@
  * 13.12.2007 Rel. 1.20 Release keyboard SRQ and STP after 5ms. This is done by KDN single-shot FF.   
  * 27.02.2008 Rel. 1.21 Added method release(). Keyboard is now released after a certain amount of executed instructions  
  * 09.01.2009 Rel. 1.33 Added synchronized(ioUnit){} and ioUnit.notifyAll() in requestInterrupt() 
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
 package io.HP9810A;
 
+import io.HP9800Mainframe;
 import io.IOinterface;
 import io.KeyboardInterface;
 
@@ -38,9 +40,9 @@ public class HP9810KeyboardInterface extends IOinterface implements KeyboardInte
 {
   int keyCode = -1;
   
-  public HP9810KeyboardInterface(int selectCode)
+  public HP9810KeyboardInterface(int selectCode, HP9800Mainframe hp9800Mainframe)
   {
-    super(selectCode);
+    super(selectCode, hp9800Mainframe);
     System.out.println("HP9810 Keyboard loaded.");
   }
 

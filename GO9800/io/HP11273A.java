@@ -23,7 +23,8 @@
  * 22.10.2009 Rel. 1.40 Moved output sleep() to HP9867.java
  * 04.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
  * 25.10.2017 Rel. 2.03 Changed static access to ioUnit, removed deprecated use of ioRegister
-*/
+ * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ */
 
 package io;
 
@@ -34,10 +35,10 @@ public class HP11273A extends IOinterface
   private boolean busy = false;
   private boolean debug = false;
   
-  public HP11273A(Integer selectCode)
+  public HP11273A(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
     // create thread
-    super(selectCode);
+    super(selectCode, hp9800Mainframe);
     status = HP11305A.POWER_ON;
     timerValue = HP11305A.IDLE_TIMER;
   }
