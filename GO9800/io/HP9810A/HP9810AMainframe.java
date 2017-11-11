@@ -51,6 +51,7 @@
  * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
  * 24.10.2017 Rel. 2.10 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
  */
 
 package io.HP9810A;
@@ -85,6 +86,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   static int TEMPLATE_Y = 271; //269;
   static int TEMPLATE_W = 147; //162;
   static int TEMPLATE_H = 254; //260;
+  public double TEMPLATE_S = -0.025;
   
   // click area for ROM block exchange
   static int ROM_X = 25;
@@ -153,9 +155,9 @@ public class HP9810AMainframe extends HP9800Mainframe
     romSelector.addRomButton("media/HP9810A/HP11266A_Block.jpg", "HP11266A");
     romSelector.addRomButton("media/HP9810A/HP11267A_Block.jpg", "HP11267A");
 
-    keyboardImage = new ImageMedia("media/HP9810A/HP9810A_Keyboard.png").getImage();
-    displayImage = new ImageMedia("media/HP9810A/HP9810A_Display.jpg").getImage();
-    blockImage = new ImageMedia("media/HP9810A/HP9810A_Module.png").getImage();
+    keyboardImageMedia = new ImageMedia("media/HP9810A/HP9810A_Keyboard.png");
+    displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display.jpg");
+    blockImageMedia = new ImageMedia("media/HP9810A/HP9810A_Module.png");
 
     ledLargeOn = new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg").getImage();
     ledLargeOff = new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage();
@@ -268,87 +270,102 @@ public class HP9810AMainframe extends HP9800Mainframe
   {
   	AffineTransform g2dSaveTransform;
   	Image moduleImage;
-    int i, j;
-    int x = 0, y = 0; // positioning is done by g2d.translate()
-    
-    // normalize frame and get scaling parameters
-    super.paint(this.getGraphics());
+  	int i, j;
+  	int x = 0, y = 0; // positioning is done by g2d.translate()
 
-    // scale keyboard image to normal size
-    backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
+  	// normalize frame and get scaling parameters
+  	super.paint(g);
 
-    if(backgroundImage) {
-      g2dSaveTransform = g2d.getTransform();  // save current transformation, changed by ROM blocks
+  	// scale keyboard image to normal size
+  	keyboardImage = keyboardImageMedia.getScaledImage((int)(KEYB_W * widthScale), (int)(KEYB_H * heightScale));
+  	backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
 
-      // get images of ROM modules and template
-      MemoryBlock block = (MemoryBlock)config.memoryBlocks.get("Slot1");
+  	blockImage = blockImageMedia.getScaledImage((int)(BLOCK_W * widthScale), (int)(BLOCK_H * heightScale));
+  	g2dSaveTransform = g2d.getTransform();  // save current transformation, changed by ROM blocks
 
-      if(block != null) {
-      	// draw universal ROM module
-      	moduleImage = block.getUniModule();
-      	
-      	if(moduleImage != null) {
-      		g2d.shear(-0.06, 0.);  // negative horizontal shear for correct perspective
-      		g2d.drawImage(blockImage, x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
-      		
-      		g2d.drawImage(imageProcessing(moduleImage, 1.17f, 10f) , x + BLOCK1_X + 1, y + BLOCK1_Y + 1, BLOCK_W - 2, BLOCK_H - 13, this);  // draw processed module label
-      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  	if(!backgroundImage)  // dont draw modules and templates before keyboard is ready
+  		return;
 
-      		// draw ROM template
-      		g2d.shear(-0.026, 0.);  // negative horizontal shear for correct perspective
-      		// draw template with transparence
-      		g2d.drawImage(imageProcessing(block.getTemplate(), 1f, 50f), x + TEMPLATE_X, y + TEMPLATE_Y, TEMPLATE_W, TEMPLATE_H, this);
+  	blockImage = blockImageMedia.getScaledImage((int)(BLOCK_W * widthScale), (int)(BLOCK_H * heightScale));
+  	displayImage = displayImageMedia.getScaledImage((int)(DISPLAY_W * widthScale), (int)(DISPLAY_H * heightScale));
+  	g2dSaveTransform = g2d.getTransform();  // save current transformation, changed by ROM blocks
 
-      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
-      	}
-      }
-        
-      block = (MemoryBlock)config.memoryBlocks.get("Slot2");
-      if(block != null) {
-      	// draw universal ROM module
-      	moduleImage = block.getUniModule();
-      	if(moduleImage != null) {
-      		g2d.shear(-0.03, 0.);  // negative horizontal shear for correct perspective
-      		g2d.drawImage(blockImage, x + BLOCK2_X, y + BLOCK2_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
-      		g2d.drawImage(imageProcessing(moduleImage, 1.17f, 10f), x + BLOCK2_X + 1, y + BLOCK2_Y + 1, BLOCK_W - 2, BLOCK_H - 13, this);  // draw module label
-      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  	// get images of ROM modules and template
+  	MemoryBlock block = (MemoryBlock)config.memoryBlocks.get("Slot1");
 
-      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
-      	}
-      }
-        
-      block = (MemoryBlock)config.memoryBlocks.get("Slot3");
-      if(block != null) {
-      	// draw universal ROM module
-      	moduleImage = block.getUniModule();
-      	if(moduleImage != null) {
-      		g2d.shear(-0.01, 0.);  // negative horizontal shear for correct perspective
-      		g2d.drawImage(blockImage, x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
-      		g2d.drawImage(imageProcessing(moduleImage, 1.17f, 10f), x + BLOCK3_X + 1, y + BLOCK3_Y + 1, BLOCK_W - 2, BLOCK_H - 13, this);  // draw module label
-      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
 
-      		g2d.setTransform(g2dSaveTransform);  // restore original transformation
-      	}
-      }
+  	if(block != null) {
+  		// draw universal ROM module
+  		moduleImage = block.getUniModule((int)(MODULE_W * widthScale), (int)(MODULE_H * heightScale));  // get scaled image
 
-      // draw display area
-      g2d.drawImage(displayImage, x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W, DISPLAY_H, this);
+  		if(moduleImage != null) {
+  			g2d.shear(BLOCK1_S, 0.);  // negative horizontal shear for correct perspective
+  			g2d.drawImage(blockImage, x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
 
-      // draw keyboard LEDs
-      displayLEDs(ioUnit.bus.display.getKeyLEDs());
+  			// draw ROM module label with transparence, scaled and processed for brightness and contrast
+  			moduleImage = block.getUniModule(1.1f, 30f);  // get processed image, based on scaled image
+  			g2d.drawImage(moduleImage, x + BLOCK1_X + 1, y + BLOCK1_Y + 1, MODULE_W, MODULE_H, this);  // draw module label
+  			g2d.setTransform(g2dSaveTransform);  // restore original transformation
 
-      // draw display only not blanked 
-      if(ioUnit.dispCounter.running()) {
-        for(j = 0; j < 3; j++) {
-          for(i = 0; i < 15; i++) {
-            display(j, i);
-          }
-        }
-      }
+  			// draw ROM template with transparence
+  			g2d.shear(TEMPLATE_S, 0.);  // negative horizontal shear for correct perspective
+  			templateImage = block.getUniTemplate((int)(TEMPLATE_W * widthScale), (int)(TEMPLATE_H * heightScale));  // first get scaled image
+  			templateImage = block.getUniTemplate(1f, 50f);  // then get processed image, based on scaled image
+  			g2d.drawImage(templateImage, x + TEMPLATE_X, y + TEMPLATE_Y, TEMPLATE_W, TEMPLATE_H, this);
 
-      displayPrintOutput();
-      displayKeyMatrix();
-    }
+  			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  		}
+  	}
+
+  	block = (MemoryBlock)config.memoryBlocks.get("Slot2");
+  	if(block != null) {
+  		// draw universal ROM module
+  		moduleImage = block.getUniModule((int)(MODULE_W * widthScale), (int)(MODULE_H * heightScale));  // get scaled image
+
+  		if(moduleImage != null) {
+  			g2d.shear(BLOCK2_S, 0.);  // negative horizontal shear for correct perspective
+  			g2d.drawImage(blockImage, x + BLOCK2_X, y + BLOCK2_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
+
+  			// draw ROM module label with transparence, scaled and processed for brightness and contrast
+  			moduleImage = block.getUniModule(1.1f, 30f);  // get processed image, based on scaled image
+  			g2d.drawImage(moduleImage, x + BLOCK2_X + 1, y + BLOCK2_Y + 1, MODULE_W, MODULE_H, this);
+  			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  		}
+  	}
+
+  	block = (MemoryBlock)config.memoryBlocks.get("Slot3");
+  	if(block != null) {
+  		// draw universal ROM module
+  		moduleImage = block.getUniModule((int)(MODULE_W * widthScale), (int)(MODULE_H * heightScale));
+
+  		if(moduleImage != null) {
+  			g2d.shear(BLOCK3_S, 0.);  // negative horizontal shear for correct perspective
+  			g2d.drawImage(blockImage, x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
+
+  			// draw ROM module label with transparence, scaled and processed for brightness and contrast
+  			moduleImage = block.getUniModule(1.1f, 30f);  // get processed image, based on scaled image
+  			g2d.drawImage(moduleImage, x + BLOCK3_X + 1, y + BLOCK3_Y + 1, MODULE_W, MODULE_H, this);
+  			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  		}
+  	}
+
+  	// draw display area
+  	g2d.drawImage(displayImage, x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W, DISPLAY_H, this);
+
+  	// draw keyboard LEDs
+  	displayLEDs(ioUnit.bus.display.getKeyLEDs());
+
+  	// draw display only not blanked 
+  	if(ioUnit.dispCounter.running()) {
+  		for(j = 0; j < 3; j++) {
+  			for(i = 0; i < 15; i++) {
+  				display(j, i);
+  			}
+  		}
+  	}
+
+  	displayPrintOutput();
+  	displayKeyMatrix();
   }
   
   public void displayClickAreas()

@@ -84,19 +84,28 @@ public class HP9821AMainframe extends HP9820AMainframe
     PAPER_LEFT = 557;
     PAPER_EDGE = 123;
 
-    BLOCK1_X = 33;
-    BLOCK2_X = 185;
-    BLOCK3_X = 336;
+    BLOCK1_X = 38;
+    BLOCK1_S = -0.15; 
+    BLOCK2_X = 187;
+    BLOCK2_S = -0.10; 
+    BLOCK3_X = 338;
+    BLOCK3_S = -0.05;
+    BLOCK_W = 151;
+    BLOCK_H = 50;
+
     
     // ROM template sizes
-    TEMPLATE1_X = 87;
+    TEMPLATE1_X = 106;
     TEMPLATE1_Y = 391;
-    TEMPLATE2_X = 214;
+    TEMPLATE1_S = -0.030;
+    TEMPLATE2_X = 230;
     TEMPLATE2_Y = 391;
-    TEMPLATE3_X = 342;
+    TEMPLATE2_S = -0.025;
+    TEMPLATE3_X = 350;
     TEMPLATE3_Y = 391;
-    TEMPLATE_W = 118;
-    TEMPLATE_H = 223;
+    TEMPLATE3_S = -0.010;
+    TEMPLATE_W = 111;
+    TEMPLATE_H = 224;
 
     // click area for ROM block exchange
     ROM_X = 30;
@@ -134,7 +143,8 @@ public class HP9821AMainframe extends HP9820AMainframe
     romSelector.addRomButton("media/HP9821A/HP11222A_Block.jpg", "HP11222A");
     //romSelector.addRomButton("media/HP9821A/HP11223A_Block.jpg", "HP11223A");
     
-    keyboardImage = new ImageMedia("media/HP9821A/HP9821A_Keyboard.jpg").getImage();
+    keyboardImageMedia = new ImageMedia("media/HP9821A/HP9821A_Keyboard.png");
+    blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png");
 
     setSize();
     System.out.println("HP9821 Mainframe loaded.");

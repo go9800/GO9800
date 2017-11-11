@@ -42,6 +42,7 @@
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  * 02.11.2017 Rel. 2.10: Added method imageProcessing() used to draw ROM modules and templates
  * 02.11.2017 Rel. 2.10: Changed drawing of ROM modules and templates using imageProcessing() and RGBA images with transparency
+ * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
  */
 
 package io;
@@ -85,13 +86,19 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public int PAPER_EDGE = 126;
 
   public int BLOCK1_X = 24;
-  public int BLOCK1_Y = 3;
+  public int BLOCK1_Y = 4;
+  public double BLOCK1_S = -0.10; 
   public int BLOCK2_X = 174;
-  public int BLOCK2_Y = 2;
+  public int BLOCK2_Y = 4;
+  public double BLOCK2_S = -0.06; 
   public int BLOCK3_X = 325;
-  public int BLOCK3_Y = 1;
+  public int BLOCK3_Y = 4;
+  public double BLOCK3_S = -0.02; 
   public int BLOCK_W = 152;
-  public int BLOCK_H = 54;
+  public int BLOCK_H = 51;
+  public int MODULE_W = BLOCK_W - 2;
+  public int MODULE_H = BLOCK_H - 13;
+
   
   public int STOP_KEYCODE = 041; // code of STOP key
   
@@ -116,7 +123,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public double aspectRatio = 1.;
 	public double widthScale = 1., heightScale = 1.;
 	
-  protected Image keyboardImage, displayImage, blockImage;
+  protected ImageMedia keyboardImageMedia, displayImageMedia, blockImageMedia;
+	protected Image keyboardImage, displayImage, blockImage, moduleImage, templateImage;
   protected Image ledLargeOn, ledLargeOff;
   protected Image ledSmallOn, ledSmallOff;
 
@@ -228,15 +236,17 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 	
     setResizable(true); // this changes size of insets
     setVisible(true);
+    
+    /*
     // wait until background image has been loaded
-    synchronized(keyboardImage) {
+    synchronized(keyboardImageMedia.getImage()) {
       try
       {
-        keyboardImage.wait(500);
+      	keyboardImageMedia.getImage().wait(500);
       } catch (InterruptedException e)
       { }
     }
-    
+    */
     // fixed aspect ratio of keyboard
     aspectRatio = (double)KEYB_W / (double)KEYB_H;
 
@@ -316,12 +326,17 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   
   public void update(Graphics g)
   {
-    // avoid flickering by not drawing background color
     paint(g);
+    
+    // avoid flickering
+  	try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) { }
   }
   
   public void paint(Graphics g)
   {
+  	super.paint(g);
   	g2d = (Graphics2D)g.create();
   	normalizeSize();  // normalize aspect ratio and get scaling factors
   	
@@ -721,29 +736,6 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     g2d.fillRect(x, y, PAPER_WIDTH, 6);
   }
   
-  public BufferedImage imageProcessing(Image image, float factor, float offset)
-  {
-  	Graphics2D bufferedGraphics;
-  	BufferedImage bufferedImage; // for image processing
-  	RescaleOp imageOp;
-  	float[] factors;  // contrast factors (RGBA)
-  	float[] offsets;  // brightness offsets (RGBA)
-  	
-  	// processing of RGB with Alpha (RGBA) requires vector values
-  	factors = new float[]{factor, factor, factor, 1f};
-  	offsets = new float[]{offset, offset, offset, 0f};
-
-  	// created buffered RGB image with alpha channel
-  	while(image.getWidth(null) < 0); // wait for image to be loaded
-  	bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-  	bufferedGraphics = bufferedImage.createGraphics();
-  	bufferedGraphics.drawImage(image, 0, 0, null); // draw moduleImage into bufferedImage
-  	imageOp = new RescaleOp(factors, offsets, null); // image processing operation
-  	
-  	// return processed image
-  	return(imageOp.filter(bufferedImage, null));
-  }
-    
   public void displayKeyMatrix()
   {
     float[] dashArray = {2f, 2f};

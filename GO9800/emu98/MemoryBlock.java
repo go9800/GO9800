@@ -42,9 +42,9 @@ public class MemoryBlock
   private String title;
   private int blockStart, blockEnd, blockSize = 0;
   private boolean isRW;
-  private Image moduleImage = null;
-  private Image templateImage = null;
-  private Image instructionsImage = null;
+  private ImageMedia moduleImageMedia = null;
+  private ImageMedia templateImageMedia = null;
+  private ImageMedia instructionsImageMedia = null;
   private Vector<String> instructionsVector = null;
   private int instrIndex = 0;
   
@@ -76,28 +76,60 @@ public class MemoryBlock
   
   public Image getModule()
   {
-    if(moduleImage == null) {
-      moduleImage = new ImageMedia(makeFileName("_Module_" + blockSlot + ".jpg")).getImage();
+    if(moduleImageMedia == null) {
+      moduleImageMedia = new ImageMedia(makeFileName("_Module_" + blockSlot + ".jpg"));
     }
       
-    return(moduleImage);
+    return(moduleImageMedia.getImage());
   }
 
-  public Image getUniModule()
+  // get scaled universal module graphics
+  public Image getUniModule(int width, int height)
   {
-    if(moduleImage == null)
-      moduleImage = new ImageMedia(makeFileName("_Module.png")).getImage();
+    if(moduleImageMedia == null) {
+      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"));
+   }
 
-    return(moduleImage);
+    return(moduleImageMedia.getScaledImage(width, height));
   }
 
-  public Image getTemplate()
+  // get processed universal module graphics
+  public Image getUniModule(float factor, float offset)
   {
-    if(templateImage == null) {
-      templateImage = new ImageMedia(makeFileName("_Template_" + blockSlot + ".png")).getImage();
+    if(moduleImageMedia == null) {
+      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"));
+   }
+
+    return(moduleImageMedia.getProcessedImage(factor, offset));
+  }
+
+  // get scaled universal template graphics
+  public Image getUniTemplate(int width, int height)
+  {
+    if(templateImageMedia == null) {
+      templateImageMedia = new ImageMedia(makeFileName("_Template.png"));
     }
     
-    return(templateImage);
+    return(templateImageMedia.getScaledImage(width, height));
+  }
+  
+  // get processed universal template graphics
+  public Image getUniTemplate(float factor, float offset)
+  {
+    if(templateImageMedia == null) {
+      templateImageMedia = new ImageMedia(makeFileName("_Template.png"));
+    }
+    
+    return(templateImageMedia.getProcessedImage(factor, offset));
+  }
+  
+  public Image getTemplate()
+  {
+    if(templateImageMedia == null) {
+      templateImageMedia = new ImageMedia(makeFileName("_Template_" + blockSlot + ".jpg"));
+    }
+    
+    return(templateImageMedia.getImage());
   }
   
   public Image getInstructions()
@@ -116,12 +148,12 @@ public class MemoryBlock
       return(null);
     
     String fileName = "media/" + machineName + "/" + (String)instructionsVector.elementAt(instrIndex);
-    instructionsImage = new ImageMedia(fileName).getImage();
+    instructionsImageMedia = new ImageMedia(fileName);
     
     if(++instrIndex >= instructionsVector.size())
       instrIndex = 0;
 
-    return(instructionsImage);
+    return(instructionsImageMedia.getImage());
   }
   
   public int getAddress()
@@ -131,12 +163,12 @@ public class MemoryBlock
   
   public void unload()
   {
-    if(blockName != null && !blockName.equals("HP11XXXX")) {
+    if(blockName != null) {
       // dismiss previous images, stop image threads and free all resources
-    	if(moduleImage != null) moduleImage.flush();
-    	if(templateImage != null) templateImage.flush();
-    	if(instructionsImage != null) instructionsImage.flush();
-      moduleImage = templateImage = instructionsImage = null;
+    	if(moduleImageMedia != null && moduleImageMedia.getImage() != null) moduleImageMedia.getImage().flush();
+    	if(templateImageMedia != null && templateImageMedia.getImage() != null) templateImageMedia.getImage().flush();
+    	if(instructionsImageMedia != null && instructionsImageMedia.getImage() != null) instructionsImageMedia.getImage().flush();
+      moduleImageMedia = templateImageMedia = instructionsImageMedia = null;
       instructionsVector = null;
 
       System.out.println(blockName + " unloaded.");

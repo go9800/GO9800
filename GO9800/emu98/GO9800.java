@@ -237,6 +237,8 @@ public class GO9800
       }
     }
     
+    System.setProperty("awt.image.incrementalDraw", "false");
+    
     GO9800Window go9800 = new GO9800Window();
     
     System.out.println("HP Series 9800 Emulator Release 2.1, Copyright (C) 2006-2018 Achim Buerger\n");

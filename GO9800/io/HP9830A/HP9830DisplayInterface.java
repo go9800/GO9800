@@ -78,11 +78,16 @@ public class HP9830DisplayInterface extends IOinterface implements DisplayInterf
   public void blank()
   {
     for(int j = 0; j < 32; j++)
+    {
       displayBuffer[0][j] = ' ';
-    
+      mainframe.display(0, j); // blank display
+    }
+
+    /* do NOT repaint mainframe as this may change g2d
     int l = mainframe.getInsets().left;
     int t = mainframe.getInsets().top;
     mainframe.repaint(l + mainframe.DISPLAY_X, t + mainframe.DISPLAY_Y, mainframe.DISPLAY_W, mainframe.DISPLAY_H);
+    */
   }
 
   public boolean output(int printValue)

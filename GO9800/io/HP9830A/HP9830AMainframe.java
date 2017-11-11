@@ -50,6 +50,7 @@
  * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
  * 24.10.2017 Rel. 2.10 Added display of click areas, changed size ROM click area
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 05.11.2017 Rel. 2.10: Bugfix: Removed checking ioUnit.DEN from display() method
  */
 
 package io.HP9830A;
@@ -343,7 +344,7 @@ public class HP9830AMainframe extends HP9800Mainframe
     int charCode;
 
     // normalize frame and get scaling parameters
-    super.paint(this.getGraphics());
+    super.paint(g);
 
     // scale keyboard image to normal size
     backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
@@ -374,7 +375,7 @@ public class HP9830AMainframe extends HP9800Mainframe
 
   public void display(int line, int i)
   {
-     if(ioUnit.DEN && backgroundImage && this.getGraphics() != null) {
+     if(backgroundImage && this.getGraphics() != null) {
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x = 0, y = 0; // positioning is done by g2d.translate()
       int charCode = displayBuffer[0][i];
