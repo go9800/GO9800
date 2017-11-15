@@ -50,8 +50,9 @@
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
  * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
  * 24.10.2017 Rel. 2.10 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
- * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
- * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
+ * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
+ * 10.11.2017 Rel. 2.10 Added dynamic image scaling and processing
+ * 13.11.2017 Rel. 2.10 Added HP11265A Cassette Memory keyboard overlay
  */
 
 package io.HP9810A;
@@ -82,11 +83,15 @@ public class HP9810AMainframe extends HP9800Mainframe
   // the following constants are used in HP9810A only
   
   // ROM template size
-  static int TEMPLATE_X = 117; //100;
-  static int TEMPLATE_Y = 271; //269;
-  static int TEMPLATE_W = 147; //162;
-  static int TEMPLATE_H = 254; //260;
+  static int TEMPLATE1_X = 117;
+  static int TEMPLATE1_Y = 271;
+  static int TEMPLATE_W = 147;
+  static int TEMPLATE_H = 254;
   public double TEMPLATE_S = -0.025;
+  static int TEMPLATE2_X = 262;
+  static int TEMPLATE2_Y = 291;
+  static int TEMPLATE2_W = 645;
+  static int TEMPLATE2_H = 252;
   
   // click area for ROM block exchange
   static int ROM_X = 25;
@@ -156,7 +161,7 @@ public class HP9810AMainframe extends HP9800Mainframe
     romSelector.addRomButton("media/HP9810A/HP11267A_Block.jpg", "HP11267A");
 
     keyboardImageMedia = new ImageMedia("media/HP9810A/HP9810A_Keyboard.png");
-    displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display.jpg");
+    displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display.png");
     blockImageMedia = new ImageMedia("media/HP9810A/HP9810A_Module.png");
 
     ledLargeOn = new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg").getImage();
@@ -279,20 +284,19 @@ public class HP9810AMainframe extends HP9800Mainframe
   	// scale keyboard image to normal size
   	keyboardImage = keyboardImageMedia.getScaledImage((int)(KEYB_W * widthScale), (int)(KEYB_H * heightScale));
   	backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
-
-  	blockImage = blockImageMedia.getScaledImage((int)(BLOCK_W * widthScale), (int)(BLOCK_H * heightScale));
-  	g2dSaveTransform = g2d.getTransform();  // save current transformation, changed by ROM blocks
+  	displayImage = displayImageMedia.getScaledImage((int)(DISPLAY_W * widthScale), (int)(DISPLAY_H * heightScale));
 
   	if(!backgroundImage)  // dont draw modules and templates before keyboard is ready
   		return;
+  	
+  	// draw display area
+  	backgroundImage = g2d.drawImage(displayImage, x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W, DISPLAY_H, this);
 
   	blockImage = blockImageMedia.getScaledImage((int)(BLOCK_W * widthScale), (int)(BLOCK_H * heightScale));
-  	displayImage = displayImageMedia.getScaledImage((int)(DISPLAY_W * widthScale), (int)(DISPLAY_H * heightScale));
   	g2dSaveTransform = g2d.getTransform();  // save current transformation, changed by ROM blocks
 
   	// get images of ROM modules and template
   	MemoryBlock block = (MemoryBlock)config.memoryBlocks.get("Slot1");
-
 
   	if(block != null) {
   		// draw universal ROM module
@@ -311,7 +315,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   			g2d.shear(TEMPLATE_S, 0.);  // negative horizontal shear for correct perspective
   			templateImage = block.getUniTemplate((int)(TEMPLATE_W * widthScale), (int)(TEMPLATE_H * heightScale));  // first get scaled image
   			templateImage = block.getUniTemplate(1f, 50f);  // then get processed image, based on scaled image
-  			g2d.drawImage(templateImage, x + TEMPLATE_X, y + TEMPLATE_Y, TEMPLATE_W, TEMPLATE_H, this);
+  			g2d.drawImage(templateImage, x + TEMPLATE1_X, y + TEMPLATE1_Y, TEMPLATE_W, TEMPLATE_H, this);
 
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
   		}
@@ -330,6 +334,15 @@ public class HP9810AMainframe extends HP9800Mainframe
   			moduleImage = block.getUniModule(1.1f, 30f);  // get processed image, based on scaled image
   			g2d.drawImage(moduleImage, x + BLOCK2_X + 1, y + BLOCK2_Y + 1, MODULE_W, MODULE_H, this);
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  			
+  			if(block.getTitle().indexOf("CASSETTE_MEMORY") >= 0) {
+    			// draw ROM template with transparence
+    			templateImage = block.getUniTemplate((int)(TEMPLATE2_W * widthScale), (int)(TEMPLATE2_H * heightScale));  // first get scaled image
+    			templateImage = block.getUniTemplate(1f, 50f);  // then get processed image, based on scaled image
+    			g2d.drawImage(templateImage, x + TEMPLATE2_X, y + TEMPLATE2_Y, TEMPLATE2_W, TEMPLATE2_H, this);
+
+    			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  			}
   		}
   	}
 
@@ -346,11 +359,20 @@ public class HP9810AMainframe extends HP9800Mainframe
   			moduleImage = block.getUniModule(1.1f, 30f);  // get processed image, based on scaled image
   			g2d.drawImage(moduleImage, x + BLOCK3_X + 1, y + BLOCK3_Y + 1, MODULE_W, MODULE_H, this);
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  			
+  			if(block.getTitle().indexOf("CASSETTE_MEMORY") >= 0) {
+    			// draw ROM template with transparence
+    			templateImage = block.getUniTemplate((int)(TEMPLATE2_W * widthScale), (int)(TEMPLATE2_H * heightScale));  // first get scaled image
+    			templateImage = block.getUniTemplate(1f, 50f);  // then get processed image, based on scaled image
+    			g2d.drawImage(templateImage, x + TEMPLATE2_X, y + TEMPLATE2_Y, TEMPLATE2_W, TEMPLATE2_H, this);
+
+    			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  			}
   		}
   	}
 
-  	// draw display area
-  	g2d.drawImage(displayImage, x + DISPLAY_X, y + DISPLAY_Y, DISPLAY_W, DISPLAY_H, this);
+  	//if(!backgroundImage)
+  		//return;
 
   	// draw keyboard LEDs
   	displayLEDs(ioUnit.bus.display.getKeyLEDs());

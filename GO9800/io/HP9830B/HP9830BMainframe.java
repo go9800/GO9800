@@ -47,11 +47,13 @@
  * 17.07.2007 Rel. 1.20 Added use of keyCode Hashtable
  * 24.09.2007 Rel. 1.20 Changed display blanking control from fixed timer to instruction counter
  * 13.12.2007 Rel. 1.20 Don't release keyboard by mouseReleased() or keyReleased(). This is now done after 5ms by KeyboardInterface.run()   
+ * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
  */
 
 package io.HP9830B;
 
 import emu98.*;
+import io.ImageMedia;
 import io.HP9830A.HP9830AMainframe;
 
 public class HP9830BMainframe extends HP9830AMainframe
@@ -61,5 +63,6 @@ public class HP9830BMainframe extends HP9830AMainframe
   public HP9830BMainframe(Emulator emu)
   {
     super(emu, "HP9830B");
+    keyboardImageMedia = new ImageMedia("media/HP9830B/HP9830B_Keyboard.png");
   }
 }

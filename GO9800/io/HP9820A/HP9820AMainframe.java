@@ -262,17 +262,6 @@ public class HP9820AMainframe extends HP9800Mainframe
     }
   }
   
-/*  
-  public boolean imageUpdate(Image img, int infoflags, int x, int y, int w, int h) {
-  	super.imageUpdate(img, infoflags, x, y, w, h);
-  	// wait until keyboardImage is complete and size fields are valid
-  	if(img != keyboardImage)
-  		return(true);
-  	
-  	return((infoflags & (ImageObserver.ALLBITS | ImageObserver.WIDTH | ImageObserver.HEIGHT)) != (ImageObserver.ALLBITS | ImageObserver.WIDTH | ImageObserver.HEIGHT));
-  }
-*/
-  
   public void paint(Graphics g)
   {
   	AffineTransform g2dSaveTransform;

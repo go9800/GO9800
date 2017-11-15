@@ -51,6 +51,8 @@
  * 24.10.2017 Rel. 2.10 Added display of click areas, changed size ROM click area
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  * 05.11.2017 Rel. 2.10: Bugfix: Removed checking ioUnit.DEN from display() method
+ * 10.11.2017 Rel. 2.10 Added dynamic image scaling and processing
+ * 14.11.2017 Rel. 2.10 Added overlays for tape drive
  */
 
 package io.HP9830A;
@@ -175,6 +177,11 @@ public class HP9830AMainframe extends HP9800Mainframe
     KEYB_W = 1000;
     KEYB_H = 558;
     
+    DRIVE_X = 690;
+    DRIVE_Y = 17;
+    DRIVE_W = 291;
+    DRIVE_H = 193;
+    
     DISPLAY_X = 40;
     DISPLAY_Y = 25;
     DISPLAY_W = 635;
@@ -206,8 +213,9 @@ public class HP9830AMainframe extends HP9800Mainframe
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
 
-
-    keyboardImage = new ImageMedia("media/HP9830A/HP9830A_Keyboard.jpg").getImage();
+ 		keyboardImageMedia = new ImageMedia("media/HP9830A/HP9830A_Keyboard.png");
+ 		driveopenImageMedia = new ImageMedia("media/HP9830A/HP9830A_Drive_Open.png");
+ 		driveloadedImageMedia = new ImageMedia("media/HP9830A/HP9830A_Drive_Loaded.png");
     romSlots = new HP9830ROMslots(this);
 
     setSize();
@@ -299,17 +307,16 @@ public class HP9830AMainframe extends HP9800Mainframe
 
       if(keyCode == 0777) {
         // cassette OPEN
-        keyboardImage = new ImageMedia("media/HP9830A/HP9830A_Keyboard+Tape.jpg").getImage();
+      	tapedriveImage = driveopenImageMedia.getScaledImage((int)(DRIVE_W * widthScale), (int)(DRIVE_H * heightScale));
         repaint();
+        
         tapeLoaded = tapeDevice.openTapeFile();
-        if(tapeLoaded) {
-          keyboardImage = new ImageMedia("media/HP9830A/HP9830A_Keyboard+Cassette.jpg").getImage();
-          repaint();
-        } else {
-          keyboardImage = new ImageMedia("media/HP9830A/HP9830A_Keyboard.jpg").getImage();
-          repaint();
-          return;
-        }
+        if(tapeLoaded)
+        	tapedriveImage = driveloadedImageMedia.getScaledImage((int)(DRIVE_W * widthScale), (int)(DRIVE_H * heightScale));
+        else
+        	tapedriveImage = null;
+        
+        repaint();
         return;
       }
 
@@ -339,27 +346,32 @@ public class HP9830AMainframe extends HP9800Mainframe
 
   public void paint(Graphics g)
   {
-    int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
-    int x = 0, y = 0; // positioning is done by g2d.translate()
-    int charCode;
+  	int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
+  	int x = 0, y = 0; // positioning is done by g2d.translate()
+  	int charCode;
 
-    // normalize frame and get scaling parameters
-    super.paint(g);
+  	// normalize frame and get scaling parameters
+  	super.paint(g);
 
-    // scale keyboard image to normal size
-    backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
+  	// scale keyboard image to normal size
+  	keyboardImage = keyboardImageMedia.getScaledImage((int)(KEYB_W * widthScale), (int)(KEYB_H * heightScale));
+  	backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
 
-    if(backgroundImage) {
-      // draw display only not blanked 
-      if(ioUnit.dispCounter.running()) {
-        for(int i = 0; i < 32; i++) {
-          charCode = displayBuffer[0][i];
-          g2d.drawImage(ledMatrix[charCode], x + DISPLAY_X + i * (6 * LED_DOT_SIZE + 2), y + DISPLAY_Y, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE, this);
-        }
-      }
-      
-      displayKeyMatrix();
-    }
+  	if(!backgroundImage)
+  		return;
+
+  	if(tapedriveImage != null)
+  		g2d.drawImage(tapedriveImage, x + DRIVE_X, y +  DRIVE_Y, DRIVE_W, DRIVE_H, this);
+  		
+  	// draw display only not blanked 
+  	if(ioUnit.dispCounter.running()) {
+  		for(int i = 0; i < 32; i++) {
+  			charCode = displayBuffer[0][i];
+  			g2d.drawImage(ledMatrix[charCode], x + DISPLAY_X + i * (6 * LED_DOT_SIZE + 2), y + DISPLAY_Y, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE, this);
+  		}
+  	}
+
+  	displayKeyMatrix();
   }
 
   public void displayClickAreas()

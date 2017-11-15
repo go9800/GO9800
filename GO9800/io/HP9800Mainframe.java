@@ -49,9 +49,6 @@ package io;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.awt.image.RescaleOp;
 import java.awt.print.*;
 import java.util.*;
 import javax.sound.sampled.*;
@@ -70,6 +67,11 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 
   public int KEYB_W = 1000;
   public int KEYB_H = 578;
+  
+  public int DRIVE_X;
+  public int DRIVE_Y;
+  public int DRIVE_W;
+  public int DRIVE_H;
   
   public int DISPLAY_X = 100;
   public int DISPLAY_Y = 105;
@@ -124,7 +126,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 	public double widthScale = 1., heightScale = 1.;
 	
   protected ImageMedia keyboardImageMedia, displayImageMedia, blockImageMedia;
-	protected Image keyboardImage, displayImage, blockImage, moduleImage, templateImage;
+  protected ImageMedia driveopenImageMedia, driveloadedImageMedia;
+	protected Image keyboardImage, displayImage, blockImage, moduleImage, templateImage, tapedriveImage;
   protected Image ledLargeOn, ledLargeOff;
   protected Image ledSmallOn, ledSmallOff;
 
@@ -326,12 +329,13 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   
   public void update(Graphics g)
   {
-    paint(g);
-    
-    // avoid flickering
+    // avoid flickering when drawing resized window
+  	// also wait for image processing after ROM module change
   	try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) { }
+
+  	paint(g);
   }
   
   public void paint(Graphics g)

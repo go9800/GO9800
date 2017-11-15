@@ -62,20 +62,20 @@ public class HP9830ROMslots extends Frame
 
     romSelector = new ROMselector(this, hp9830);
     romSelector.addRomButton("media/HP9830A/HP11XXXX_Block.jpg", "HP11XXXX");
-    romSelector.addRomButton("media/HP9830A/HP11270B_Block.jpg", "HP11270B");
-    romSelector.addRomButton("media/HP9830A/HP11271B_Block.jpg", "HP11271B");
-    romSelector.addRomButton("media/HP9830A/HP11272B_Block.jpg", "HP11272B");
-    romSelector.addRomButton("media/HP9830A/HP11273B_Block.jpg", "HP11273B");
-    romSelector.addRomButton("media/HP9830A/HP11274B_Block.jpg", "HP11274B");
-    romSelector.addRomButton("media/HP9830A/HP11277B_Block.jpg", "HP11277B");
-    romSelector.addRomButton("media/HP9830A/HP11278B_Block.jpg", "HP11278B");
-    romSelector.addRomButton("media/HP9830A/HP11279B_Block.jpg", "HP11279B");
-    romSelector.addRomButton("media/HP9830A/HP11283B_Block.jpg", "HP11283B");
-    romSelector.addRomButton("media/HP9830A/HP11289B_Block.jpg", "HP11289B");
-    romSelector.addRomButton("media/HP9830A/HP11296B_Block.jpg", "HP11296B");
-    romSelector.addRomButton("media/HP9830A/INFOTEK_FB1_Block.jpg", "INFOTEK_FB1");
-    romSelector.addRomButton("media/HP9830A/INFOTEK_FB3_Block.jpg", "INFOTEK_FB3");
-    romSelector.addRomButton("media/HP9830A/INFOTEK_FB4_Block.jpg", "INFOTEK_FB4");
+    romSelector.addRomButton("media/HP9830A/HP11270B_Module.png", "HP11270B");
+    romSelector.addRomButton("media/HP9830A/HP11271B_Module.png", "HP11271B");
+    romSelector.addRomButton("media/HP9830A/HP11272B_Module.png", "HP11272B");
+    romSelector.addRomButton("media/HP9830A/HP11273B_Module.png", "HP11273B");
+    romSelector.addRomButton("media/HP9830A/HP11274B_Module.png", "HP11274B");
+    romSelector.addRomButton("media/HP9830A/HP11277B_Module.png", "HP11277B");
+    romSelector.addRomButton("media/HP9830A/HP11278B_Module.png", "HP11278B");
+    romSelector.addRomButton("media/HP9830A/HP11279B_Module.png", "HP11279B");
+    romSelector.addRomButton("media/HP9830A/HP11283B_Module.png", "HP11283B");
+    romSelector.addRomButton("media/HP9830A/HP11289B_Module.png", "HP11289B");
+    romSelector.addRomButton("media/HP9830A/HP11296B_Module.png", "HP11296B");
+    romSelector.addRomButton("media/HP9830A/INFOTEK_FB1_Module.png", "INFOTEK_FB1");
+    romSelector.addRomButton("media/HP9830A/INFOTEK_FB3_Module.png", "INFOTEK_FB3");
+    romSelector.addRomButton("media/HP9830A/INFOTEK_FB4_Module.png", "INFOTEK_FB4");
   }
   
    
@@ -141,7 +141,7 @@ public class HP9830ROMslots extends Frame
         block = (MemoryBlock)hp9830.config.memoryBlocks.get("Slot" + i);
 
         if(block != null) {
-          blockImage = block.getUniModule();
+          blockImage = block.getUniModule(200, 44);
           if(blockImage != null) {
             g.drawImage(blockImage, x+32, y + 50*i - 32, 200, blockImage.getHeight(this), this);
           }

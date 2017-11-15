@@ -74,12 +74,27 @@ public class MemoryBlock
     return(blockName);
   }
   
+  public String getTitle()
+  {
+    return(title);
+  }
+  
   public Image getModule()
   {
     if(moduleImageMedia == null) {
       moduleImageMedia = new ImageMedia(makeFileName("_Module_" + blockSlot + ".jpg"));
     }
       
+    return(moduleImageMedia.getImage());
+  }
+
+  // get scaled universal module graphics
+  public Image getUniModule()
+  {
+    if(moduleImageMedia == null) {
+      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"));
+   }
+
     return(moduleImageMedia.getImage());
   }
 

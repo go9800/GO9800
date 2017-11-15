@@ -54,10 +54,10 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   static final int MOTOR_CONTROL = 0x20; // =1 when motor is on
 
   // values for thread timer
-  static int WAIT_BYTE = 7;     // timer value for reading one byte
-  static int WAIT_INSERT = 200; // time value for insert card (matches length of motor start sound)
   static final int WAIT_CARD = 3000;  // time value for one complete card
   static final int WAIT_IDLE = 10000; // nothing to do
+  int WAIT_BYTE = 7;     // timer value for reading one byte
+  int WAIT_INSERT = 200; // time value for insert card (matches length of motor start sound)
 
   // asynchronous reading
   static final boolean asyncMode = true;
