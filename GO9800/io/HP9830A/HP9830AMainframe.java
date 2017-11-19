@@ -210,7 +210,7 @@ public class HP9830AMainframe extends HP9800Mainframe
     tapeDevice = new HP9865A(10, hp9865Interface);
     hp9865Interface.setDevice(tapeDevice); 
 
-    tapeDevice.setStatusFrame(this, 820, 70);
+    tapeDevice.setStatusFrame(this, 825, 50);
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
 

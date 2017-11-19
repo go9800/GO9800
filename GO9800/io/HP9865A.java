@@ -42,6 +42,7 @@
      * 20.03.2009 Rel. 1.40 Added synchronized(keyboardImage) before visualizing main window to avoid flickering
      * 09.02.2010 Rel. 1.42 Added stopping of HP9865Interface thread before unloading
      * 04.04.2010 Rel. 1.50 Class now inherited from IOdevice and completely reworked
+     * 19.11.2017 Rel. 2.10 Changed drawStatus() for Graphics2D with scaling from mainframe 
      */
 
     package io;
@@ -408,7 +409,7 @@
         g.drawImage(hp9865aImage, x, y, hp9865aImage.getWidth(this), hp9865aImage.getHeight(this), this);
       }
 
-      void drawStatus()
+      void drawStatusOld()
       {
         if(tapeCommand == prevCommand)
           return;
@@ -447,6 +448,53 @@
         }
         
         g.drawString(statusString, xStatus, yStatus);
+      }
+      
+      void drawStatus()
+      {
+      	Graphics2D g2d;
+      	
+        if(tapeCommand == prevCommand)
+          return;
+        
+        if(statusFrame == this)
+        	g2d = (Graphics2D)statusFrame.getGraphics();  // standalone HP9865A: get Graphics2D from current frame
+        else
+        	g2d = ioInterface.mainframe.getG2D(statusFrame.getGraphics());  // integrated HP9865A: get Graphics2D with scaling from mainframe
+        
+        Font font = new Font("Monospaced", Font.BOLD, 20);
+        g2d.setFont(font);
+
+        // overpaint previous status
+        g2d.setColor(new Color(67, 66, 55));
+        g2d.drawString(statusString, xStatus, yStatus);
+        
+        if(tapeCommand == STOP)
+          return;
+
+        if((tapeCommand & CONTROL ) != 0)
+          // search for control word
+          g2d.setColor(Color.YELLOW);
+        else {
+          if((tapeCommand & WRITE ) != 0)  
+            g2d.setColor(Color.RED);
+          else
+            g2d.setColor(Color.GREEN);
+        }
+        
+        if((tapeCommand & FAST) != 0) {
+          if((tapeCommand & REVERSE) != 0)
+            statusString = "<<";
+          else
+            statusString = ">>";
+        } else {
+          if((tapeCommand & REVERSE) != 0)
+            statusString = "<";
+          else 
+            statusString = ">";
+        }
+        
+        g2d.drawString(statusString, xStatus, yStatus);
       }
       
       public void setStatusFrame(Frame frame, int x, int y)

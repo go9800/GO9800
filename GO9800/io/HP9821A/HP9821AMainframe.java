@@ -73,6 +73,11 @@ public class HP9821AMainframe extends HP9820AMainframe
     KEYB_W = 1065;
     KEYB_H = 650;
     
+    DRIVE_X = 745;
+    DRIVE_Y = 125;
+    DRIVE_W = 295;
+    DRIVE_H = 109;
+    
     DISPLAY_X = 74;
     DISPLAY_Y = 133;
     DISPLAY_W = 75;
@@ -133,7 +138,7 @@ public class HP9821AMainframe extends HP9820AMainframe
     hp9865Interface = new HP9865Interface(Integer.valueOf(10), this);
     tapeDevice = new HP9865A(5, hp9865Interface);
     hp9865Interface.setDevice(tapeDevice); 
-    tapeDevice.setStatusFrame(this, 880, 177);
+    tapeDevice.setStatusFrame(this, 875, 165);
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
 
@@ -144,6 +149,8 @@ public class HP9821AMainframe extends HP9820AMainframe
     //romSelector.addRomButton("media/HP9821A/HP11223A_Block.jpg", "HP11223A");
     
     keyboardImageMedia = new ImageMedia("media/HP9821A/HP9821A_Keyboard.png");
+ 		driveopenImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Open.png");
+ 		driveloadedImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Loaded.png");
     blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png");
 
     setSize();
@@ -223,17 +230,16 @@ public class HP9821AMainframe extends HP9820AMainframe
 
       if(keyCode == 0776) {
         // cassette OPEN
-        keyboardImage = new ImageMedia("media/HP9821A/HP9821A_Keyboard+Tape.jpg").getImage();
+      	tapedriveImage = driveopenImageMedia.getScaledImage((int)(DRIVE_W * widthScale), (int)(DRIVE_H * heightScale));
         repaint();
+        
         tapeLoaded = tapeDevice.openTapeFile();
-        if(tapeLoaded) {
-          keyboardImage = new ImageMedia("media/HP9821A/HP9821A_Keyboard+Cassette.jpg").getImage();
-          repaint();
-        } else {
-          keyboardImage = new ImageMedia("media/HP9821A/HP9821A_Keyboard.jpg").getImage();
-          repaint();
-          return;
-        }
+        if(tapeLoaded)
+        	tapedriveImage = driveloadedImageMedia.getScaledImage((int)(DRIVE_W * widthScale), (int)(DRIVE_H * heightScale));
+        else
+        	tapedriveImage = null;
+        
+        repaint();
         return;
       }
 

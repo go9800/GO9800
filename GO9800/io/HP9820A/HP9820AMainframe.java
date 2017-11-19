@@ -279,6 +279,10 @@ public class HP9820AMainframe extends HP9800Mainframe
     if(!backgroundImage)  // dont draw modules and templates before keyboard is ready
     	return;
     
+    // draw tapedrive only in HP9821A
+  	if(tapedriveImage != null)
+  		g2d.drawImage(tapedriveImage, x + DRIVE_X, y +  DRIVE_Y, DRIVE_W, DRIVE_H, this);
+  		
     blockImage = blockImageMedia.getScaledImage((int)(BLOCK_W * widthScale), (int)(BLOCK_H * heightScale));
     g2dSaveTransform = g2d.getTransform();  // save current transformation, changed by ROM blocks
 

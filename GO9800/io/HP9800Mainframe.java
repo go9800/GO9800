@@ -241,16 +241,6 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     setResizable(true); // this changes size of insets
     setVisible(true);
     
-    /*
-    // wait until background image has been loaded
-    synchronized(keyboardImageMedia.getImage()) {
-      try
-      {
-      	keyboardImageMedia.getImage().wait(500);
-      } catch (InterruptedException e)
-      { }
-    }
-    */
     // fixed aspect ratio of keyboard
     aspectRatio = (double)KEYB_W / (double)KEYB_H;
 
