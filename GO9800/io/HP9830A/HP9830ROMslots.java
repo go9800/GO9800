@@ -39,6 +39,11 @@ public class HP9830ROMslots extends Frame
 {
   private static final long serialVersionUID = 1L;
 
+  static int MODULE_W = 200;
+  static int MODULE_H = 44;
+  static int SLOT_W = 265;
+  static int SLOT_H = 318;
+
   Image romSlotImage;
   HP9830AMainframe hp9830;
   ROMselector romSelector;
@@ -58,10 +63,10 @@ public class HP9830ROMslots extends Frame
     setBackground(Color.BLACK);
     setAlwaysOnTop(true);
     
-    romSlotImage = new ImageMedia("media/HP9830A/HP9830A_ROMslot.jpg").getImage();
+    romSlotImage = new ImageMedia("media/HP9830A/HP9830A_ROMslot.png").getScaledImage(SLOT_W, SLOT_H);
 
-    romSelector = new ROMselector(this, hp9830);
-    romSelector.addRomButton("media/HP9830A/HP11XXXX_Block.jpg", "HP11XXXX");
+    romSelector = new ROMselector(this, hp9830, MODULE_W, MODULE_H);
+    romSelector.addRomButton("media/HP9830A/HP11XXXX_Module.png", "HP11XXXX");
     romSelector.addRomButton("media/HP9830A/HP11270B_Module.png", "HP11270B");
     romSelector.addRomButton("media/HP9830A/HP11271B_Module.png", "HP11271B");
     romSelector.addRomButton("media/HP9830A/HP11272B_Module.png", "HP11272B");

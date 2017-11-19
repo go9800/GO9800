@@ -137,10 +137,10 @@ public class HP9821AMainframe extends HP9820AMainframe
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
 
-    romSelector.addRomButton("media/HP9821A/HP11XXXX_Block.jpg", "HP11XXXX");
-    romSelector.addRomButton("media/HP9821A/HP11220A_Block.jpg", "HP11220A");
-    romSelector.addRomButton("media/HP9821A/HP11221A_Block.jpg", "HP11221A");
-    romSelector.addRomButton("media/HP9821A/HP11222A_Block.jpg", "HP11222A");
+    romSelector.addRomButton("media/HP9821A/HP11XXXX_Slot.png", "HP11XXXX");
+    romSelector.addRomButton("media/HP9821A/HP11220A_Module.png", "HP11220A");
+    romSelector.addRomButton("media/HP9821A/HP11221A_Module.png", "HP11221A");
+    romSelector.addRomButton("media/HP9821A/HP11222A_Module.png", "HP11222A");
     //romSelector.addRomButton("media/HP9821A/HP11223A_Block.jpg", "HP11223A");
     
     keyboardImageMedia = new ImageMedia("media/HP9821A/HP9821A_Keyboard.png");

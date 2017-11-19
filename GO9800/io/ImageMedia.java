@@ -138,7 +138,7 @@ public class ImageMedia
   			
   			// wait for processing to finish
   			try {
-					Thread.sleep(height / 2);
+					Thread.sleep(width / 2);
 				} catch (InterruptedException e) { }
   			
     		imageList.add(processedImage);

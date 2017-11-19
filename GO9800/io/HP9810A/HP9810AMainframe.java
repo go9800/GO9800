@@ -53,6 +53,7 @@
  * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
  * 10.11.2017 Rel. 2.10 Added dynamic image scaling and processing
  * 13.11.2017 Rel. 2.10 Added HP11265A Cassette Memory keyboard overlay
+ * 18.11.2017 Rel. 2.10 Bugfix: display(), displayLEDs(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
  */
 
 package io.HP9810A;
@@ -110,21 +111,19 @@ public class HP9810AMainframe extends HP9800Mainframe
   static int INSTRUCTIONS_H = 30;
 
   // Indicator LEDs
-  static int LED1_X = 136;
-  static int LED2_X = 178;
-  static int LED3_X = 219;
-  static int LED_SMALL_Y = 279;
-  static int LED_SMALL_WH = 11;
+  static int LED1_X = 134;
+  static int LED2_X = 175;
+  static int LED3_X = 217;
 
   static int STATUS_X = 342;
-  static int FLOAT_X = 424;
-  static int FIX_X = 467;
+  static int FLOAT_X = 426;
+  static int FIX_X = 468;
   static int RUN_X = 552;
   static int PRGM_X = 595;
   static int KEYLOG_X = 679;
-  static int CARD_X = 847;
-  static int LED_LARGE_Y = 274;
-  static int LED_LARGE_WH = 18;
+  static int CARD_X = 848;
+  static int LED_LAMP_Y = 274;
+  static int LED_WH = 18;
   
   public static int LED_SEGMENT_SIZE = 4;
 
@@ -148,27 +147,27 @@ public class HP9810AMainframe extends HP9800Mainframe
     // HP9810A keyboard has in fact no select code
     ioUnit.bus.keyboard = new HP9810KeyboardInterface(16, this);
 
-    romSelector.addRomButton("media/HP9810A/HP11XXXX_Block.jpg", "HP11XXXX");
-    romSelector.addRomButton("media/HP9810A/HP11210A_Block.jpg", "HP11210A");
-    romSelector.addRomButton("media/HP9810A/HP11211A_Block.jpg", "HP11211A");
-    romSelector.addRomButton("media/HP9810A/HP11213A_Block.jpg", "HP11213A");
-    romSelector.addRomButton("media/HP9810A/HP11214A_Block.jpg", "HP11214A");
-    romSelector.addRomButton("media/HP9810A/HP11215A_Block.jpg", "HP11215A");
-    romSelector.addRomButton("media/HP9810A/HP11252A_Block.jpg", "HP11252A");
-    romSelector.addRomButton("media/HP9810A/HP11261A_Block.jpg", "HP11261A");
-    romSelector.addRomButton("media/HP9810A/HP11262A_Block.jpg", "HP11262A");
-    romSelector.addRomButton("media/HP9810A/HP11266A_Block.jpg", "HP11266A");
-    romSelector.addRomButton("media/HP9810A/HP11267A_Block.jpg", "HP11267A");
+    romSelector.addRomButton("media/HP9810A/HP11XXXX_Slot.png", "HP11XXXX");
+    romSelector.addRomButton("media/HP9810A/HP11210A_Module.png", "HP11210A");
+    romSelector.addRomButton("media/HP9810A/HP11211A_Module.png", "HP11211A");
+    romSelector.addRomButton("media/HP9810A/HP11213A_Module.png", "HP11213A");
+    romSelector.addRomButton("media/HP9810A/HP11214A_Module.png", "HP11214A");
+    romSelector.addRomButton("media/HP9810A/HP11215A_Module.png", "HP11215A");
+    romSelector.addRomButton("media/HP9810A/HP11252A_Module.png", "HP11252A");
+    romSelector.addRomButton("media/HP9810A/HP11261A_Module.png", "HP11261A");
+    romSelector.addRomButton("media/HP9810A/HP11262A_Module.png", "HP11262A");
+    romSelector.addRomButton("media/HP9810A/HP11266A_Module.png", "HP11266A");
+    romSelector.addRomButton("media/HP9810A/HP11267A_Module.png", "HP11267A");
 
     keyboardImageMedia = new ImageMedia("media/HP9810A/HP9810A_Keyboard.png");
     displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display.png");
     blockImageMedia = new ImageMedia("media/HP9810A/HP9810A_Module.png");
 
-    ledLargeOn = new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg").getImage();
-    ledLargeOff = new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage();
-    ledSmallOn = new ImageMedia("media/HP9810A/HP9810A_LED_Small_On.jpg").getImage();
-    ledSmallOff = new ImageMedia("media/HP9810A/HP9810A_LED_Small_Off.jpg").getImage();
-
+    ledOnImageMedia = new ImageMedia("media/HP9810A/HP9810A_LED_On.png");
+    ledOffImageMedia = new ImageMedia("media/HP9810A/HP9810A_LED_Off.png");
+    ledSmallOnImageMedia = new ImageMedia("media/HP9810A/HP9810A_LED_Small_On.png");
+    ledSmallOffImageMedia = new ImageMedia("media/HP9810A/HP9810A_LED_Small_Off.png");
+    
     setSize();
     System.out.println("HP9810 Mainframe loaded.");
   }
@@ -280,7 +279,7 @@ public class HP9810AMainframe extends HP9800Mainframe
 
   	// normalize frame and get scaling parameters
   	super.paint(g);
-
+  	
   	// scale keyboard image to normal size
   	keyboardImage = keyboardImageMedia.getScaledImage((int)(KEYB_W * widthScale), (int)(KEYB_H * heightScale));
   	backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
@@ -370,31 +369,31 @@ public class HP9810AMainframe extends HP9800Mainframe
   			}
   		}
   	}
-
-  	//if(!backgroundImage)
-  		//return;
-
+  	
   	// draw keyboard LEDs
-  	displayLEDs(ioUnit.bus.display.getKeyLEDs());
-
+  	displayLEDs(g2d, ioUnit.bus.display.getKeyLEDs());
+ 	
   	// draw display only not blanked 
   	if(ioUnit.dispCounter.running()) {
   		for(j = 0; j < 3; j++) {
   			for(i = 0; i < 15; i++) {
-  				display(j, i);
+  				display(g2d, j, i);
   			}
   		}
   	}
 
-  	displayPrintOutput();
-  	displayKeyMatrix();
+  	displayPrintOutput(g2d);
+  	displayKeyMatrix(g2d);
   }
   
-  public void displayClickAreas()
+  public void displayClickAreas(Graphics2D g2d)
   {
     float[] dashArray = {4f, 4f};
     int i;
     
+    if(g2d == null)
+    	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
     BasicStroke stroke = new BasicStroke(1, 0, 0, 1f, dashArray, 0f);
     g2d.setStroke(stroke);
     g2d.setColor(Color.white);
@@ -407,79 +406,92 @@ public class HP9810AMainframe extends HP9800Mainframe
     g2d.drawRect(INSTRUCTIONS_X, INSTRUCTIONS_Y, INSTRUCTIONS_W, INSTRUCTIONS_H);
   }
 
-  public void displayLEDs(int keyLEDs)
+  public void displayLEDs(Graphics2D g2d, int keyLEDs)
   {
     int x = 0, y = 0; // positioning is done by g2d.translate()
+    
+    if(g2d == null)
+    	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
 
+    ledOn = ledOnImageMedia.getScaledImage((int)(LED_WH * widthScale), (int)(LED_WH * heightScale));
+    ledOff = ledOffImageMedia.getScaledImage((int)(LED_WH * widthScale), (int)(LED_WH * heightScale));
+    
     // STATUS
     if((keyLEDs & 0x10) != 0) {
-      g2d.drawImage(ledLargeOn, x + STATUS_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOn, x + STATUS_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     } else {
-      g2d.drawImage(ledLargeOff, x + STATUS_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOff, x + STATUS_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     }
 
     // FLOAT / FIX
     if((keyLEDs & 0x80) != 0) {
-      g2d.drawImage(ledLargeOn, x + FLOAT_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
-      g2d.drawImage(ledLargeOff, x + FIX_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOn, x + FLOAT_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
+      g2d.drawImage(ledOff, x + FIX_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     } else {
-      g2d.drawImage(ledLargeOff, x + FLOAT_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
-      g2d.drawImage(ledLargeOn, x + FIX_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOff, x + FLOAT_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
+      g2d.drawImage(ledOn, x + FIX_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     }
 
     // RUN / PRGM
     if((keyLEDs & 0x02) != 0) {
-      g2d.drawImage(ledLargeOn, x + RUN_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
-      g2d.drawImage(ledLargeOff, x + PRGM_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOn, x + RUN_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
+      g2d.drawImage(ledOff, x + PRGM_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     } else {
-      g2d.drawImage(ledLargeOff, x + RUN_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
-      g2d.drawImage(ledLargeOn, x + PRGM_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOff, x + RUN_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
+      g2d.drawImage(ledOn, x + PRGM_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     }
     
     // KEY LOG
     if((keyLEDs & 0x04) != 0) {
-      g2d.drawImage(ledLargeOn, x + KEYLOG_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOn, x + KEYLOG_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     } else {
-      g2d.drawImage(ledLargeOff, x + KEYLOG_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOff, x + KEYLOG_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     }
     
     // INSERT CARD
     if((keyLEDs & 0x01) != 0) {
-      g2d.drawImage(ledLargeOn, x + CARD_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOn, x + CARD_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     } else {
-      g2d.drawImage(ledLargeOff, x + CARD_X, y + LED_LARGE_Y, LED_LARGE_WH, LED_LARGE_WH, this);
+      g2d.drawImage(ledOff, x + CARD_X, y + LED_LAMP_Y, LED_WH, LED_WH, this);
     }
     
     // check if ROM template is present
-     if(((MemoryBlock)config.memoryBlocks.get("Slot1")).getTemplate() == null) {
+     if(((MemoryBlock)config.memoryBlocks.get("Slot1")).getUniTemplate() == null) {
       if((keyLEDs & 0x20) != 0) {
-        g2d.drawImage(ledLargeOn, x + LED1_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
+        g2d.drawImage(ledOn, x + LED1_X - 1, y + LED_LAMP_Y, LED_WH - 1, LED_WH - 1, this);
       }
 
       if((keyLEDs & 0x40) != 0) {
-        g2d.drawImage(ledLargeOn, x + LED2_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
+        g2d.drawImage(ledOn, x + LED2_X - 1, y + LED_LAMP_Y, LED_WH - 1, LED_WH - 1, this);
       }
 
       if((keyLEDs & 0x08) != 0) {
-        g2d.drawImage(ledLargeOn, x + LED3_X - 3, y + LED_LARGE_Y + 2, LED_LARGE_WH, LED_LARGE_WH, this);
+        g2d.drawImage(ledOn, x + LED3_X - 1, y + LED_LAMP_Y, LED_WH - 1, LED_WH - 1, this);
       }
     } else {
+      ledOn = ledSmallOnImageMedia.getScaledImage((int)(LED_WH * widthScale), (int)(LED_WH * heightScale));
+      ledOff = ledSmallOffImageMedia.getScaledImage((int)(LED_WH * widthScale), (int)(LED_WH * heightScale));
+
       // LED 1
-      g2d.drawImage((keyLEDs & 0x20) != 0 ? ledSmallOn : ledSmallOff, x + LED1_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
+      //g2d.drawImage((keyLEDs & 0x20) != 0 ? ledOn : ledOff, x + LED1_X, y + LED_LAMP_Y + 1, LED_WH - 1, LED_WH - 1, this);
+      g2d.drawImage((keyLEDs & 0x20) != 0 ? ledOn : ledOff, x + LED1_X + 2, y + LED_LAMP_Y + 4, LED_WH - 7, LED_WH - 7, this);
 
       // LED 2
-      g2d.drawImage((keyLEDs & 0x40) != 0 ? ledSmallOn : ledSmallOff, x + LED2_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
+      g2d.drawImage((keyLEDs & 0x40) != 0 ? ledOn : ledOff, x + LED2_X + 2, y + LED_LAMP_Y + 4, LED_WH - 7, LED_WH - 7, this);
 
       // LED 3
-      g2d.drawImage((keyLEDs & 0x08) != 0 ? ledSmallOn : ledSmallOff, x + LED3_X, y + LED_SMALL_Y, LED_SMALL_WH, LED_SMALL_WH, this);
+      g2d.drawImage((keyLEDs & 0x08) != 0 ? ledOn : ledOff, x + LED3_X + 2, y + LED_LAMP_Y + 4, LED_WH - 7, LED_WH - 7, this);
     }
   }
   
-  public void display(int reg, int i)
+  public void display(Graphics2D g2d, int reg, int i)
   {
     int x = 0, y = 0; // positioning is done by g2d.translate()
-
+    
     if(backgroundImage && this.getGraphics() != null) {
+      if(g2d == null)
+      	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x1, y1, y2, segments;
 

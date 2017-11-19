@@ -44,6 +44,7 @@
  * 24.10.2017 Rel. 2.10 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
+ * 18.11.2017 Rel. 2.10 Bugfix: display(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
  */
 
 package io.HP9820A;
@@ -149,11 +150,11 @@ public class HP9820AMainframe extends HP9800Mainframe
     // create card reader
     ioUnit.bus.cardReader = new HP9800MagneticCardReaderInterface(this);
 
-    romSelector.addRomButton("media/HP9820A/HP11XXXX_Block.jpg", "HP11XXXX");
-    romSelector.addRomButton("media/HP9820A/HP11220A_Block.jpg", "HP11220A");
-    romSelector.addRomButton("media/HP9820A/HP11221A_Block.jpg", "HP11221A");
-    romSelector.addRomButton("media/HP9820A/HP11222A_Block.jpg", "HP11222A");
-    romSelector.addRomButton("media/HP9820A/HP11223A_Block.jpg", "HP11223A");
+    romSelector.addRomButton("media/HP9820A/HP11XXXX_Slot.png", "HP11XXXX");
+    romSelector.addRomButton("media/HP9820A/HP11220A_Module.png", "HP11220A");
+    romSelector.addRomButton("media/HP9820A/HP11221A_Module.png", "HP11221A");
+    romSelector.addRomButton("media/HP9820A/HP11222A_Module.png", "HP11222A");
+    romSelector.addRomButton("media/HP9820A/HP11223A_Module.png", "HP11223A");
 
     keyboardImageMedia = new ImageMedia("media/HP9820A/HP9820A_Keyboard.png");
     blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png");
@@ -363,20 +364,23 @@ public class HP9820AMainframe extends HP9800Mainframe
   	if(ioUnit.dispCounter.running()) {
   		for(i = 0; i < 5; i++) {
   			for(j = 0; j < 16; j++) {
-  				display(i, j);
+  				display(g2d, i, j);
   			}
   		}
   	}
 
-  	displayPrintOutput();
-  	displayKeyMatrix();
+  	displayPrintOutput(g2d);
+  	displayKeyMatrix(g2d);
   }
 
-  public void displayClickAreas()
+  public void displayClickAreas(Graphics2D g2d)
   {
     float[] dashArray = {4f, 4f};
     int i;
     
+    if(g2d == null)
+     	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
     BasicStroke stroke = new BasicStroke(1, 0, 0, 1f, dashArray, 0f);
     g2d.setStroke(stroke);
     g2d.setColor(Color.white);
@@ -392,9 +396,12 @@ public class HP9820AMainframe extends HP9800Mainframe
     g2d.drawRect(INSTRUCTIONS_X, INSTRUCTIONS_Y, INSTRUCTIONS_W, INSTRUCTIONS_H);
   }
 
-  public void display(int col, int chr)
+  public void display(Graphics2D g2d, int col, int chr)
   {
     if(backgroundImage && this.getGraphics() != null) {
+      if(g2d == null)
+      	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x = DISPLAY_X + LED_X + chr * (6 * LED_DOT_SIZE + 2)  + col * LED_DOT_SIZE;
       int y = DISPLAY_Y + LED_Y;

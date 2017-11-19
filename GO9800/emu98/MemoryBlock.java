@@ -88,7 +88,7 @@ public class MemoryBlock
     return(moduleImageMedia.getImage());
   }
 
-  // get scaled universal module graphics
+  // get universal module graphics, scaled
   public Image getUniModule()
   {
     if(moduleImageMedia == null) {
@@ -98,7 +98,7 @@ public class MemoryBlock
     return(moduleImageMedia.getImage());
   }
 
-  // get scaled universal module graphics
+  // get universal module graphics, scaled
   public Image getUniModule(int width, int height)
   {
     if(moduleImageMedia == null) {
@@ -108,7 +108,7 @@ public class MemoryBlock
     return(moduleImageMedia.getScaledImage(width, height));
   }
 
-  // get processed universal module graphics
+  // get universal module graphics, processed
   public Image getUniModule(float factor, float offset)
   {
     if(moduleImageMedia == null) {
@@ -118,7 +118,17 @@ public class MemoryBlock
     return(moduleImageMedia.getProcessedImage(factor, offset));
   }
 
-  // get scaled universal template graphics
+  // get universal template graphics
+  public Image getUniTemplate()
+  {
+    if(templateImageMedia == null) {
+      templateImageMedia = new ImageMedia(makeFileName("_Template.png"));
+    }
+    
+    return(templateImageMedia.getImage());
+  }
+  
+  // get universal template graphics, scaled
   public Image getUniTemplate(int width, int height)
   {
     if(templateImageMedia == null) {
@@ -128,7 +138,7 @@ public class MemoryBlock
     return(templateImageMedia.getScaledImage(width, height));
   }
   
-  // get processed universal template graphics
+  // get universal template graphics, processed
   public Image getUniTemplate(float factor, float offset)
   {
     if(templateImageMedia == null) {
@@ -147,6 +157,7 @@ public class MemoryBlock
     return(templateImageMedia.getImage());
   }
   
+  // get instructions page
   public Image getInstructions()
   {
     if(instructionsVector.size() == 0)
@@ -157,6 +168,18 @@ public class MemoryBlock
     return(nextInstructions());
   }
   
+  // get instructions page, scaled
+  public Image getInstructions(int width, int height)
+  {
+    if(instructionsVector.size() == 0)
+      return(null);
+    
+    instrIndex = 0;
+    
+    return(nextInstructions(width, height));
+  }
+  
+  // get instructions page
   public Image nextInstructions()
   {
     if(instructionsVector.size() == 0)
@@ -169,6 +192,26 @@ public class MemoryBlock
       instrIndex = 0;
 
     return(instructionsImageMedia.getImage());
+  }
+  
+  // get instructions page, scaled
+  public Image nextInstructions(int width, int height)
+  {
+    if(instructionsVector.size() == 0)
+      return(null);
+    
+    String fileName = "media/" + machineName + "/" + (String)instructionsVector.elementAt(instrIndex);
+    instructionsImageMedia = new ImageMedia(fileName);
+    
+    if(++instrIndex >= instructionsVector.size())
+      instrIndex = 0;
+    
+    // scale image proportional
+    height -= 100;
+    while(instructionsImageMedia.getImage().getWidth(null) <= 0);
+    width = (instructionsImageMedia.getImage().getWidth(null) * height) / instructionsImageMedia.getImage().getHeight(null);
+
+    return(instructionsImageMedia.getScaledImage(width, height));
   }
   
   public int getAddress()

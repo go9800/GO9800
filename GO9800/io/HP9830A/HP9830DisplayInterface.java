@@ -80,7 +80,7 @@ public class HP9830DisplayInterface extends IOinterface implements DisplayInterf
     for(int j = 0; j < 32; j++)
     {
       displayBuffer[0][j] = ' ';
-      mainframe.display(0, j); // blank display
+      mainframe.display(null, 0, j); // blank display
     }
 
     /* do NOT repaint mainframe as this may change g2d
@@ -118,8 +118,8 @@ public class HP9830DisplayInterface extends IOinterface implements DisplayInterf
           displayBuffer[0][pos] = c1;
           displayBuffer[0][pos+16] = c2;
 
-          mainframe.display(0, pos);
-          mainframe.display(0, pos+16);
+          mainframe.display(null, 0, pos);
+          mainframe.display(null, 0, pos+16);
         }
 
         // with beginning of display output clear SRQ flag 

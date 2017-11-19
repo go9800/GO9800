@@ -43,6 +43,7 @@
  * 02.11.2017 Rel. 2.10: Added method imageProcessing() used to draw ROM modules and templates
  * 02.11.2017 Rel. 2.10: Changed drawing of ROM modules and templates using imageProcessing() and RGBA images with transparency
  * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
+ * 18.11.2017 Rel. 2.10 Bugfix: displayPrintOutput(), displayKeyMatrix(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
  */
 
 package io;
@@ -127,9 +128,9 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 	
   protected ImageMedia keyboardImageMedia, displayImageMedia, blockImageMedia;
   protected ImageMedia driveopenImageMedia, driveloadedImageMedia;
+  protected ImageMedia ledOnImageMedia, ledOffImageMedia, ledSmallOnImageMedia, ledSmallOffImageMedia;
 	protected Image keyboardImage, displayImage, blockImage, moduleImage, templateImage, tapedriveImage;
-  protected Image ledLargeOn, ledLargeOff;
-  protected Image ledSmallOn, ledSmallOff;
+	protected Image ledOn, ledOff;
 
   protected Color ledRed, ledBack, paperWhite, paperGray;
   private SoundMedia fanSound, printSound, paperSound;
@@ -203,7 +204,6 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", false);
     fanSound.loop();
 
-    romSelector = new ROMselector(this, this);
     instructionsWindow = new InstructionsWindow(this);
     instructionsWindow.setSize(860, 800);
     ledRed = new Color(255, 120, 80);
@@ -213,6 +213,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     setLocation(0, 100);
     
     if(!machine.startsWith("HP9830")) {
+      romSelector = new ROMselector(this, this, BLOCK_W, BLOCK_H - 8);
       printSound = new SoundMedia("media/HP9810A/HP9810A_PRINT_LINE.wav", false);
       paperSound = new SoundMedia("media/HP9810A/HP9810A_PAPER.wav", true);
       paperWhite = new Color(230, 230, 230);
@@ -341,20 +342,29 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public void paint(Graphics g)
   {
   	super.paint(g);
-  	g2d = (Graphics2D)g.create();
   	normalizeSize();  // normalize aspect ratio and get scaling factors
-  	
-  	g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
-  	g2d.scale(widthScale, heightScale);  // scale graphics to required size
-  	
-  	// enable antialiasing for higher quality of scaled graphics
-    g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+  	g2d = getG2D(g);
+  }
+  
+  public Graphics2D getG2D(Graphics g)
+  {
+  	Graphics2D g2d = (Graphics2D)g;
+
+  	if(g2d != null) {
+  		g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
+  		g2d.scale(widthScale, heightScale);  // scale graphics to required size
+
+  		// enable antialiasing for higher quality of scaled graphics
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+  	}
+
+  	return(g2d);
   }
 
-  public void displayLEDs(int keyLEDs)
+  public void displayLEDs(Graphics2D g2d, int keyLEDs)
   {}
   
-  public void display(int reg, int i)
+  public void display(Graphics2D g2d, int reg, int i)
   {}
 
   public void keyPressed(KeyEvent event)
@@ -452,7 +462,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
         case KeyEvent.VK_PAGE_UP:
           // paper page up
           if(--page < 0) page = 0;
-          displayPrintOutput();
+          displayPrintOutput(null);
           break;
 
         case KeyEvent.VK_PAGE_DOWN:
@@ -463,7 +473,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
             repaint();
           }
           else
-            displayPrintOutput();
+            displayPrintOutput(null);
           break;
 
         case KeyEvent.VK_DELETE:
@@ -567,7 +577,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       printBuffer.addElement(lineBuffer);
       lineBuffer = new byte[16];
 
-      displayPrintOutput();
+      displayPrintOutput(null);
 
       if(++dotLine == 10) {
         dotLine = 0;
@@ -625,7 +635,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       } catch(InterruptedException e) { }
       
       lineBuffer = new byte[16];
-      displayPrintOutput();
+      displayPrintOutput(null);
     }
   }
   
@@ -685,7 +695,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   }
 
   
-  public void displayPrintOutput()
+  public void displayPrintOutput(Graphics2D g2d)
   {
     byte[] lineBuffer;
     int dotRow;
@@ -694,9 +704,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     if(numLines == 0)
       return;
     
-    Graphics g = getGraphics();
-    if(g == null)
-      return;
+    if(g2d == null)
+    	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
     
     int x = 0, y = 0; // positioning is done by g2d.translate()
     int maxLine = numLines - page * PAPER_HEIGHT;
@@ -721,10 +730,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
         for(n = 4; n >= 0; n--) {
           if((dotRow & 1) != 0) {
             xd = x + 7 * j + n;
-            if(heightScale < 10.2)
               g2d.drawLine(xd, y, xd, y);
-            else
-            	g2d.fillOval(xd, y, 1, 1);
           }
 
           dotRow >>= 1;
@@ -740,7 +746,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     g2d.fillRect(x, y, PAPER_WIDTH, 6);
   }
   
-  public void displayKeyMatrix()
+  public void displayKeyMatrix(Graphics2D g2d)
   {
     float[] dashArray = {2f, 2f};
     int keyCode;
@@ -749,7 +755,10 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     
     if(!showKeycode)
       return;
-    
+   
+    if(g2d == null)
+    	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
     BasicStroke stroke = new BasicStroke(1, 0, 0, 1f, dashArray, 0f);
     g2d.setStroke(stroke);
 
@@ -785,10 +794,10 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     }
     
     // draw model specific click areas
-    displayClickAreas();
+    displayClickAreas(g2d);
   }
   
-  public void displayClickAreas()
+  public void displayClickAreas(Graphics2D g2d)
   {
   }
 }

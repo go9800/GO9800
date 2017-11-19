@@ -53,6 +53,7 @@
  * 05.11.2017 Rel. 2.10: Bugfix: Removed checking ioUnit.DEN from display() method
  * 10.11.2017 Rel. 2.10 Added dynamic image scaling and processing
  * 14.11.2017 Rel. 2.10 Added overlays for tape drive
+ * 18.11.2017 Rel. 2.10 Bugfix: display(), displayLEDs(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
  */
 
 package io.HP9830A;
@@ -371,13 +372,16 @@ public class HP9830AMainframe extends HP9800Mainframe
   		}
   	}
 
-  	displayKeyMatrix();
+  	displayKeyMatrix(g2d);
   }
 
-  public void displayClickAreas()
+  public void displayClickAreas(Graphics2D g2d)
   {
     float[] dashArray = {4f, 4f};
     
+    if(g2d == null)
+     	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
     BasicStroke stroke = new BasicStroke(1, 0, 0, 1f, dashArray, 0f);
     g2d.setStroke(stroke);
     g2d.setColor(Color.white);
@@ -385,9 +389,12 @@ public class HP9830AMainframe extends HP9800Mainframe
    	g2d.drawRect(ROM_X, ROM_Y, ROM_W, ROM_H);
   }
 
-  public void display(int line, int i)
+  public void display(Graphics2D g2d, int line, int i)
   {
      if(backgroundImage && this.getGraphics() != null) {
+       if(g2d == null)
+       	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x = 0, y = 0; // positioning is done by g2d.translate()
       int charCode = displayBuffer[0][i];

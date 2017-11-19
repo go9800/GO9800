@@ -42,6 +42,7 @@ import io.HP9800Mainframe;
 
 public class HP9810DisplayInterface extends IOinterface implements DisplayInterface
 {
+	HP9800Mainframe mainframe;
   int[][] displayBuffer;
   int keyLEDs = 0;
   boolean equal;  // false if display contents has changed
@@ -49,6 +50,7 @@ public class HP9810DisplayInterface extends IOinterface implements DisplayInterf
   public HP9810DisplayInterface(HP9800Mainframe hp9800Mainframe)
   {
     super(0, hp9800Mainframe);
+    this.mainframe = hp9800Mainframe;
 
     displayBuffer = new int[3][16];
     
@@ -78,7 +80,7 @@ public class HP9810DisplayInterface extends IOinterface implements DisplayInterf
     for(int i = 0; i < 3; i++)
       for(int j = 0; j < 15; j++) {
         displayBuffer[i][j] = 0;
-        mainframe.display(i, j);
+        mainframe.display(null, i, j);
       }
   }
 
@@ -104,7 +106,7 @@ public class HP9810DisplayInterface extends IOinterface implements DisplayInterf
         // output only if a LED has changed
         if(segments != keyLEDs) {
           keyLEDs = segments;
-          mainframe.displayLEDs(keyLEDs);
+          mainframe.displayLEDs(null, keyLEDs);
         }
 
         return(false);
@@ -124,7 +126,7 @@ public class HP9810DisplayInterface extends IOinterface implements DisplayInterf
 
         if(!equal) {
           displayBuffer[reg][pos] = segments;
-          mainframe.display(reg, pos);
+          mainframe.display(null, reg, pos);
         }
 
         // with beginning of display output clear SRQ flag 

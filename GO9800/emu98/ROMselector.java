@@ -50,6 +50,7 @@ public class ROMselector extends JDialog implements ActionListener
   private JScrollPane romScrollPane = null;
   private JPanel romPanel = null;
   private JButton romButton = null;
+  private int moduleWidth, moduleHeight;
   
   private HP9800Mainframe mainframe;
   private Frame owner;
@@ -59,10 +60,12 @@ public class ROMselector extends JDialog implements ActionListener
   /**
    * @param owner
    */
-  public ROMselector(Frame owner, HP9800Mainframe hp9800Mainframe)
+  public ROMselector(Frame owner, HP9800Mainframe hp9800Mainframe, int w, int h)
   {
     super(owner);
     this.owner = owner;
+    moduleWidth = w;
+    moduleHeight = h;
     mainframe = hp9800Mainframe;
     initialize();
   }
@@ -154,8 +157,8 @@ public class ROMselector extends JDialog implements ActionListener
   public void addRomButton(String imageName, String actionCommand)
   {
     romButton = new JButton();
-    romButton.setIcon(new ImageIcon(new ImageMedia(imageName).getScaledImage(200, 44)));
-    romButton.setPreferredSize(new Dimension(200, 58));
+    romButton.setIcon(new ImageIcon(new ImageMedia(imageName).getScaledImage((int)(1.2 * moduleWidth), (int)(1.2 * moduleHeight))));
+    romButton.setPreferredSize(new Dimension(moduleWidth + 10, moduleHeight + 10));
     romButton.setBackground(Color.black);
     romPanel.add(romButton, null);
     romButton.setActionCommand(actionCommand);
