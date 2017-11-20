@@ -505,13 +505,13 @@ public class Configuration
 
             // read modifier keys
             if(tokenline.hasMoreTokens()) {
-              modifier = tokenline.nextToken().toUpperCase();
+              modifier = tokenline.nextToken().toLowerCase();
               if(modifier.charAt(0) == ';')
                 modifier = "";
             }
             else
               modifier = "";
-
+            
             hostKeyCodes.put(Integer.toString(scanCode) + modifier, Integer.toOctalString(keyCode));
 
             keyString = Integer.toString(scanCode);
