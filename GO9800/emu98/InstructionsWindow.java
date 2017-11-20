@@ -111,7 +111,6 @@ public class InstructionsWindow extends JDialog implements ActionListener
       setTitle(romBlock.getName() + " User Instructions");
       setVisible(true);
 
-      /*
       Dimension s = Toolkit.getDefaultToolkit().getScreenSize();
       s.height -= 100;
       Dimension d = this.getSize();
@@ -119,7 +118,6 @@ public class InstructionsWindow extends JDialog implements ActionListener
         d.height = s.height;
         this.setSize(d);
       }
-      */
       
       instructionsImage = romBlock.getInstructions(getWidth(), getHeight());
       instructionsButton.setIcon(new ImageIcon(instructionsImage));

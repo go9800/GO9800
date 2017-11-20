@@ -237,7 +237,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public void setSize()
   {
   	Dimension normalSize;
-	
+  	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+  	
     setResizable(true); // this changes size of insets
     setVisible(true);
     
@@ -247,7 +248,12 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     // set window to standard size
     normalSize = new Dimension(KEYB_W + getInsets().left + getInsets().right, KEYB_H + getInsets().top + getInsets().bottom);
     this.setPreferredSize(normalSize);
-    this.setSize(normalSize);
+    
+    // check if normalSize fits in screenSize
+    if(normalSize.getHeight() > screenSize.getHeight())
+    	this.setSize(screenSize); // resize to screen on smaller devices
+    else
+    	this.setSize(normalSize);
   }
   
   public void normalizeSize()
