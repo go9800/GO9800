@@ -44,6 +44,7 @@
  * 02.11.2017 Rel. 2.10: Changed drawing of ROM modules and templates using imageProcessing() and RGBA images with transparency
  * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
  * 18.11.2017 Rel. 2.10 Bugfix: displayPrintOutput(), displayKeyMatrix(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
+ * 21.10.2017 Rel. 2.10 Changed rendering hints, disable antialiasing for faster printer output, enable bicubic interpolation for scaled bitmaps
  */
 
 package io;
@@ -349,9 +350,12 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   	if(g2d != null) {
   		g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
   		g2d.scale(widthScale, heightScale);  // scale graphics to required size
-
-  		// enable antialiasing for higher quality of scaled graphics
-  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+  		
+  		// disable antialiasing for higher speed of printer output
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF));
+  		// enable bilinear interpolation for higher quality of scaled imaged
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC));
+  		//g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
   	}
 
   	return(g2d);
@@ -702,7 +706,7 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     
     if(g2d == null)
     	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
-    
+
     int x = 0, y = 0; // positioning is done by g2d.translate()
     int maxLine = numLines - page * PAPER_HEIGHT;
 

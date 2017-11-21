@@ -415,11 +415,17 @@ public class HP9820AMainframe extends HP9800Mainframe
       g2d.fillRect(x - 1 , y - 1, LED_DOT_SIZE + 2, 7 * LED_DOT_SIZE + 2); // draw character background slightly greater
       g2d.setColor(ledRed);
 
-      for(int j = 6; j >= 0; j--) {
+  		// enable antialiasing for higher quality of line graphics
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+
+  		for(int j = 6; j >= 0; j--) {
         if((ledColumn & 1) != 0)
         	g2d.fillRect(x, y + j * LED_DOT_SIZE, LED_DOT_SIZE - 1, LED_DOT_SIZE - 1);
         ledColumn >>= 1;
       }
+  		
+  		// disable antialiasing for higher speed
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF));
     }
   }
 }

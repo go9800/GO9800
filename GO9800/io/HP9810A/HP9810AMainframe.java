@@ -514,6 +514,9 @@ public class HP9810AMainframe extends HP9800Mainframe
       if(segments == 0)
         return;
       
+  		// enable antialiasing for higher quality of line graphics
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+
       /* Stroking to simulate single LED dots is not really useful
       float[] dashArray = {0.9f, 0.1f};
       BasicStroke stroke = new BasicStroke(1, 0, 0, 1, dashArray, 0);
@@ -559,6 +562,9 @@ public class HP9810AMainframe extends HP9800Mainframe
       if((segments & 0x01) != 0) {
         g2d.drawLine(x1+2, y2, x1+2, y2);
       }
+
+  		// disable antialiasing for higher speed
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF));
     }
   }
 }
