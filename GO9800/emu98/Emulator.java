@@ -1232,7 +1232,7 @@ public class Emulator implements Runnable
       }
 
       // check for ASM-level breakpoints
-      address = cpu.Pregister.getValue();
+      address = cpu.Pregister.getValue() & 077777;
 
       if(mainframe.memory[address].breakPoint) {
         console.append("> Breakpoint\n");

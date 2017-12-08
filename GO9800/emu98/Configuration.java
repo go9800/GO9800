@@ -505,7 +505,7 @@ public class Configuration
 
             // read modifier keys
             if(tokenline.hasMoreTokens()) {
-              modifier = tokenline.nextToken().toLowerCase();
+              modifier = tokenline.nextToken().toUpperCase();
               if(modifier.charAt(0) == ';')
                 modifier = "";
             }

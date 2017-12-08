@@ -317,7 +317,8 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
       } catch (IOException e) { }
     } else {
       // stop empty card reader
-      motorSound.stop();
+    	if(motorSound != null)
+    		motorSound.stop();
     }
     
     synchronized(ioUnit) {

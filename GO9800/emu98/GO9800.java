@@ -62,27 +62,16 @@ class GO9800Window extends JDialog implements ActionListener
 
 	class JTextAreaOutputStream extends OutputStream
 	{
-		private final JTextArea destination;
+		private final JTextArea stdout;
 
-		public JTextAreaOutputStream (JTextArea destination)
+		public JTextAreaOutputStream (JTextArea stdout)
 		{
-			if (destination == null)
-				throw new IllegalArgumentException("Destination is null");
-
-			this.destination = destination;
+			this.stdout = stdout;
 		}
 
-		public void write(byte[] buffer, int offset, int length) throws IOException
+		public void write(byte[] buffer, int offset, int length)
 		{
-			final String text = new String(buffer, offset, length);
-
-			SwingUtilities.invokeLater(new Runnable ()
-			{
-				public void run() 
-				{
-					destination.append(text);
-				}
-			});
+			stdout.append(new String(buffer, offset, length));
 		}
 
 		public void write(int b) throws IOException
@@ -142,7 +131,7 @@ class GO9800Window extends JDialog implements ActionListener
 		hp9830b.addActionListener(this);
 
 		// TextArea for stdout
-		JTextArea textArea = new JTextArea(25, 80);
+		JTextArea textArea = new JTextArea(20, 80);
 		textArea.setEditable(false);
 		textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
 		textArea.setBackground(gray);
@@ -157,7 +146,8 @@ class GO9800Window extends JDialog implements ActionListener
 
 		// redirect System.out
 		JTextAreaOutputStream out = new JTextAreaOutputStream(textArea);
-		System.setOut (new PrintStream(out));
+		System.setOut(new PrintStream(out));
+		System.setErr(new PrintStream(out));
 	}
 	
 	public void start(String machine, boolean debug)

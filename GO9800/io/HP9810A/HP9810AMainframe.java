@@ -285,7 +285,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   	backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
   	displayImage = displayImageMedia.getScaledImage((int)(DISPLAY_W * widthScale), (int)(DISPLAY_H * heightScale));
 
-  	if(!backgroundImage)  // dont draw modules and templates before keyboard is ready
+  	if(!backgroundImage)  // don't draw modules and templates before keyboard is ready
   		return;
   	
   	// draw display area
@@ -306,7 +306,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   			g2d.drawImage(blockImage, x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
 
   			// draw ROM module label with transparence, scaled and processed for brightness and contrast
-  			moduleImage = block.getUniModule(1.1f, 30f);  // get processed image, based on scaled image
+  			moduleImage = block.getUniModule(1.1f, 25f);  // get processed image, based on scaled image
   			g2d.drawImage(moduleImage, x + BLOCK1_X + 1, y + BLOCK1_Y + 1, MODULE_W, MODULE_H, this);  // draw module label
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
 
@@ -330,7 +330,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   			g2d.drawImage(blockImage, x + BLOCK2_X, y + BLOCK2_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
 
   			// draw ROM module label with transparence, scaled and processed for brightness and contrast
-  			moduleImage = block.getUniModule(1.1f, 30f);  // get processed image, based on scaled image
+  			moduleImage = block.getUniModule(1.1f, 25f);  // get processed image, based on scaled image
   			g2d.drawImage(moduleImage, x + BLOCK2_X + 1, y + BLOCK2_Y + 1, MODULE_W, MODULE_H, this);
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
   			
@@ -355,7 +355,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   			g2d.drawImage(blockImage, x + BLOCK3_X, y + BLOCK3_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
 
   			// draw ROM module label with transparence, scaled and processed for brightness and contrast
-  			moduleImage = block.getUniModule(1.1f, 30f);  // get processed image, based on scaled image
+  			moduleImage = block.getUniModule(1.1f, 25f);  // get processed image, based on scaled image
   			g2d.drawImage(moduleImage, x + BLOCK3_X + 1, y + BLOCK3_Y + 1, MODULE_W, MODULE_H, this);
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
   			
@@ -508,7 +508,7 @@ public class HP9810AMainframe extends HP9800Mainframe
 
 
       g2d.setColor(ledBack);
-      g2d.fillRect(x - 1, y - 1, LED_SEGMENT_SIZE + 6, 2 * LED_SEGMENT_SIZE + 3); // draw digit background slightly greater than segment area
+      g2d.fillRect(x - 1, y - 1, LED_SEGMENT_SIZE + 7, 2 * LED_SEGMENT_SIZE + 3); // draw digit background slightly greater than segment area
       g2d.setColor(ledRed);
 
       if(segments == 0)

@@ -45,6 +45,7 @@
  * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
  * 18.11.2017 Rel. 2.10 Bugfix: displayPrintOutput(), displayKeyMatrix(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
  * 21.10.2017 Rel. 2.10 Changed rendering hints, disable antialiasing for faster printer output, enable bicubic interpolation for scaled bitmaps
+ * 04.12.2017 Rel. 2.10 Added drawing of separate modifier key strings in method displayKeyMatriy()
  */
 
 package io;
@@ -89,14 +90,14 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public int PAPER_LEFT = 548;
   public int PAPER_EDGE = 126;
 
-  public int BLOCK1_X = 24;
-  public int BLOCK1_Y = 4;
+  public int BLOCK1_X = 26;
+  public int BLOCK1_Y = 5;
   public double BLOCK1_S = -0.10; 
-  public int BLOCK2_X = 174;
+  public int BLOCK2_X = 175;
   public int BLOCK2_Y = 4;
   public double BLOCK2_S = -0.06; 
   public int BLOCK3_X = 325;
-  public int BLOCK3_Y = 4;
+  public int BLOCK3_Y = 3;
   public double BLOCK3_S = -0.02; 
   public int BLOCK_W = 152;
   public int BLOCK_H = 51;
@@ -355,7 +356,6 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF));
   		// enable bilinear interpolation for higher quality of scaled imaged
   		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC));
-  		//g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
   	}
 
   	return(g2d);
@@ -750,8 +750,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   {
     float[] dashArray = {2f, 2f};
     int keyCode;
-    int x, y;
-    String strKey;
+    int x, y, yStr, i;
+    String strKey, key;
     
     if(!showKeycode)
       return;
@@ -761,35 +761,75 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 
     BasicStroke stroke = new BasicStroke(1, 0, 0, 1f, dashArray, 0f);
     g2d.setStroke(stroke);
-
     g2d.setColor(Color.white);
-    Font font = new Font("Sans", Font.BOLD, 12);
-    g2d.setFont(font);
-    
     
     for(int row = 0; row < keyOffsetX.length; row++) {
       //y = keyOffsetY - getInsets().top - row * keyWidth + 15; // why is +15 necessary ???
       y = keyOffsetY - (row + 1) * keyWidth;
 
       for(int col = 0; col < keyCodes[row].length; col++) {
-        keyCode = keyCodes[row][col];
-        if(keyCode != -1) {
-          if(config.model.startsWith("HP9830") && col > 11)
-            x = keyOffsetX[7];
-          else
-            x = keyOffsetX[row];
-            
-          x += col * keyWidth;
-          g2d.drawRect(x, y, keyWidth, keyWidth);
-          
-          if(keyCode < 0700) {
-            strKey = Integer.toString(keyCode);
-            strKey = (String)config.hostKeyStrings.get(strKey);
-            if(strKey == null)
-              strKey = String.valueOf((char)keyCode);
-            g2d.drawString(strKey, x + 5, y + keyWidth - 5);
-          }
-        }
+      	keyCode = keyCodes[row][col];
+      	if(keyCode != -1) {
+      		if(config.model.startsWith("HP9830") && col > 11)
+      			x = keyOffsetX[7];
+      		else
+      			x = keyOffsetX[row];
+
+      		x += col * keyWidth;
+      		g2d.drawRect(x, y, keyWidth, keyWidth);
+
+      		if(keyCode < 0700) {
+      			yStr = y + keyWidth - 2;
+      			strKey = Integer.toString(keyCode);
+      			strKey = (String)config.hostKeyStrings.get(strKey);
+
+      			if(strKey == null)
+      				strKey = String.valueOf((char)keyCode);
+
+      			// get position of modifier separator (if not present: i = -1)
+      			i = strKey.indexOf('+');
+      			if(i == strKey.length() - 1) // is '+' the last char in key string?
+      				i = -1;  // then ignore
+
+      			key = strKey.substring(i + 1);
+      			if(key.equals("CurLe"))
+      				key = "\u2190"; // left arrow unicode
+      			if(key.equals("CurRi"))
+      				key = "\u2192"; // right arrow unicode
+      			if(key.equals("CurUp"))
+      				key = "\u2191";
+      			if(key.equals("CurDn"))
+      				key = "\u2193";
+      			if(key.equals("PgUp"))
+      				key = "Pg\u2191";
+      			if(key.equals("PgDn"))
+      				key = "Pg\u2193";
+      			
+      			// draw key string without modifier characters
+      			g2d.setFont(new Font("Sans", Font.PLAIN, 12));
+      			g2d.drawString(key, x + 2, yStr); 
+
+      			g2d.setFont(new Font("Sans", Font.ITALIC, 9));
+
+      			// check key modifiers (separated by + sign)
+      			for(i = i - 1; i >= 0; i--) {
+      				yStr -= 9;
+
+      				switch(strKey.charAt(i)) {
+      					case 'A':
+      						g2d.drawString("Alt", x + 2, yStr);
+      						break;
+
+      					case 'C':
+      						g2d.drawString("Ctrl", x + 2, yStr);
+      						break;
+
+      					case 'S':
+      						g2d.drawString("Shift", x + 2, yStr);
+      				}
+      			}
+      		}
+      	}
       }
     }
     

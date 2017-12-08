@@ -28,6 +28,10 @@ package io.HP9810A2;
 
 import io.*;
 import io.HP9810A.HP9810AMainframe;
+
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+
 import emu98.*;
 
 public class HP9810A2Mainframe extends HP9810AMainframe
@@ -44,13 +48,16 @@ public class HP9810A2Mainframe extends HP9810AMainframe
     displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display_2.png");
   }
   
-  public void display(int reg, int i)
+  public void display(Graphics2D g2d, int reg, int i)
   {
     int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
     int x = 0, y = 0; // positioning is done by g2d.translate()
     int x1, y1, y2, segments;
 
     if(backgroundImage && this.getGraphics() != null) {
+      if(g2d == null)
+      	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+      
       segments = displayBuffer[reg][i];
 
       // graphic digit position
@@ -65,11 +72,14 @@ public class HP9810A2Mainframe extends HP9810AMainframe
 
       //g.fillRect(x, y, LED_SEGMENT_SIZE+1, 2 * LED_SEGMENT_SIZE+1);
       g2d.setColor(ledBack);
-      g2d.fillRect(x - 1, y - 1, LED_SEGMENT_SIZE + 2, 2 * LED_SEGMENT_SIZE + 2); // draw digit background slightly greater than segment area
+      g2d.fillRect(x - 1, y - 1, LED_SEGMENT_SIZE + 3, 2 * LED_SEGMENT_SIZE + 3); // draw digit background slightly greater than segment area
       g2d.setColor(ledRed);
 
       if(segments == 0)
         return;
+      
+  		// enable antialiasing for higher quality of line graphics
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
 
       // segment a
       if((segments & 0x40) != 0) {
@@ -110,6 +120,9 @@ public class HP9810A2Mainframe extends HP9810AMainframe
       if((segments & 0x01) != 0) {
         g2d.drawLine(x1-1, y2, x1-1, y2);
       }
+      
+  		// disable antialiasing for higher speed
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF));
     }
   }
 }
