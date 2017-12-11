@@ -46,6 +46,7 @@
  * 18.11.2017 Rel. 2.10 Bugfix: displayPrintOutput(), displayKeyMatrix(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
  * 21.10.2017 Rel. 2.10 Changed rendering hints, disable antialiasing for faster printer output, enable bicubic interpolation for scaled bitmaps
  * 04.12.2017 Rel. 2.10 Added drawing of separate modifier key strings in method displayKeyMatriy()
+ * 10.12.2017 Rel. 2.10 Added MenuBar and required menu actions
  */
 
 package io;
@@ -55,11 +56,17 @@ import java.awt.event.*;
 import java.awt.print.*;
 import java.util.*;
 import javax.sound.sampled.*;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import emu98.*;
 
-public class HP9800Mainframe extends Frame implements KeyListener, LineListener, Printable
+public class HP9800Mainframe extends JFrame implements ActionListener, KeyListener, LineListener, Printable
 {
   private static final long serialVersionUID = 1L;
 
@@ -84,7 +91,6 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public int LED_Y = +25;
   public int LED_DOT_SIZE = 3; // used in HP9820/21/30 only
 
-
   public int PAPER_HEIGHT = 168;
   public int PAPER_WIDTH = 124;
   public int PAPER_LEFT = 548;
@@ -103,6 +109,8 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   public int BLOCK_H = 51;
   public int MODULE_W = BLOCK_W - 2;
   public int MODULE_H = BLOCK_H - 13;
+  
+  public int MENU_H = 23;
 
   
   public int STOP_KEYCODE = 041; // code of STOP key
@@ -135,6 +143,9 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 	protected Image ledOn, ledOff;
 
   protected Color ledRed, ledBack, paperWhite, paperGray;
+  protected Color gray = new Color(230, 230, 230);
+  protected Color brown = new Color(87, 87, 75);
+  
   private SoundMedia fanSound, printSound, paperSound;
   Vector<byte[]> printBuffer;
   byte[] lineBuffer;
@@ -147,6 +158,11 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
   boolean showKeycode = false;
   private PrinterJob printJob;
   private PageFormat pageFormat;
+  
+  protected JMenuBar menuBar;
+  protected JMenuItem restartItem, pageFormatItem, hardcopyItem;
+  protected JCheckBoxMenuItem keyMapItem, consoleItem, hp2116PanelItem;
+  protected JCheckBoxMenuItem debugItem, fanSoundItem, allSoundItem;
 
 
   public HP9800Mainframe(Emulator emu, String machine) 
@@ -155,6 +171,76 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
 
     this.emu = emu;
     emu.setMainframe(this);
+    
+    GridBagLayout gridbag = new GridBagLayout();
+    GridBagConstraints c = new GridBagConstraints();
+		Container contentPane = getContentPane();
+		contentPane.setLayout(gridbag);
+		contentPane.setBackground(brown);
+
+		// Menu bar
+		menuBar = new JMenuBar();
+		menuBar.setMinimumSize(new Dimension(0, MENU_H));
+		menuBar.addMouseListener(new MenuMouseListener());
+		
+		JMenu runMenu = new JMenu("Run");
+		restartItem = new JMenuItem("Restart");
+		runMenu.add(restartItem);
+		restartItem.addActionListener(this);
+		menuBar.add(runMenu);
+		
+		JMenu viewMenu = new JMenu("View");
+		keyMapItem = new JCheckBoxMenuItem("Key Map");
+		consoleItem = new JCheckBoxMenuItem("Console");
+		hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel");
+		viewMenu.add(keyMapItem);
+		viewMenu.add(consoleItem);
+		viewMenu.add(hp2116PanelItem);
+		keyMapItem.addActionListener(this);
+		consoleItem.addActionListener(this);
+		hp2116PanelItem.addActionListener(this);
+		menuBar.add(viewMenu);
+		
+		JMenu printMenu = new JMenu("Print");
+		pageFormatItem = new JMenuItem("Page Format");
+		hardcopyItem = new JMenuItem("Hardcopy");
+		printMenu.add(pageFormatItem);
+		printMenu.add(hardcopyItem);
+		pageFormatItem.addActionListener(this);
+		hardcopyItem.addActionListener(this);
+		menuBar.add(printMenu);
+		
+		JMenu optionsMenu = new JMenu("Options");
+		debugItem = new JCheckBoxMenuItem("Debug");
+		fanSoundItem = new JCheckBoxMenuItem("Fan Sound");
+		fanSoundItem.setSelected(true);
+		allSoundItem = new JCheckBoxMenuItem("All Sounds");
+		allSoundItem.setSelected(true);
+		debugItem.addActionListener(this);
+		fanSoundItem.addActionListener(this);
+		allSoundItem.addActionListener(this);
+		optionsMenu.addMouseListener(new MenuMouseListener());
+
+		optionsMenu.add(debugItem);
+		optionsMenu.add(fanSoundItem);
+		optionsMenu.add(allSoundItem);
+		menuBar.add(optionsMenu);
+		
+		c.gridx = 0;
+		c.gridy = 0;
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.anchor = GridBagConstraints.WEST;
+		contentPane.add(menuBar, c);
+		
+		JPanel panel = new JPanel();
+		panel.setBackground(brown);
+		c.gridy = 1;
+    c.weightx = 1.;
+    c.weighty = 1.;
+    c.fill = GridBagConstraints.BOTH;
+    contentPane.add(panel, c);
+    
+    pack();
     
     // List of all loaded IOinterfaces
     ioInterfaces = new Vector<IOinterface>();
@@ -231,6 +317,50 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
     }
   }
   
+  public class MenuMouseListener extends MouseAdapter
+  {
+  	 public void mouseEntered(MouseEvent event)
+     {
+  		 menuBar.setVisible(false);
+  		 menuBar.setVisible(true);
+     }
+  	 
+  	 public void mouseExited(MouseEvent event)
+     {
+  		 if(event.getY() >= menuBar.getHeight())
+  			 repaint();
+     }
+  }
+  
+	public void actionPerformed(ActionEvent event)
+	{
+		String cmd = event.getActionCommand();
+		
+		if(cmd.equals("Restart")) {
+ 			ioUnit.reset = true;
+	  } else if(cmd.equals("Debug")) {
+      console.setDebugMode(!console.getDebugMode());
+  		debugItem.setSelected(console.getDebugMode());
+  	} else if(cmd.equals("Key Map")) {
+  		keyMapItem.setSelected(showKeycode = !showKeycode);
+  	} else if(cmd.equals("Console")) {
+      console.setVisible(!console.isVisible());
+  		consoleItem.setSelected(console.isVisible());
+  	} else if(cmd.equals("HP2116 Panel")) {
+      hp2116panel.setVisible(!hp2116panel.isVisible());
+      hp2116PanelItem.setSelected(hp2116panel.isVisible());
+  	} else if(cmd.equals("Fan Sound")) {
+  		fanSoundItem.setSelected(fanSound.toggle());
+  	} else if(cmd.equals("All Sounds")) {
+      SoundMedia.enable(!SoundMedia.isEnabled());
+      if(!SoundMedia.isEnabled())
+      	fanSound.stop();
+      allSoundItem.setSelected(SoundMedia.isEnabled());
+  	}
+		
+		repaint();
+	}
+
   public void setConfiguration(Configuration config)
   {
   	this.config = config;
@@ -792,18 +922,20 @@ public class HP9800Mainframe extends Frame implements KeyListener, LineListener,
       				i = -1;  // then ignore
 
       			key = strKey.substring(i + 1);
-      			if(key.equals("CurLe"))
+      			if(key.equals("Left"))
       				key = "\u2190"; // left arrow unicode
-      			if(key.equals("CurRi"))
+      			if(key.equals("Right"))
       				key = "\u2192"; // right arrow unicode
-      			if(key.equals("CurUp"))
+      			if(key.equals("Up"))
       				key = "\u2191";
-      			if(key.equals("CurDn"))
+      			if(key.equals("Down"))
       				key = "\u2193";
       			if(key.equals("PgUp"))
-      				key = "Pg\u2191";
+      				key = "Page\u2191";
       			if(key.equals("PgDn"))
-      				key = "Pg\u2193";
+      				key = "Page\u2193";
+      			if(key.equals("Return"))
+      				key = " \u21B2";
       			
       			// draw key string without modifier characters
       			g2d.setFont(new Font("Sans", Font.PLAIN, 12));

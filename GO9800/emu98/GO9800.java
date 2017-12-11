@@ -37,7 +37,8 @@
  * 15.08.2016 Rel. 2.01 Added debug mode (command line option -d) for output of ROM decoding
  * 21.10.2017 Rel. 2.10 Added scalability of calculator window
  * 24.10.2017 Rel. 2.10 Added main window and redirection of System.out
- * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
+ * 10.12.2017 Rel. 2.10 Changed window layout mananger, added menus
  */
 
 package emu98;
@@ -91,37 +92,51 @@ class GO9800Window extends JDialog implements ActionListener
 		Color gray = new Color(230, 230, 230);
 		Color brown = new Color(87, 87, 75);
 		
+    GridBagLayout gridbag = new GridBagLayout();
+    GridBagConstraints c = new GridBagConstraints();
+    
 		// Frame for main window and stdout
 		JFrame frame = new JFrame("GO9800 Emulator");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container contentPane = frame.getContentPane();
-		contentPane.setLayout (new BorderLayout());
+		contentPane.setLayout(gridbag);
 		contentPane.setBackground(brown);
 
 		// Menu bar
 		JMenuBar menuBar = new JMenuBar();
-		JMenu fileMenu = new JMenu("Startup");
+		menuBar.setBackground(gray);
+		menuBar.setMinimumSize(new Dimension(0, 23));
+		
+		JMenu runMenu = new JMenu("Run");
 		JMenuItem hp9810a = new JMenuItem("HP9810A");
 		JMenuItem hp9810a2 = new JMenuItem("HP9810A2");
 		JMenuItem hp9820a = new JMenuItem("HP9820A");
 		JMenuItem hp9821a = new JMenuItem("HP9821A");
 		JMenuItem hp9830a = new JMenuItem("HP9830A");
 		JMenuItem hp9830b = new JMenuItem("HP9830B");
-
-		fileMenu.add(hp9810a);
-		fileMenu.add(hp9810a2);
-		fileMenu.add(hp9820a);
-		fileMenu.add(hp9821a);
-		fileMenu.add(hp9830a);
-		fileMenu.add(hp9830b);
-		menuBar.add(fileMenu);
-		menuBar.setBackground(gray);
-		contentPane.add(menuBar, BorderLayout.NORTH);
+		runMenu.add(hp9810a);
+		runMenu.add(hp9810a2);
+		runMenu.add(hp9820a);
+		runMenu.add(hp9821a);
+		runMenu.add(hp9830a);
+		runMenu.add(hp9830b);
+		menuBar.add(runMenu);
+		
+		c.gridx = 0;
+		c.gridy = 0;
+    c.gridheight = 1;
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.anchor = GridBagConstraints.WEST;
+		contentPane.add(menuBar, c);
 		
     JButton logo = new JButton();
     logo.setIcon(new ImageIcon(new ImageMedia("media/HP9800/HP9800_Emulator.jpg").getImage()));
     logo.setBackground(gray);
-		contentPane.add(logo, BorderLayout.CENTER);
+    logo.setMargin(new Insets(0, 0, 0, 20));
+    logo.setHorizontalAlignment(SwingConstants.LEFT);
+    
+		c.gridy = 1;
+		contentPane.add(logo, c);
 		
 		hp9810a.addActionListener(this);
 		hp9810a2.addActionListener(this);
@@ -139,7 +154,12 @@ class GO9800Window extends JDialog implements ActionListener
 
 		// ScrollPane for textArea
 		JScrollPane scrollPane = new JScrollPane (textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		contentPane.add(scrollPane, BorderLayout.SOUTH);
+		
+		c.gridy = 2;
+    c.weightx = 1.;
+    c.weighty = 1.;
+    c.fill = GridBagConstraints.BOTH;
+    contentPane.add(scrollPane, c);
 
 		frame.pack();
 		frame.setVisible(true);

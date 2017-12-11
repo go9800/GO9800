@@ -156,7 +156,7 @@ public class SoundMedia
       soundClip.stop();
   }
 
-  public void toggle()
+  public boolean toggle()
   {
     if(enabled && (soundClip != null)) {
       if(soundClip.isRunning())
@@ -166,6 +166,8 @@ public class SoundMedia
         soundClip.loop(Clip.LOOP_CONTINUOUSLY);
       }
     }
+    
+    return(soundClip.isRunning());
   }
 
   public Clip getClip()
