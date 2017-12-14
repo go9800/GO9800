@@ -96,6 +96,11 @@ public class ImageMedia
   		if(image != null) {
   			scaledImage = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 
+  			// wait for processing to finish
+  			try {
+					Thread.sleep(width / 4);
+				} catch (InterruptedException e) { }
+
   			this.width = width;
   			this.height = height;
   			
@@ -115,7 +120,7 @@ public class ImageMedia
   	float[] offsets;  // brightness offsets (RGBA)
     
   	// generate new processed image only if scaledImage is ready
-  	if(scaledImage != null && (scaledImage.getWidth(null) > 0)) {
+  	if((scaledImage != null) && (scaledImage.getWidth(null) > 0)) {
     	// generate new processed image only if there is no valid present or size has changed
   		if(processedImage == null || processedImage.getWidth(null) != scaledImage.getWidth(null) || processedImage.getHeight(null) != scaledImage.getHeight(null)) {
     		if(processedImage != null) {
@@ -138,7 +143,7 @@ public class ImageMedia
   			
   			// wait for processing to finish
   			try {
-					Thread.sleep(width / 2);
+					Thread.sleep(width / 4);
 				} catch (InterruptedException e) { }
   			
     		imageList.add(processedImage);

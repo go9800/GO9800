@@ -53,6 +53,7 @@ package io;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.ImageObserver;
 import java.awt.print.*;
 import java.util.*;
 import javax.sound.sampled.*;
@@ -160,7 +161,7 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   private PageFormat pageFormat;
   
   protected JMenuBar menuBar;
-  protected JMenuItem restartItem, pageFormatItem, hardcopyItem;
+  protected JMenuItem dismissItem, restartItem, normalSizeItem, pageFormatItem, hardcopyItem;
   protected JCheckBoxMenuItem keyMapItem, consoleItem, hp2116PanelItem;
   protected JCheckBoxMenuItem debugItem, fanSoundItem, allSoundItem;
 
@@ -181,21 +182,33 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
 		// Menu bar
 		menuBar = new JMenuBar();
 		menuBar.setMinimumSize(new Dimension(0, MENU_H));
-		menuBar.addMouseListener(new MenuMouseListener());
+		menuBar.addMouseListener(new MenuMouseListener()); // to make menuBar visible or invisible
 		
 		JMenu runMenu = new JMenu("Run");
 		restartItem = new JMenuItem("Restart");
 		runMenu.add(restartItem);
+		runMenu.addSeparator();
+		dismissItem = new JMenuItem("Dismiss");
+		dismissItem.addActionListener(this);
+		runMenu.add(dismissItem);
 		restartItem.addActionListener(this);
 		menuBar.add(runMenu);
 		
 		JMenu viewMenu = new JMenu("View");
+		normalSizeItem = new JMenuItem("Normal Size");
 		keyMapItem = new JCheckBoxMenuItem("Key Map");
 		consoleItem = new JCheckBoxMenuItem("Console");
 		hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel");
+		viewMenu.add(normalSizeItem);
+		viewMenu.addSeparator();
 		viewMenu.add(keyMapItem);
 		viewMenu.add(consoleItem);
 		viewMenu.add(hp2116PanelItem);
+		viewMenu.addSeparator();
+		dismissItem = new JMenuItem("Dismiss");
+		dismissItem.addActionListener(this);
+		viewMenu.add(dismissItem);
+		normalSizeItem.addActionListener(this);
 		keyMapItem.addActionListener(this);
 		consoleItem.addActionListener(this);
 		hp2116PanelItem.addActionListener(this);
@@ -206,6 +219,10 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
 		hardcopyItem = new JMenuItem("Hardcopy");
 		printMenu.add(pageFormatItem);
 		printMenu.add(hardcopyItem);
+		printMenu.addSeparator();
+		dismissItem = new JMenuItem("Dismiss");
+		dismissItem.addActionListener(this);
+		printMenu.add(dismissItem);
 		pageFormatItem.addActionListener(this);
 		hardcopyItem.addActionListener(this);
 		menuBar.add(printMenu);
@@ -216,14 +233,16 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
 		fanSoundItem.setSelected(true);
 		allSoundItem = new JCheckBoxMenuItem("All Sounds");
 		allSoundItem.setSelected(true);
-		debugItem.addActionListener(this);
-		fanSoundItem.addActionListener(this);
-		allSoundItem.addActionListener(this);
-		optionsMenu.addMouseListener(new MenuMouseListener());
-
 		optionsMenu.add(debugItem);
 		optionsMenu.add(fanSoundItem);
 		optionsMenu.add(allSoundItem);
+		optionsMenu.addSeparator();
+		dismissItem = new JMenuItem("Dismiss");
+		dismissItem.addActionListener(this);
+		optionsMenu.add(dismissItem);
+		debugItem.addActionListener(this);
+		fanSoundItem.addActionListener(this);
+		allSoundItem.addActionListener(this);
 		menuBar.add(optionsMenu);
 		
 		c.gridx = 0;
@@ -341,6 +360,8 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
 	  } else if(cmd.equals("Debug")) {
       console.setDebugMode(!console.getDebugMode());
   		debugItem.setSelected(console.getDebugMode());
+  	} else if(cmd.equals("Normal Size")) {
+  		setSize();
   	} else if(cmd.equals("Key Map")) {
   		keyMapItem.setSelected(showKeycode = !showKeycode);
   	} else if(cmd.equals("Console")) {
@@ -460,10 +481,11 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   {
     // avoid flickering when drawing resized window
   	// also wait for image processing after ROM module change
+  	/*
   	try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) { }
-
+		*/
   	paint(g);
   }
   
@@ -473,7 +495,16 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   	normalizeSize();  // normalize aspect ratio and get scaling factors
   	g2d = getG2D(g);
   }
-  
+  /*
+  public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height)
+  {
+  	if((infoflags & ImageObserver.ALLBITS) != 0) {
+  		repaint();
+  	}
+  		
+  	return(true);
+  }
+  */
   public Graphics2D getG2D(Graphics g)
   {
   	Graphics2D g2d = (Graphics2D)g;
