@@ -21,13 +21,15 @@
  * 24.11.2006 Class created 
  * 12.07.2007 Rel. 1.20 Changed JAR-file access to Class.getResourceAsStream()
  * 25.10.2017 Rel. 2.10 Added method disposeAll() to close all loaded images
- * 10.11.2017 Tel. 2.10 Added methods getScaledImage() and getProcessedImage() 
+ * 10.11.2017 Rel. 2.10 Added methods getScaledImage() and getProcessedImage() 
+ * 19.12.2017 Rel. 2.10 Added MediaTracker to control image processing. This requires class extension of JComponent or the like
  */
 
 package io;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
@@ -35,10 +37,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
 
-public class ImageMedia
+import javax.swing.JComponent;
+
+public class ImageMedia extends JComponent
 {
+  private static final long serialVersionUID = 1L;
   private Image image, scaledImage, processedImage;
   private static Vector<Image> imageList;
+  private MediaTracker tracker;
   private int width = -1, height = -1;
   
   static {
@@ -48,7 +54,9 @@ public class ImageMedia
   
   public ImageMedia(String imageFile)
   {
-    InputStream imageStream = getClass().getResourceAsStream("/" + imageFile);
+  	tracker = new MediaTracker(this);
+
+  	InputStream imageStream = getClass().getResourceAsStream("/" + imageFile);
     try
     {
       if (imageStream != null) {
@@ -67,8 +75,12 @@ public class ImageMedia
 
         //create image
         scaledImage = image = Toolkit.getDefaultToolkit().createImage(buffer);
-        imageStream.close();
+        tracker.addImage(image, 0);
+        try {
+          tracker.waitForID(0);
+        } catch (InterruptedException e) { }
         
+        imageStream.close();
         imageList.add(image);
       }
     } catch (IOException e)
@@ -95,12 +107,13 @@ public class ImageMedia
   		// generate new scaled instance
   		if(image != null) {
   			scaledImage = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-
+  			
   			// wait for processing to finish
-  			try {
-					Thread.sleep(width / 4);
-				} catch (InterruptedException e) { }
-
+        tracker.addImage(scaledImage, 1);
+        try {
+          tracker.waitForID(1);
+        } catch (InterruptedException e) { }
+        
   			this.width = width;
   			this.height = height;
   			
@@ -142,10 +155,11 @@ public class ImageMedia
   			processedImage = (Image)imageOp.filter(bufferedImage, null);
   			
   			// wait for processing to finish
-  			try {
-					Thread.sleep(width / 4);
-				} catch (InterruptedException e) { }
-  			
+        tracker.addImage(scaledImage, 1);
+        try {
+          tracker.waitForID(1);
+        } catch (InterruptedException e) { }
+        
     		imageList.add(processedImage);
   		}
   	}

@@ -54,6 +54,7 @@
  * 10.11.2017 Rel. 2.10 Added dynamic image scaling and processing
  * 14.11.2017 Rel. 2.10 Added overlays for tape drive
  * 18.11.2017 Rel. 2.10 Bugfix: display(), displayLEDs(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
+ * 18.12.2017 Rel. 2.10 Moved creation of LEDmatrix from WindowListener() to paint() 
  */
 
 package io.HP9830A;
@@ -190,7 +191,6 @@ public class HP9830AMainframe extends HP9800Mainframe
     
     STOP_KEYCODE = 0177; // code of STOP key used by super.keyPressed()
 
-    addWindowListener(new windowListener());
     addMouseListener(new mouseListener());
     ioUnit.line10_20 = true;  // set 10/20 flag
 
@@ -210,7 +210,7 @@ public class HP9830AMainframe extends HP9800Mainframe
     tapeDevice = new HP9865A(10, hp9865Interface);
     hp9865Interface.setDevice(tapeDevice); 
 
-    tapeDevice.setStatusFrame(this, 825, 50);
+    tapeDevice.setStatusFrame(hp9800Window, 825, 50);
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
 
@@ -221,37 +221,6 @@ public class HP9830AMainframe extends HP9800Mainframe
 
     setSize();
     System.out.println("HP9830 Mainframe loaded.");
-  }
-
-  class windowListener extends WindowAdapter
-  {
-    public void windowOpened(WindowEvent event)
-    {
-      // create LED matrix images after window is set visible
-      ledMatrix = new Image[64];
-
-      Graphics ledGraphics;
-
-      for(int i = 0; i < 64; i++) {
-        ledMatrix[i] = createImage(5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE);
-        ledGraphics = ledMatrix[i].getGraphics();
-        ledGraphics.setColor(ledBack);
-        ledGraphics.fillRect(0, 0, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE);
-
-        ledGraphics.setColor(ledRed);
-        for(int x = 0; x < 5; x++) {
-          int ledColumn = ledMatrixValues[i][x];
-
-          for(int y = 6; y >= 0; y--) {
-            if((ledColumn & 1) != 0) {
-              ledGraphics.fillRect(x * LED_DOT_SIZE, y * LED_DOT_SIZE, LED_DOT_SIZE - 1, LED_DOT_SIZE - 1);
-            }
-
-            ledColumn >>= 1;
-          }
-        }
-      }
-    }
   }
 
   class mouseListener extends MouseAdapter
@@ -394,6 +363,33 @@ public class HP9830AMainframe extends HP9800Mainframe
      if(backgroundImage && this.getGraphics() != null) {
        if(g2d == null)
        	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+       
+       if(ledMatrix == null) {
+         // create LED matrix images once
+         ledMatrix = new Image[64];
+
+         Graphics ledGraphics;
+
+         for(int j = 0; j < 64; j++) {
+           ledMatrix[j] = createImage(5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE);
+           ledGraphics = ledMatrix[j].getGraphics();
+           ledGraphics.setColor(ledBack);
+           ledGraphics.fillRect(0, 0, 5 * LED_DOT_SIZE, 7 * LED_DOT_SIZE);
+
+           ledGraphics.setColor(ledRed);
+           for(int x = 0; x < 5; x++) {
+             int ledColumn = ledMatrixValues[j][x];
+
+             for(int y = 6; y >= 0; y--) {
+               if((ledColumn & 1) != 0) {
+                 ledGraphics.fillRect(x * LED_DOT_SIZE, y * LED_DOT_SIZE, LED_DOT_SIZE - 1, LED_DOT_SIZE - 1);
+               }
+
+               ledColumn >>= 1;
+             }
+           }
+         }
+       }
 
       int[][] displayBuffer = ioUnit.bus.display.getDisplayBuffer();
       int x = 0, y = 0; // positioning is done by g2d.translate()

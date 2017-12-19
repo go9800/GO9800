@@ -138,7 +138,7 @@ public class HP9821AMainframe extends HP9820AMainframe
     hp9865Interface = new HP9865Interface(Integer.valueOf(10), this);
     tapeDevice = new HP9865A(5, hp9865Interface);
     hp9865Interface.setDevice(tapeDevice); 
-    tapeDevice.setStatusFrame(this, 875, 165);
+    tapeDevice.setStatusFrame(hp9800Window, 875, 165);
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
 

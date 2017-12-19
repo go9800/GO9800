@@ -47,6 +47,7 @@
  * 21.10.2017 Rel. 2.10 Changed rendering hints, disable antialiasing for faster printer output, enable bicubic interpolation for scaled bitmaps
  * 04.12.2017 Rel. 2.10 Added drawing of separate modifier key strings in method displayKeyMatriy()
  * 10.12.2017 Rel. 2.10 Added MenuBar and required menu actions
+ * 17.12.2017 Rel. 2.10 Moved Menubar and ContentPane to class MainWindow, changed to extend JPanel  
  */
 
 package io;
@@ -57,17 +58,12 @@ import java.awt.image.ImageObserver;
 import java.awt.print.*;
 import java.util.*;
 import javax.sound.sampled.*;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import emu98.*;
 
-public class HP9800Mainframe extends JFrame implements ActionListener, KeyListener, LineListener, Printable
+public class HP9800Mainframe extends JPanel implements LineListener, Printable
 {
   private static final long serialVersionUID = 1L;
 
@@ -111,9 +107,6 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   public int MODULE_W = BLOCK_W - 2;
   public int MODULE_H = BLOCK_H - 13;
   
-  public int MENU_H = 23;
-
-  
   public int STOP_KEYCODE = 041; // code of STOP key
   
   // mainframe ressources used by all modules, interfaces, devices  
@@ -121,17 +114,18 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   public Memory[] memory;
   public IOunit ioUnit;
   public Console console;
+  public HP2116Panel hp2116panel; 
+  public ROMselector romSelector;
+  public InstructionsWindow instructionsWindow;
+  public HP9800Window hp9800Window;
   
   // List of all IOinterfaces and IOdevices for cleanup
   public Vector<IOinterface> ioInterfaces; // also used by IObus
   public Vector<IOdevice> ioDevices;
 
-  protected Emulator emu;
+  public Emulator emu;
   public Configuration config;
-  protected HP2116Panel hp2116panel; 
-  protected ROMselector romSelector;
   protected Hashtable<String, String> hostKeyCodes, hostKeyStrings;
-  public InstructionsWindow instructionsWindow;
   
   public Graphics2D g2d;
   public double aspectRatio = 1.;
@@ -147,7 +141,7 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   protected Color gray = new Color(230, 230, 230);
   protected Color brown = new Color(87, 87, 75);
   
-  private SoundMedia fanSound, printSound, paperSound;
+  public SoundMedia fanSound, printSound, paperSound;
   Vector<byte[]> printBuffer;
   byte[] lineBuffer;
   public int numLines;
@@ -156,119 +150,24 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   public boolean backgroundImage = false;
   boolean printing = false;
   public boolean advancing = false;
-  boolean showKeycode = false;
-  private PrinterJob printJob;
-  private PageFormat pageFormat;
-  
-  protected JMenuBar menuBar;
-  protected JMenuItem dismissItem, restartItem, normalSizeItem, pageFormatItem, hardcopyItem;
-  protected JCheckBoxMenuItem keyMapItem, consoleItem, hp2116PanelItem;
-  protected JCheckBoxMenuItem debugItem, fanSoundItem, allSoundItem;
-
+  public boolean showKeycode = false;
+  public PrinterJob printJob;
+  public PageFormat pageFormat;
 
   public HP9800Mainframe(Emulator emu, String machine) 
   {
-    super(machine);
+    super();
 
     this.emu = emu;
-    emu.setMainframe(this);
-    
-    GridBagLayout gridbag = new GridBagLayout();
-    GridBagConstraints c = new GridBagConstraints();
-		Container contentPane = getContentPane();
-		contentPane.setLayout(gridbag);
-		contentPane.setBackground(brown);
-
-		// Menu bar
-		menuBar = new JMenuBar();
-		menuBar.setMinimumSize(new Dimension(0, MENU_H));
-		menuBar.addMouseListener(new MenuMouseListener()); // to make menuBar visible or invisible
-		
-		JMenu runMenu = new JMenu("Run");
-		restartItem = new JMenuItem("Restart");
-		runMenu.add(restartItem);
-		runMenu.addSeparator();
-		dismissItem = new JMenuItem("Dismiss");
-		dismissItem.addActionListener(this);
-		runMenu.add(dismissItem);
-		restartItem.addActionListener(this);
-		menuBar.add(runMenu);
-		
-		JMenu viewMenu = new JMenu("View");
-		normalSizeItem = new JMenuItem("Normal Size");
-		keyMapItem = new JCheckBoxMenuItem("Key Map");
-		consoleItem = new JCheckBoxMenuItem("Console");
-		hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel");
-		viewMenu.add(normalSizeItem);
-		viewMenu.addSeparator();
-		viewMenu.add(keyMapItem);
-		viewMenu.add(consoleItem);
-		viewMenu.add(hp2116PanelItem);
-		viewMenu.addSeparator();
-		dismissItem = new JMenuItem("Dismiss");
-		dismissItem.addActionListener(this);
-		viewMenu.add(dismissItem);
-		normalSizeItem.addActionListener(this);
-		keyMapItem.addActionListener(this);
-		consoleItem.addActionListener(this);
-		hp2116PanelItem.addActionListener(this);
-		menuBar.add(viewMenu);
-		
-		JMenu printMenu = new JMenu("Print");
-		pageFormatItem = new JMenuItem("Page Format");
-		hardcopyItem = new JMenuItem("Hardcopy");
-		printMenu.add(pageFormatItem);
-		printMenu.add(hardcopyItem);
-		printMenu.addSeparator();
-		dismissItem = new JMenuItem("Dismiss");
-		dismissItem.addActionListener(this);
-		printMenu.add(dismissItem);
-		pageFormatItem.addActionListener(this);
-		hardcopyItem.addActionListener(this);
-		menuBar.add(printMenu);
-		
-		JMenu optionsMenu = new JMenu("Options");
-		debugItem = new JCheckBoxMenuItem("Debug");
-		fanSoundItem = new JCheckBoxMenuItem("Fan Sound");
-		fanSoundItem.setSelected(true);
-		allSoundItem = new JCheckBoxMenuItem("All Sounds");
-		allSoundItem.setSelected(true);
-		optionsMenu.add(debugItem);
-		optionsMenu.add(fanSoundItem);
-		optionsMenu.add(allSoundItem);
-		optionsMenu.addSeparator();
-		dismissItem = new JMenuItem("Dismiss");
-		dismissItem.addActionListener(this);
-		optionsMenu.add(dismissItem);
-		debugItem.addActionListener(this);
-		fanSoundItem.addActionListener(this);
-		allSoundItem.addActionListener(this);
-		menuBar.add(optionsMenu);
-		
-		c.gridx = 0;
-		c.gridy = 0;
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.anchor = GridBagConstraints.WEST;
-		contentPane.add(menuBar, c);
-		
-		JPanel panel = new JPanel();
-		panel.setBackground(brown);
-		c.gridy = 1;
-    c.weightx = 1.;
-    c.weighty = 1.;
-    c.fill = GridBagConstraints.BOTH;
-    contentPane.add(panel, c);
-    
-    pack();
     
     // List of all loaded IOinterfaces
     ioInterfaces = new Vector<IOinterface>();
     
     // List of loaded IOdevices
     ioDevices = new Vector<IOdevice>();
-    
+
     // console output of emulator (disassembler)
-    console = new Console(this, emu);
+    console = new Console(hp9800Window, emu);
     emu.setConsole(console);
 
     // initialize complete memory to 'unused'  
@@ -289,14 +188,11 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
     cpu.setIOunit(ioUnit);
     cpu.setDisassemblerOutput(console);
     ioUnit.setDisassemblerOutput(console);
-    
+
     // HP2116 like lamp panel (just for fun)
     hp2116panel = new HP2116Panel(cpu);
     hp2116panel.setVisible(false);
 
-    addKeyListener(this);
-    addWindowListener(new windowListener());
-    
     // fixed window size ratio
     addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
@@ -310,9 +206,10 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
 		
     fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", false);
     fanSound.loop();
-
-    instructionsWindow = new InstructionsWindow(this);
+    
+    instructionsWindow = new InstructionsWindow(hp9800Window);
     instructionsWindow.setSize(860, 800);
+
     ledRed = new Color(255, 120, 80);
     ledBack = new Color(31, 10, 9);
     
@@ -320,7 +217,7 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
     setLocation(0, 100);
     
     if(!machine.startsWith("HP9830")) {
-      romSelector = new ROMselector(this, this, BLOCK_W, BLOCK_H - 8);
+      romSelector = new ROMselector(hp9800Window, this, BLOCK_W, BLOCK_H - 8);
       printSound = new SoundMedia("media/HP9810A/HP9810A_PRINT_LINE.wav", false);
       paperSound = new SoundMedia("media/HP9810A/HP9810A_PAPER.wav", true);
       paperWhite = new Color(230, 230, 230);
@@ -336,79 +233,32 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
     }
   }
   
-  public class MenuMouseListener extends MouseAdapter
-  {
-  	 public void mouseEntered(MouseEvent event)
-     {
-  		 menuBar.setVisible(false);
-  		 menuBar.setVisible(true);
-     }
-  	 
-  	 public void mouseExited(MouseEvent event)
-     {
-  		 if(event.getY() >= menuBar.getHeight())
-  			 repaint();
-     }
-  }
-  
-	public void actionPerformed(ActionEvent event)
-	{
-		String cmd = event.getActionCommand();
-		
-		if(cmd.equals("Restart")) {
- 			ioUnit.reset = true;
-	  } else if(cmd.equals("Debug")) {
-      console.setDebugMode(!console.getDebugMode());
-  		debugItem.setSelected(console.getDebugMode());
-  	} else if(cmd.equals("Normal Size")) {
-  		setSize();
-  	} else if(cmd.equals("Key Map")) {
-  		keyMapItem.setSelected(showKeycode = !showKeycode);
-  	} else if(cmd.equals("Console")) {
-      console.setVisible(!console.isVisible());
-  		consoleItem.setSelected(console.isVisible());
-  	} else if(cmd.equals("HP2116 Panel")) {
-      hp2116panel.setVisible(!hp2116panel.isVisible());
-      hp2116PanelItem.setSelected(hp2116panel.isVisible());
-  	} else if(cmd.equals("Fan Sound")) {
-  		fanSoundItem.setSelected(fanSound.toggle());
-  	} else if(cmd.equals("All Sounds")) {
-      SoundMedia.enable(!SoundMedia.isEnabled());
-      if(!SoundMedia.isEnabled())
-      	fanSound.stop();
-      allSoundItem.setSelected(SoundMedia.isEnabled());
-  	}
-		
-		repaint();
-	}
-
   public void setConfiguration(Configuration config)
   {
   	this.config = config;
   }
   
+  // set standard size of HP9800Mainframe panel
   public void setSize()
   {
   	Dimension normalSize;
   	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
   	
-    setResizable(true); // this changes size of insets
-    setVisible(true);
-    
     // fixed aspect ratio of keyboard
     aspectRatio = (double)KEYB_W / (double)KEYB_H;
 
-    // set window to standard size
+    // set panel to standard size
     normalSize = new Dimension(KEYB_W + getInsets().left + getInsets().right, KEYB_H + getInsets().top + getInsets().bottom);
-    this.setPreferredSize(normalSize);
+    setPreferredSize(normalSize);
     
     // check if normalSize fits in screenSize
     if(normalSize.getHeight() > screenSize.getHeight())
-    	this.setSize(screenSize); // resize to screen on smaller devices
+    	setSize(screenSize); // resize to screen on smaller devices
     else
-    	this.setSize(normalSize);
+    	setSize(normalSize);
   }
   
+  // set size of HP9800Mainframe panel with fixed aspect ratio
   public void normalizeSize()
   {
   	// actual size of keyboard area
@@ -429,12 +279,14 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   	actualSize.height += getInsets().top + getInsets().bottom;
   	
   	setSize(actualSize);
+  	if(hp9800Window != null)
+  		hp9800Window.setSize();
   }
   
   public void setTapeDevice(HP9865A tapeDevice)
   {}
   
-  protected void closeAllDevices()
+  public void closeAllDevices()
   {
   	// close all open devices one by one
   	while(!ioDevices.isEmpty())
@@ -443,7 +295,7 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   	}
   }
 
-  protected void closeAllInterfaces()
+  public void closeAllInterfaces()
   {
   	// close all open devices one by one
   	while(!ioInterfaces.isEmpty())
@@ -452,59 +304,28 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   	}
   }
 
-  class windowListener extends WindowAdapter
-  {
-    public void windowClosing(WindowEvent event)
-    {
-    	System.out.println("\nHP9800 Emulator shutdown initiated ...");
-    	
-    	closeAllDevices(); // close all loaded devices
-    	closeAllInterfaces(); // close remaining interfaces without device (MCR, Beeper etc.)
-    	emu.stop();
-    	hp2116panel.stop();
-      ImageMedia.disposeAll();
-      SoundMedia.disposeAll();
-      config.dispose();
-      setVisible(false);
-      dispose();
-      System.out.println("HP9800 Emulator terminated.");
-      
-      g2d = null;
-      //System.exit(0);
-   }
-  }
-
   public class mouseListener extends MouseAdapter
   {}
-  
+  /*
   public void update(Graphics g)
   {
     // avoid flickering when drawing resized window
   	// also wait for image processing after ROM module change
-  	/*
+  	
   	try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) { }
-		*/
+		
   	paint(g);
   }
-  
+  */
   public void paint(Graphics g)
   {
   	super.paint(g);
   	normalizeSize();  // normalize aspect ratio and get scaling factors
   	g2d = getG2D(g);
   }
-  /*
-  public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height)
-  {
-  	if((infoflags & ImageObserver.ALLBITS) != 0) {
-  		repaint();
-  	}
-  		
-  	return(true);
-  }
-  */
+  
   public Graphics2D getG2D(Graphics g)
   {
   	Graphics2D g2d = (Graphics2D)g;
@@ -526,182 +347,6 @@ public class HP9800Mainframe extends JFrame implements ActionListener, KeyListen
   {}
   
   public void display(Graphics2D g2d, int reg, int i)
-  {}
-
-  public void keyPressed(KeyEvent event)
-  {
-    int numPages = numLines / PAPER_HEIGHT;
-    int keyChar = event.getKeyChar();
-    int keyCode = event.getKeyCode();
-    String strCode = "";
-    String modifier = "";
-
-    switch(keyCode) {
-    case KeyEvent.VK_UNDEFINED:
-      if(keyChar != KeyEvent.CHAR_UNDEFINED)
-        strCode = Integer.toString(keyChar);
-      else
-        return;
-      break;
-
-    case KeyEvent.VK_SHIFT:     // don't send modifier keys
-    case KeyEvent.VK_CONTROL:
-    case KeyEvent.VK_ALT:
-    case KeyEvent.VK_NUM_LOCK:
-      return;
-
-
-    default:
-      if(event.isControlDown()) {
-        switch(keyCode) {
-        /*
-        case 'Q':
-          for(int i = 01000; i <= 01777; i++) {
-            emu.console.append(Integer.toOctalString(emu.memory[i].getValue()) + "\n");
-          }
-          break;
-        */ 
-        
-        case 'C':
-          hp2116panel.setVisible(!hp2116panel.isVisible());
-          break;
-        
-        case 'D':
-          console.setVisible(!console.isVisible());
-          break;
-
-        case 'F':
-          fanSound.toggle();
-          break;
-        
-        case 'K':
-          showKeycode = ! showKeycode;
-          repaint();
-          break;
-
-        case 'P':
-          if(event.isShiftDown())
-            pageFormat = printJob.pageDialog(pageFormat);
-          else {
-            printJob.printDialog();
-            try {
-              printJob.print();
-            } catch (PrinterException e) { }
-          }
-          break;
-
-        case 'R':
-          if(event.isAltDown())
-            synchronized(ioUnit) {
-              ioUnit.reset = true;
-            }
-          break;
-
-        case 'S':
-          if(SoundMedia.isEnabled()) {
-            fanSound.stop();
-            SoundMedia.enable(false);
-          } else {
-            SoundMedia.enable(true);
-            fanSound.loop();
-          }
-          break;
-
-        case 'T':
-          if(emu.measure) {
-            emu.stopMeasure();
-            console.append("NumOps=" + emu.numOps);
-            console.append(" Min=" + emu.minExecTime);
-            console.append(" Max=" + emu.maxExecTime);
-            console.append(" Mean=" + emu.sumExecTime / emu.numOps + "[ns]\n");
-            if(!console.isVisible())
-              console.setVisible(true);
-          } else
-            emu.startMeasure();
-          break;
-
-        case KeyEvent.VK_PAGE_UP:
-          // paper page up
-          if(--page < 0) page = 0;
-          displayPrintOutput(null);
-          break;
-
-        case KeyEvent.VK_PAGE_DOWN:
-          // paper page down
-          page++;
-          if(page >= numPages) {
-            page = numPages;
-            repaint();
-          }
-          else
-            displayPrintOutput(null);
-          break;
-
-        case KeyEvent.VK_DELETE:
-          // clear print buffer
-          initializeBuffer();
-          page = 0;
-          repaint();
-          break;
-
-        case KeyEvent.VK_HOME:
-          // PAPER
-          paper(2);
-          keyCode = -1;
-          break;
-
-        }
-
-        return;
-      }
-
-    strCode = Integer.toString(keyCode);
-    }
-
-    if(event.isAltDown())
-      modifier = "A";
-
-    if(event.isControlDown())
-      modifier += "C";
-
-    if(event.isShiftDown())
-      modifier += "S";
-
-    if(emu.keyLogMode) {
-      emu.console.append(strCode);
-      if(modifier != "")
-        emu.console.append(" " + modifier);
-      emu.console.append(" ; " + (char)keyChar + "\n");
-      return;
-    }
-
-    strCode = (String)config.hostKeyCodes.get(strCode + modifier);
-    if(strCode != null)
-      keyCode = Integer.parseInt(strCode, 8);
-    else if(keyChar >= 040 && keyChar <= 0172)
-      if(Character.isLowerCase(keyChar))
-        keyCode = Character.toUpperCase(keyChar);
-      else if(Character.isUpperCase(keyChar ))
-        keyCode = keyChar + 0200;
-      else
-        keyCode = keyChar;
-    else
-      return;
-
-    if(keyCode == STOP_KEYCODE) {
-      // set STP flag
-      ioUnit.STP = true;
-    }
-
-    event.consume(); // do not pass key event to host system 
-    ioUnit.bus.keyboard.setKeyCode(keyCode);
-    ioUnit.bus.keyboard.requestInterrupt();
-  }
-
-  public void keyReleased(KeyEvent event)
-  {}
-
-  public void keyTyped(KeyEvent event)
   {}
 
   public void initializeBuffer()

@@ -28,7 +28,6 @@ import io.ImageMedia;
 
 import javax.swing.JPanel;
 import java.awt.Frame;
-import java.awt.Image;
 import java.awt.BorderLayout;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
@@ -174,8 +173,8 @@ public class ROMselector extends JDialog implements ActionListener
   {
     String cmd = event.getActionCommand();
     mainframe.config.setROM(romSlot, cmd);
+    mainframe.repaint();
     setVisible(false);
-    owner.repaint();
   }
 
 }

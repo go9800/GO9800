@@ -175,7 +175,7 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   
   boolean openCardFile()
   {
-    FileDialog fileDialog = new FileDialog(mainframe, "Load Magnetic Card");
+    FileDialog fileDialog = new FileDialog(mainframe.hp9800Window, "Load Magnetic Card");
     fileDialog.setBackground(Color.WHITE);
     fileDialog.setVisible(true);
 

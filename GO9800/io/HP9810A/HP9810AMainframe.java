@@ -304,7 +304,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   		if(moduleImage != null) {
   			g2d.shear(BLOCK1_S, 0.);  // negative horizontal shear for correct perspective
   			g2d.drawImage(blockImage, x + BLOCK1_X, y + BLOCK1_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
-
+  			
   			// draw ROM module label with transparence, scaled and processed for brightness and contrast
   			moduleImage = block.getUniModule(1.1f, 25f);  // get processed image, based on scaled image
   			g2d.drawImage(moduleImage, x + BLOCK1_X + 1, y + BLOCK1_Y + 1, MODULE_W, MODULE_H, this);  // draw module label

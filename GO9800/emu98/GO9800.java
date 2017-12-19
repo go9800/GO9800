@@ -39,6 +39,7 @@
  * 24.10.2017 Rel. 2.10 Added main window and redirection of System.out
  * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
  * 10.12.2017 Rel. 2.10 Changed window layout mananger, added menus
+ * 17.12.2017 Rel. 2.10 Added HP9800Window
  */
 
 package emu98;
@@ -213,8 +214,10 @@ class GO9800Window extends JDialog implements ActionListener
     mainframe.console.setDebugMode(debug);
     if(debug)
       mainframe.cpu.outputDecoderToConsole(); // transfer decoded micro code to console 
-
-    mainframe.setVisible(true);
+    
+    // create window for HP9800Mainframe 
+    HP9800Window hp9800Window = new HP9800Window(mainframe, machine);
+    hp9800Window.setVisible(true);
     emu.start();
 	}
 }
