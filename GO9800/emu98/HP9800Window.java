@@ -163,10 +163,15 @@ public class HP9800Window extends JFrame implements ActionListener
   	} else if(cmd.equals("Fan Sound")) {
   		fanSoundItem.setSelected(mainframe.fanSound.toggle());
   	} else if(cmd.equals("All Sounds")) {
-      SoundMedia.enable(!SoundMedia.isEnabled());
-      if(!SoundMedia.isEnabled())
+      if(mainframe.soundController.isEnabled()) {
       	mainframe.fanSound.stop();
-      allSoundItem.setSelected(SoundMedia.isEnabled());
+      	mainframe.soundController.setEnabled(false);
+      } else {
+      	mainframe.soundController.setEnabled(true);
+        mainframe.fanSound.loop();
+      }
+      allSoundItem.setSelected(mainframe.soundController.isEnabled());
+      fanSoundItem.setSelected(mainframe.soundController.isEnabled());
   	} else if(cmd.equals("Page Format")) {
     	mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
   	} else if(cmd.equals("Hardcopy")) {
@@ -197,8 +202,8 @@ public class HP9800Window extends JFrame implements ActionListener
   	mainframe.closeAllInterfaces(); // close remaining interfaces without device (MCR, Beeper etc.)
   	emu.stop();
   	hp2116panel.stop();
-  	ImageMedia.disposeAll();
-  	SoundMedia.disposeAll();
+  	mainframe.imageController.disposeAll();
+  	mainframe.soundController.disposeAll();
   	mainframe.config.dispose();
   	setVisible(false);
   	dispose();
@@ -207,7 +212,13 @@ public class HP9800Window extends JFrame implements ActionListener
 
   public void setSize()
   {
-    setSize(new Dimension(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + menuBar.getHeight() + getInsets().top + getInsets().bottom));
+    setSize(new Dimension(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom));
+  }
+  
+  public void setSize(Boolean showMenuBar)
+  {
+    setSize(new Dimension(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (showMenuBar ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom));
+    menuBar.setVisible(showMenuBar);
   }
   
   class HP9800KeyListener implements KeyListener
@@ -266,7 +277,7 @@ public class HP9800Window extends JFrame implements ActionListener
             break;
             
           case 'M':
-          	menuBar.setVisible(!menuBar.isVisible());
+          	setSize(!menuBar.isVisible());
           	break;
 
           case 'P':
@@ -288,14 +299,15 @@ public class HP9800Window extends JFrame implements ActionListener
             break;
 
           case 'S':
-            if(SoundMedia.isEnabled()) {
+            if(mainframe.soundController.isEnabled()) {
             	mainframe.fanSound.stop();
-              SoundMedia.enable(false);
+            	mainframe.soundController.setEnabled(false);
             } else {
-              SoundMedia.enable(true);
+            	mainframe.soundController.setEnabled(true);
               mainframe.fanSound.loop();
             }
-            allSoundItem.setSelected(SoundMedia.isEnabled());
+            allSoundItem.setSelected(mainframe.soundController.isEnabled());
+            fanSoundItem.setSelected(mainframe.soundController.isEnabled());
             break;
 
           case 'T':

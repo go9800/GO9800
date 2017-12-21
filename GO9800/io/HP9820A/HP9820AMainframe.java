@@ -156,8 +156,8 @@ public class HP9820AMainframe extends HP9800Mainframe
     romSelector.addRomButton("media/HP9820A/HP11222A_Module.png", "HP11222A");
     romSelector.addRomButton("media/HP9820A/HP11223A_Module.png", "HP11223A");
 
-    keyboardImageMedia = new ImageMedia("media/HP9820A/HP9820A_Keyboard.png");
-    blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png");
+    keyboardImageMedia = new ImageMedia("media/HP9820A/HP9820A_Keyboard.png", imageController);
+    blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png", imageController);
 
     setSize();
     System.out.println("HP9820 Mainframe loaded.");

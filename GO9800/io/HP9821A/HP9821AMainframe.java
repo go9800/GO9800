@@ -148,10 +148,10 @@ public class HP9821AMainframe extends HP9820AMainframe
     romSelector.addRomButton("media/HP9821A/HP11222A_Module.png", "HP11222A");
     //romSelector.addRomButton("media/HP9821A/HP11223A_Block.jpg", "HP11223A");
     
-    keyboardImageMedia = new ImageMedia("media/HP9821A/HP9821A_Keyboard.png");
- 		driveopenImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Open.png");
- 		driveloadedImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Loaded.png");
-    blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png");
+    keyboardImageMedia = new ImageMedia("media/HP9821A/HP9821A_Keyboard.png", imageController);
+ 		driveopenImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Open.png", imageController);
+ 		driveloadedImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Loaded.png", imageController);
+    blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png", imageController);
 
     setSize();
     System.out.println("HP9821 Mainframe loaded.");

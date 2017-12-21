@@ -36,20 +36,22 @@
 package io;
 
 import java.io.*;
-import java.util.Vector;
+//import java.util.Vector;
 
 import javax.sound.sampled.*;
 
 public class SoundMedia
 {
   private AudioInputStream ais;
+  private SoundController controller;
   private Clip soundClip;
+  /*
   private static boolean enabled = true;
   private static final Mixer smMixer;
   private static final boolean DIRECT = false;
   private static int maxlines;
   private static Vector<Clip> clipList;
-
+  
   static {
     Mixer mixer = null;
     
@@ -77,21 +79,25 @@ public class SoundMedia
     
     smMixer = mixer;
   }
-
-  public SoundMedia(String soundFile, boolean discardable)
+	*/
+  public SoundMedia(String soundFile, SoundController controller, boolean discardable)
   {
+  	if(controller == null)
+  		return;
+  	this.controller = controller;
+  	
   	// can sound be discarded if not enough lines are available?
-  	if(maxlines != AudioSystem.NOT_SPECIFIED && maxlines < 16 && discardable)
+  	if(controller.getMaxLines() != AudioSystem.NOT_SPECIFIED && controller.getMaxLines() < 16 && discardable)
   		return;
   	
     try {
       ais = AudioSystem.getAudioInputStream(new BufferedInputStream(getClass().getResourceAsStream("/" + soundFile)));
       DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
-      if(DIRECT)
+      if(controller.DIRECT)
         soundClip = (Clip)AudioSystem.getLine(info);
       else {
-        if(smMixer != null)
-          soundClip = (Clip)smMixer.getLine(info);
+        if(controller.smMixer != null)
+          soundClip = (Clip)controller.smMixer.getLine(info);
         else {
           soundClip = null;
           return;
@@ -99,12 +105,12 @@ public class SoundMedia
       }
         
       soundClip.open(ais);
-      clipList.add(soundClip);
+      controller.add(soundClip);
     } catch(IOException | UnsupportedAudioFileException | LineUnavailableException | IllegalArgumentException | NullPointerException e) {
       System.err.println(soundFile + ": " + e);
     }
   }
-  
+  /*
   public static void enable(boolean value)
   {
     enabled = value;
@@ -114,10 +120,10 @@ public class SoundMedia
   {
     return(enabled);
   }
-  
+  */
   public void loop()
   {
-    if(enabled && (soundClip != null)) {
+    if(controller.isEnabled() && (soundClip != null)) {
       soundClip.setFramePosition(0);
       soundClip.loop(Clip.LOOP_CONTINUOUSLY);
     }
@@ -125,7 +131,7 @@ public class SoundMedia
 
   public void loop(int count)
   {
-    if(enabled && (soundClip != null)) {
+    if(controller.isEnabled() && (soundClip != null)) {
       soundClip.setFramePosition(0);
       soundClip.loop(count);
     }
@@ -133,7 +139,7 @@ public class SoundMedia
 
   public void start()
   {
-    if(enabled && (soundClip != null)) {
+    if(controller.isEnabled() && (soundClip != null)) {
       if(soundClip.isRunning())
         soundClip.stop();
 
@@ -144,7 +150,7 @@ public class SoundMedia
 
   public void finish()
   {
-    if(enabled && (soundClip != null)) {
+    if(controller.isEnabled() && (soundClip != null)) {
       if(soundClip.isRunning())
         soundClip.loop(0);
     }
@@ -152,13 +158,13 @@ public class SoundMedia
 
   public void stop()
   {
-    if(enabled && (soundClip != null))
+    if(controller.isEnabled() && (soundClip != null))
       soundClip.stop();
   }
 
   public boolean toggle()
   {
-    if(enabled && (soundClip != null)) {
+    if(controller.isEnabled() && (soundClip != null)) {
       if(soundClip.isRunning())
         soundClip.stop();
       else {
@@ -180,7 +186,7 @@ public class SoundMedia
   {
     soundClip.close();
   }
-  
+  /*
   public int getMaxLines()
   {
   	return(maxlines);
@@ -201,4 +207,5 @@ public class SoundMedia
   	
   	System.out.println("Sound threads stopped.");
   }
+  */
 }

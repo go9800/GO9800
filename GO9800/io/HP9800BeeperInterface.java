@@ -39,7 +39,7 @@ public class HP9800BeeperInterface extends HP9800MagneticCardReaderInterface
     mainframe.ioInterfaces.add(this); // connect to ioBus
 
     // generate beep sound
-    beepSound = new SoundMedia("media/HP9800/HP9800_BEEP.wav", false);
+    beepSound = new SoundMedia("media/HP9800/HP9800_BEEP.wav", mainframe.soundController, false);
 
     System.out.println("HP9800 Audio loaded.");
   }

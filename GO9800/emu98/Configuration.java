@@ -196,7 +196,7 @@ public class Configuration
               if(keyWord.equals("RWM")) {
                 address = Integer.parseInt(tokenline.nextToken(), 8);
                 length = Integer.parseInt(tokenline.nextToken(), 8);
-                MemoryBlock memoryBlock = new MemoryBlock(model, "RWM", address, length, "BUFFER", hpInterface);
+                MemoryBlock memoryBlock = new MemoryBlock(mainframe, model, "RWM", address, length, "BUFFER", hpInterface);
                 memoryBlocks.put(hpInterface, memoryBlock);
                 if(memoryBlock.initialize(mainframe.memory) != 0)
                   System.exit(1);
@@ -375,7 +375,7 @@ public class Configuration
               slot = "";
             }
 
-            MemoryBlock memoryBlock = new MemoryBlock(model, blockType, address, length, blockName, slot);
+            MemoryBlock memoryBlock = new MemoryBlock(mainframe, model, blockType, address, length, blockName, slot);
             memoryBlocks.put(slot, memoryBlock);
             if(memoryBlock.initialize(mainframe.memory) != 0)
               System.exit(1);

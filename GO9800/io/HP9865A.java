@@ -105,7 +105,7 @@
         addKeyListener(this);
         addMouseListener(new mouseListener());
 
-        hp9865aImage = new ImageMedia("media/HP9865A/HP9865A.jpg").getImage();
+        hp9865aImage = new ImageMedia("media/HP9865A/HP9865A.jpg", ioInterface.mainframe.imageController).getImage();
         setResizable(false);
         setLocation(280, 0);
 
@@ -144,22 +144,22 @@
       private void loadSound()
       {
         // generate door sound
-        doorOpenSound = new SoundMedia("media/HP9865A/HP9865_DOOR_OPEN.wav", true);
-        doorCloseSound = new SoundMedia("media/HP9865A/HP9865_DOOR_CLOSE.wav", true);
+        doorOpenSound = new SoundMedia("media/HP9865A/HP9865_DOOR_OPEN.wav", ioInterface.mainframe.soundController, true);
+        doorCloseSound = new SoundMedia("media/HP9865A/HP9865_DOOR_CLOSE.wav", ioInterface.mainframe.soundController, true);
 
         // generate motor sound
-        motorStartSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_START.wav", true);
-        motorStopSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_STOP.wav", true);
-        motorSlowSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_SLOW.wav", true);
-        motorFastSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_FAST.wav", true);
-        motorRewindSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_REWIND.wav", true);
+        motorStartSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_START.wav", ioInterface.mainframe.soundController, true);
+        motorStopSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_STOP.wav", ioInterface.mainframe.soundController, true);
+        motorSlowSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_SLOW.wav", ioInterface.mainframe.soundController, true);
+        motorFastSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_FAST.wav", ioInterface.mainframe.soundController, true);
+        motorRewindSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_REWIND.wav", ioInterface.mainframe.soundController, true);
       }
       
       public boolean openTapeFile()
       {
         closeTapeFile();
         doorOpenSound.start();
-        hp9865aImage = new ImageMedia("media/HP9865A/HP9865A_Open.jpg").getImage();
+        hp9865aImage = new ImageMedia("media/HP9865A/HP9865A_Open.jpg", ioInterface.mainframe.imageController).getImage();
         repaint();
 
         FileDialog fileDialog = new FileDialog(this, "Load Cassette");
@@ -315,7 +315,7 @@
           }
             
           doorCloseSound.start();
-          hp9865aImage = new ImageMedia("media/HP9865A/HP9865A+Cassette.jpg").getImage();
+          hp9865aImage = new ImageMedia("media/HP9865A/HP9865A+Cassette.jpg", ioInterface.mainframe.imageController).getImage();
           repaint();
 
           hp9865Interface.status = driveStatus;
@@ -340,7 +340,7 @@
         
         stopTape();
         hp9865Interface.status = driveStatus = POWER_ON | CASSETTE_OUT | WRITE_PROTECT;
-        hp9865aImage = new ImageMedia("media/HP9865A/HP9865A.jpg").getImage();
+        hp9865aImage = new ImageMedia("media/HP9865A/HP9865A.jpg", ioInterface.mainframe.imageController).getImage();
         repaint();
 
         return(false);

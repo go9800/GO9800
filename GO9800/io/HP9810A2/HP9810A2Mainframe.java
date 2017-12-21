@@ -45,7 +45,7 @@ public class HP9810A2Mainframe extends HP9810AMainframe
     LED_X = 137;
     LED_Y = 27;
     LED_SEGMENT_SIZE = 3;
-    displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display_2.png");
+    displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display_2.png", imageController);
   }
   
   public void display(Graphics2D g2d, int reg, int i)

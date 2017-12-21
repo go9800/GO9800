@@ -156,7 +156,7 @@ public class ROMselector extends JDialog implements ActionListener
   public void addRomButton(String imageName, String actionCommand)
   {
     romButton = new JButton();
-    romButton.setIcon(new ImageIcon(new ImageMedia(imageName).getScaledImage((int)(1.2 * moduleWidth), (int)(1.2 * moduleHeight))));
+    romButton.setIcon(new ImageIcon(new ImageMedia(imageName, mainframe.imageController).getScaledImage((int)(1.2 * moduleWidth), (int)(1.2 * moduleHeight))));
     romButton.setPreferredSize(new Dimension(moduleWidth + 10, moduleHeight + 10));
     romButton.setBackground(Color.black);
     romPanel.add(romButton, null);

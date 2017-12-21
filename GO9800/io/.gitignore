@@ -47,3 +47,6 @@
 /HP9800Mainframe$HP9800Panel.class
 /HP9800Mainframe$MenuFocusListener.class
 /HP9800Mainframe$MenuComponentListener.class
+/MediaController.class
+/ImageController.class
+/SoundController.class

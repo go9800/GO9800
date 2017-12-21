@@ -118,12 +118,12 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public ROMselector romSelector;
   public InstructionsWindow instructionsWindow;
   public HP9800Window hp9800Window;
+  public Emulator emu;
   
   // List of all IOinterfaces and IOdevices for cleanup
   public Vector<IOinterface> ioInterfaces; // also used by IObus
   public Vector<IOdevice> ioDevices;
 
-  public Emulator emu;
   public Configuration config;
   protected Hashtable<String, String> hostKeyCodes, hostKeyStrings;
   
@@ -131,6 +131,8 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public double aspectRatio = 1.;
 	public double widthScale = 1., heightScale = 1.;
 	
+	public ImageController imageController;
+	public SoundController soundController;
   protected ImageMedia keyboardImageMedia, displayImageMedia, blockImageMedia;
   protected ImageMedia driveopenImageMedia, driveloadedImageMedia;
   protected ImageMedia ledOnImageMedia, ledOffImageMedia, ledSmallOnImageMedia, ledSmallOffImageMedia;
@@ -157,9 +159,8 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public HP9800Mainframe(Emulator emu, String machine) 
   {
     super();
-
     this.emu = emu;
-    
+
     // List of all loaded IOinterfaces
     ioInterfaces = new Vector<IOinterface>();
     
@@ -167,7 +168,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     ioDevices = new Vector<IOdevice>();
 
     // console output of emulator (disassembler)
-    console = new Console(hp9800Window, emu);
+    console = new Console(hp9800Window, this);
     emu.setConsole(console);
 
     // initialize complete memory to 'unused'  
@@ -190,7 +191,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     ioUnit.setDisassemblerOutput(console);
 
     // HP2116 like lamp panel (just for fun)
-    hp2116panel = new HP2116Panel(cpu);
+    hp2116panel = new HP2116Panel(this);
     hp2116panel.setVisible(false);
 
     // fixed window size ratio
@@ -204,7 +205,10 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
       }
     });
 		
-    fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", false);
+    imageController = new ImageController();
+    soundController = new SoundController();
+    
+    fanSound = new SoundMedia("media/HP9800/HP9800_FAN.wav", soundController, false);
     fanSound.loop();
     
     instructionsWindow = new InstructionsWindow(hp9800Window);
@@ -218,8 +222,8 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     
     if(!machine.startsWith("HP9830")) {
       romSelector = new ROMselector(hp9800Window, this, BLOCK_W, BLOCK_H - 8);
-      printSound = new SoundMedia("media/HP9810A/HP9810A_PRINT_LINE.wav", false);
-      paperSound = new SoundMedia("media/HP9810A/HP9810A_PAPER.wav", true);
+      printSound = new SoundMedia("media/HP9810A/HP9810A_PRINT_LINE.wav", soundController, false);
+      paperSound = new SoundMedia("media/HP9810A/HP9810A_PAPER.wav", soundController, true);
       paperWhite = new Color(230, 230, 230);
       paperGray = new Color(100, 100, 85);
       initializeBuffer();
@@ -396,7 +400,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
       if(time < 0) time = 0;
       
       try {
-        Thread.sleep(SoundMedia.isEnabled()? time : 0);
+        Thread.sleep(soundController.isEnabled()? time : 0);
       } catch(InterruptedException e) { }
     }
   }
@@ -437,7 +441,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
       if(time < 0) time = 0;
       
       try {
-        Thread.sleep(SoundMedia.isEnabled()? time : 0);
+        Thread.sleep(soundController.isEnabled()? time : 0);
       } catch(InterruptedException e) { }
       
       lineBuffer = new byte[16];

@@ -31,6 +31,8 @@
 
 package emu98;
 
+import io.HP9800Mainframe;
+import io.ImageController;
 import io.ImageMedia;
 import javax.swing.JPanel;
 import java.awt.Frame;
@@ -80,16 +82,18 @@ public class Console extends JDialog implements ActionListener
 
   private static final int MAX_LINES = 4096;
   private Emulator emu;
+  private ImageController imageController;
   private boolean debugMode = false;
 
   /**
    * @param owner
    */
-  public Console(Frame owner, Emulator emu)
+  public Console(Frame owner, HP9800Mainframe mainframe)
   {
     super(owner);
     initialize();
-    this.emu = emu;
+    emu = mainframe.emu;
+    imageController = mainframe.imageController;
   }
 
   /**
@@ -270,7 +274,7 @@ public class Console extends JDialog implements ActionListener
     {
       runButton = new JButton();
       runButton.setActionCommand("Run");
-      runButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/RUN.jpg").getImage()));
+      runButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/RUN.jpg", imageController).getImage()));
       runButton.setMnemonic(KeyEvent.VK_UNDEFINED);
       runButton.setPreferredSize(new Dimension(70, 25));
       runButton.addActionListener(this);
@@ -288,7 +292,7 @@ public class Console extends JDialog implements ActionListener
     if (clearButton == null)
     {
       clearButton = new JButton();
-      clearButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/CLEAR.jpg").getImage()));
+      clearButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/CLEAR.jpg", imageController).getImage()));
       clearButton.setPreferredSize(new Dimension(70, 25));
       clearButton.setActionCommand("Clear");
       clearButton.addActionListener(this);
@@ -307,11 +311,11 @@ public class Console extends JDialog implements ActionListener
     {
       disassembleCheckBox = new JCheckBox();
       disassembleCheckBox.setForeground(new Color(253, 253, 253));
-      disassembleCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
-      disassembleCheckBox.setSelectedIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg").getImage()));
+      disassembleCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg", imageController).getImage()));
+      disassembleCheckBox.setSelectedIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg", imageController).getImage()));
       disassembleCheckBox.setFont(new Font("Dialog", Font.PLAIN, 12));
       disassembleCheckBox.setBackground(new Color(85, 83, 81));
-      disassembleCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
+      disassembleCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg", imageController).getImage()));
       disassembleCheckBox.setActionCommand("TraceLED");
       disassembleCheckBox.addActionListener(this);
     }
@@ -330,9 +334,9 @@ public class Console extends JDialog implements ActionListener
       keyLogCheckBox = new JCheckBox();
       keyLogCheckBox.setBackground(new Color(85, 83, 81));
       keyLogCheckBox.setForeground(new Color(253, 253, 253));
-      keyLogCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
-      keyLogCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
-      keyLogCheckBox.setSelectedIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg").getImage()));
+      keyLogCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg", imageController).getImage()));
+      keyLogCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg", imageController).getImage()));
+      keyLogCheckBox.setSelectedIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg", imageController).getImage()));
       keyLogCheckBox.setActionCommand("KeylogLED");
       keyLogCheckBox.addActionListener(this);
     }
@@ -394,7 +398,7 @@ public class Console extends JDialog implements ActionListener
     if (stepButton == null)
     {
       stepButton = new JButton();
-      stepButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/STEP.jpg").getImage()));
+      stepButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/STEP.jpg", imageController).getImage()));
       stepButton.setPreferredSize(new Dimension(70, 25));
       stepButton.setActionCommand("Step");
       stepButton.addActionListener(this);
@@ -413,7 +417,7 @@ public class Console extends JDialog implements ActionListener
     {
       keyLogButton = new JButton();
       keyLogButton.setPreferredSize(new Dimension(70, 25));
-      keyLogButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/KEYLOG.jpg").getImage()));
+      keyLogButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/KEYLOG.jpg", imageController).getImage()));
       keyLogButton.setActionCommand("KeyLog");
       keyLogButton.addActionListener(this);
     }
@@ -431,7 +435,7 @@ public class Console extends JDialog implements ActionListener
     {
       traceButton = new JButton();
       traceButton.setPreferredSize(new Dimension(70, 25));
-      traceButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/TRACE.jpg").getImage()));
+      traceButton.setIcon(new ImageIcon(new ImageMedia("media/HP9800/TRACE.jpg", imageController).getImage()));
       traceButton.setActionCommand("Trace");
       traceButton.addActionListener(this);
     }
@@ -449,9 +453,9 @@ public class Console extends JDialog implements ActionListener
       microCodeCheckBox.setBackground(new Color(85, 83, 81));
       microCodeCheckBox.setForeground(new Color(253, 253, 253));
       microCodeCheckBox.setActionCommand("MicroCodeLED");
-      microCodeCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
-      microCodeCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg").getImage()));
-      microCodeCheckBox.setSelectedIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg").getImage()));
+      microCodeCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg", imageController).getImage()));
+      microCodeCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg", imageController).getImage()));
+      microCodeCheckBox.setSelectedIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg", imageController).getImage()));
       microCodeCheckBox.setText("µCODE");
       microCodeCheckBox.setActionCommand("MicroCodeLED");
       microCodeCheckBox.addActionListener(this);

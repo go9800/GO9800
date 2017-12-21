@@ -45,6 +45,7 @@ public class HP9861A extends IOdevice implements Printable
   HP11201A hp11201a;
   //Image hp9861aImage;
   SoundMedia typeSound, spaceSound, crSound, lfSound;
+  SoundController soundController;
   private Vector<StringBuffer> printBuffer;
   private StringBuffer lineBuffer;
   private int fontSize;
@@ -75,10 +76,11 @@ public class HP9861A extends IOdevice implements Printable
     hp11201a = (HP11201A)ioInterface;
 
     // load print sound
-    typeSound = new SoundMedia("media/HP9861A/HP9861_TYPE.wav", true);
-    spaceSound = new SoundMedia("media/HP9861A/HP9861_SPC.wav", true);
-    crSound = new SoundMedia("media/HP9861A/HP9861_CR.wav", true);
-    lfSound = new SoundMedia("media/HP9861A/HP9861_LF.wav", true);
+    soundController = ioInterface.mainframe.soundController;
+    typeSound = new SoundMedia("media/HP9861A/HP9861_TYPE.wav", soundController, true);
+    spaceSound = new SoundMedia("media/HP9861A/HP9861_SPC.wav", soundController, true);
+    crSound = new SoundMedia("media/HP9861A/HP9861_CR.wav", soundController, true);
+    lfSound = new SoundMedia("media/HP9861A/HP9861_LF.wav", soundController, true);
 
     setSize(1010, 250);
     setLocation(0, 0);

@@ -57,8 +57,8 @@ public class HP9860A extends IOdevice
     hp11200a = (HP11200A)ioInterface;
 
     // generate motor sound
-    cardReaderSound = new SoundMedia("media/HP9860A/HP9860_CARD.wav", false);
-    hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg").getImage();
+    cardReaderSound = new SoundMedia("media/HP9860A/HP9860_CARD.wav", ioInterface.mainframe.soundController, false);
+    hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg", ioInterface.mainframe.imageController).getImage();
     setResizable(false);
     setLocation(740,0);
     setBackground(Color.BLACK);
@@ -109,7 +109,7 @@ public class HP9860A extends IOdevice
       }
 
       cardReaderSound.loop();
-      hp9860aImage = new ImageMedia("media/HP9860A/HP9860A+Card.jpg").getImage();
+      hp9860aImage = new ImageMedia("media/HP9860A/HP9860A+Card.jpg", ioInterface.mainframe.imageController).getImage();
       repaint();
       // restart timer
       hp11200a.timerValue = WAIT_CARD;
@@ -199,7 +199,7 @@ public class HP9860A extends IOdevice
       } catch (IOException e) { }
     }
 
-    hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg").getImage();
+    hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg", ioInterface.mainframe.imageController).getImage();
     repaint();
     cardReaderSound.loop(0);
     hp11200a.timerValue = WAIT_IDLE;

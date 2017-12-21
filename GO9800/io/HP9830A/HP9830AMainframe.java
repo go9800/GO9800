@@ -214,9 +214,9 @@ public class HP9830AMainframe extends HP9800Mainframe
     tapeDevice.hpName = "HP9865A";
     hp9865Interface.start();
 
- 		keyboardImageMedia = new ImageMedia("media/HP9830A/HP9830A_Keyboard.png");
- 		driveopenImageMedia = new ImageMedia("media/HP9830A/HP9830A_Drive_Open.png");
- 		driveloadedImageMedia = new ImageMedia("media/HP9830A/HP9830A_Drive_Loaded.png");
+ 		keyboardImageMedia = new ImageMedia("media/HP9830A/HP9830A_Keyboard.png", imageController);
+ 		driveopenImageMedia = new ImageMedia("media/HP9830A/HP9830A_Drive_Open.png", imageController);
+ 		driveloadedImageMedia = new ImageMedia("media/HP9830A/HP9830A_Drive_Loaded.png", imageController);
     romSlots = new HP9830ROMslots(this);
 
     setSize();

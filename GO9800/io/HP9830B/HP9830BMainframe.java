@@ -63,6 +63,6 @@ public class HP9830BMainframe extends HP9830AMainframe
   public HP9830BMainframe(Emulator emu)
   {
     super(emu, "HP9830B");
-    keyboardImageMedia = new ImageMedia("media/HP9830B/HP9830B_Keyboard.png");
+    keyboardImageMedia = new ImageMedia("media/HP9830B/HP9830B_Keyboard.png", imageController);
   }
 }

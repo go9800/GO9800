@@ -99,13 +99,13 @@ public class HP9867A extends IOdevice //Frame implements KeyListener
       addMouseListener(new mouseListener());
 
       //hp9867Image = new ImageMedia("media/HP9880A/HP9867" + (numDiscs == 1? "A" : "B") + ".jpg").getImage();
-      hp9867Image = new ImageMedia("media/HP9880A/HP9867B.jpg").getImage();
-      drivePowerImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_POWER.jpg").getImage();
-      doorUnlockedImage = new ImageMedia("media/HP9880A/HP9867B_DOOR_UNLOCKED.jpg").getImage();
-      driveReadyImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_READY.jpg").getImage();
-      protectLdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_LD.jpg").getImage();
-      protectUdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_UD.jpg").getImage();
-      loadSwitchImage = new ImageMedia("media/HP9880A/HP9867B_LOAD_SWITCH.jpg").getImage();
+      hp9867Image = new ImageMedia("media/HP9880A/HP9867B.jpg", ioInterface.mainframe.imageController).getImage();
+      drivePowerImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_POWER.jpg", ioInterface.mainframe.imageController).getImage();
+      doorUnlockedImage = new ImageMedia("media/HP9880A/HP9867B_DOOR_UNLOCKED.jpg", ioInterface.mainframe.imageController).getImage();
+      driveReadyImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_READY.jpg", ioInterface.mainframe.imageController).getImage();
+      protectLdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_LD.jpg", ioInterface.mainframe.imageController).getImage();
+      protectUdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_UD.jpg", ioInterface.mainframe.imageController).getImage();
+      loadSwitchImage = new ImageMedia("media/HP9880A/HP9867B_LOAD_SWITCH.jpg", ioInterface.mainframe.imageController).getImage();
 
       setBackground(Color.BLACK);
 

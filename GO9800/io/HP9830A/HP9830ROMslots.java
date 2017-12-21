@@ -63,7 +63,7 @@ public class HP9830ROMslots extends Frame
     setBackground(Color.BLACK);
     setAlwaysOnTop(true);
     
-    romSlotImage = new ImageMedia("media/HP9830A/HP9830A_ROMslot.png").getScaledImage(SLOT_W, SLOT_H);
+    romSlotImage = new ImageMedia("media/HP9830A/HP9830A_ROMslot.png", hp9830.imageController).getScaledImage(SLOT_W, SLOT_H);
 
     romSelector = new ROMselector(this, hp9830, MODULE_W, MODULE_H);
     romSelector.addRomButton("media/HP9830A/HP11XXXX_Module.png", "HP11XXXX");

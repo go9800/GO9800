@@ -25,6 +25,8 @@
 
 package emu98;
 
+import io.HP9800Mainframe;
+import io.ImageController;
 import io.ImageMedia;
 
 import java.awt.*;
@@ -34,23 +36,25 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
 {
   private static final long serialVersionUID = 1L;
   Image hp2116PanelImage;
+  ImageController imageController;
   Color lampOff, lampOn;
   CPU cpu;
   Thread panelThread;
   int timerValue = 100;
   int previous1 = 0177777, previous2 = 0177777, previous3 = 0177777, previous4 = 0177777, previous5 = 0177777; 
 
-  public HP2116Panel(CPU cpu)
+  public HP2116Panel(HP9800Mainframe mainframe)
   {
     super("HP9800 Panel");
 
-    this.cpu = cpu;
+    cpu = mainframe.cpu;
+    imageController = mainframe.imageController;
 
     addKeyListener(this);
     addWindowListener(new windowListener());
     addMouseListener(new mouseListener());
 
-    hp2116PanelImage = new ImageMedia("media/HP9800/HP2116Panel.jpg").getImage();
+    hp2116PanelImage = new ImageMedia("media/HP9800/HP2116Panel.jpg", imageController).getImage();
     setResizable(false);
     setLocation(1000,0);
 

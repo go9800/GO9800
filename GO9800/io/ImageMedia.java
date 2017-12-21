@@ -23,6 +23,7 @@
  * 25.10.2017 Rel. 2.10 Added method disposeAll() to close all loaded images
  * 10.11.2017 Rel. 2.10 Added methods getScaledImage() and getProcessedImage() 
  * 19.12.2017 Rel. 2.10 Added MediaTracker to control image processing. This requires class extension of JComponent or the like
+ * 21.12.2017 Rel. 2.10 Added use of ImageController
  */
 
 package io;
@@ -35,7 +36,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Vector;
 
 import javax.swing.JComponent;
 
@@ -43,17 +43,14 @@ public class ImageMedia extends JComponent
 {
   private static final long serialVersionUID = 1L;
   private Image image, scaledImage, processedImage;
-  private static Vector<Image> imageList;
+  private ImageController controller;
   private MediaTracker tracker;
   private int width = -1, height = -1;
-  
-  static {
-  	// save all images in imageList for later disposeAll()
-  	imageList = new Vector<Image>();
-  }
-  
-  public ImageMedia(String imageFile)
+
+  public ImageMedia(String imageFile, ImageController controller)
   {
+  	this.controller = controller;
+  	
   	tracker = new MediaTracker(this);
 
   	InputStream imageStream = getClass().getResourceAsStream("/" + imageFile);
@@ -81,7 +78,8 @@ public class ImageMedia extends JComponent
         } catch (InterruptedException e) { }
         
         imageStream.close();
-        imageList.add(image);
+        if(controller != null)
+        	controller.add(image);
       }
     } catch (IOException e)
     {
@@ -98,8 +96,8 @@ public class ImageMedia extends JComponent
   {
   	// generate new scaled image only if size request has changed
   	if(scaledImage == null || width != this.width || height != this.height) {
-  		if(scaledImage != null) {
-  			imageList.removeElement(scaledImage);
+  		if(scaledImage != null && controller != null) {
+  			controller.remove(scaledImage);
   			scaledImage.flush(); // dispose previous image
   		}
   		scaledImage = null;
@@ -117,7 +115,8 @@ public class ImageMedia extends JComponent
   			this.width = width;
   			this.height = height;
   			
-  			imageList.add(scaledImage);
+        if(controller != null)
+        	controller.add(scaledImage);
   		}
   	}
   	
@@ -136,8 +135,8 @@ public class ImageMedia extends JComponent
   	if((scaledImage != null) && (scaledImage.getWidth(null) > 0)) {
     	// generate new processed image only if there is no valid present or size has changed
   		if(processedImage == null || processedImage.getWidth(null) != scaledImage.getWidth(null) || processedImage.getHeight(null) != scaledImage.getHeight(null)) {
-    		if(processedImage != null) {
-    			imageList.removeElement(processedImage);
+    		if(processedImage != null && controller != null) {
+    			controller.remove(processedImage);
     			processedImage.flush(); // dispose previous image
     		}
 
@@ -160,25 +159,11 @@ public class ImageMedia extends JComponent
           tracker.waitForID(1);
         } catch (InterruptedException e) { }
         
-    		imageList.add(processedImage);
+        if(controller != null)
+        	controller.add(processedImage);
   		}
   	}
   	
   	return(processedImage);
-  }
-  
-  public static void disposeAll()
-  {
-  	Image image;
-
-  	// delete all images
-  	while(!imageList.isEmpty())
-  	{
-  		image = imageList.lastElement();
-  		image.flush();
-  		imageList.removeElement(image);
-  	}
-  	
-  	System.out.println("Image threads stopped.");
   }
 }

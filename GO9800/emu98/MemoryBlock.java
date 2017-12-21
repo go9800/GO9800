@@ -24,6 +24,8 @@
 
 package emu98;
 
+import io.HP9800Mainframe;
+import io.ImageController;
 import io.ImageMedia;
 
 import java.awt.Image;
@@ -45,11 +47,13 @@ public class MemoryBlock
   private ImageMedia moduleImageMedia = null;
   private ImageMedia templateImageMedia = null;
   private ImageMedia instructionsImageMedia = null;
+  private ImageController imageController;
   private Vector<String> instructionsVector = null;
   private int instrIndex = 0;
   
-  public MemoryBlock(String machine, String type, int address, int length, String name, String slot)
+  public MemoryBlock(HP9800Mainframe mainframe, String machine, String type, int address, int length, String name, String slot)
   {
+  	this.imageController = mainframe.imageController;
     machineName = machine;
     blockStart = address;
     blockEnd = address + length - 1;
@@ -82,17 +86,17 @@ public class MemoryBlock
   public Image getModule()
   {
     if(moduleImageMedia == null) {
-      moduleImageMedia = new ImageMedia(makeFileName("_Module_" + blockSlot + ".jpg"));
+      moduleImageMedia = new ImageMedia(makeFileName("_Module_" + blockSlot + ".jpg"), imageController);
     }
       
     return(moduleImageMedia.getImage());
   }
 
   // get universal module graphics, scaled
-  public Image getUniModule()
+  public Image getUniModule(ImageController controller)
   {
     if(moduleImageMedia == null) {
-      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"));
+      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"), controller);
    }
 
     return(moduleImageMedia.getImage());
@@ -102,7 +106,7 @@ public class MemoryBlock
   public Image getUniModule(int width, int height)
   {
     if(moduleImageMedia == null) {
-      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"));
+      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"), imageController);
    }
 
     return(moduleImageMedia.getScaledImage(width, height));
@@ -112,7 +116,7 @@ public class MemoryBlock
   public Image getUniModule(float factor, float offset)
   {
     if(moduleImageMedia == null) {
-      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"));
+      moduleImageMedia = new ImageMedia(makeFileName("_Module.png"), imageController);
    }
 
     return(moduleImageMedia.getProcessedImage(factor, offset));
@@ -122,7 +126,7 @@ public class MemoryBlock
   public Image getUniTemplate()
   {
     if(templateImageMedia == null) {
-      templateImageMedia = new ImageMedia(makeFileName("_Template.png"));
+      templateImageMedia = new ImageMedia(makeFileName("_Template.png"), imageController);
     }
     
     return(templateImageMedia.getImage());
@@ -132,7 +136,7 @@ public class MemoryBlock
   public Image getUniTemplate(int width, int height)
   {
     if(templateImageMedia == null) {
-      templateImageMedia = new ImageMedia(makeFileName("_Template.png"));
+      templateImageMedia = new ImageMedia(makeFileName("_Template.png"), imageController);
     }
     
     return(templateImageMedia.getScaledImage(width, height));
@@ -142,7 +146,7 @@ public class MemoryBlock
   public Image getUniTemplate(float factor, float offset)
   {
     if(templateImageMedia == null) {
-      templateImageMedia = new ImageMedia(makeFileName("_Template.png"));
+      templateImageMedia = new ImageMedia(makeFileName("_Template.png"), imageController);
     }
     
     return(templateImageMedia.getProcessedImage(factor, offset));
@@ -151,7 +155,7 @@ public class MemoryBlock
   public Image getTemplate()
   {
     if(templateImageMedia == null) {
-      templateImageMedia = new ImageMedia(makeFileName("_Template_" + blockSlot + ".jpg"));
+      templateImageMedia = new ImageMedia(makeFileName("_Template_" + blockSlot + ".jpg"), imageController);
     }
     
     return(templateImageMedia.getImage());
@@ -186,7 +190,7 @@ public class MemoryBlock
       return(null);
     
     String fileName = "media/" + machineName + "/" + (String)instructionsVector.elementAt(instrIndex);
-    instructionsImageMedia = new ImageMedia(fileName);
+    instructionsImageMedia = new ImageMedia(fileName, imageController);
     
     if(++instrIndex >= instructionsVector.size())
       instrIndex = 0;
@@ -201,7 +205,7 @@ public class MemoryBlock
       return(null);
     
     String fileName = "media/" + machineName + "/" + (String)instructionsVector.elementAt(instrIndex);
-    instructionsImageMedia = new ImageMedia(fileName);
+    instructionsImageMedia = new ImageMedia(fileName, imageController);
     
     if(++instrIndex >= instructionsVector.size())
       instrIndex = 0;

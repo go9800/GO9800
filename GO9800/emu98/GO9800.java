@@ -85,7 +85,11 @@ class GO9800Window extends JDialog implements ActionListener
 	public void actionPerformed(ActionEvent event)
 	{
 		String cmd = event.getActionCommand();
-  	start(cmd, false);
+		if(cmd.equals("Exit")) {
+			dispose();
+			System.exit(0);
+		} else
+			start(cmd, false);
 	}
 
 	public GO9800Window()
@@ -109,18 +113,14 @@ class GO9800Window extends JDialog implements ActionListener
 		menuBar.setMinimumSize(new Dimension(0, 23));
 		
 		JMenu runMenu = new JMenu("Run");
-		JMenuItem hp9810a = new JMenuItem("HP9810A");
-		JMenuItem hp9810a2 = new JMenuItem("HP9810A2");
-		JMenuItem hp9820a = new JMenuItem("HP9820A");
-		JMenuItem hp9821a = new JMenuItem("HP9821A");
-		JMenuItem hp9830a = new JMenuItem("HP9830A");
-		JMenuItem hp9830b = new JMenuItem("HP9830B");
-		runMenu.add(hp9810a);
-		runMenu.add(hp9810a2);
-		runMenu.add(hp9820a);
-		runMenu.add(hp9821a);
-		runMenu.add(hp9830a);
-		runMenu.add(hp9830b);
+		runMenu.add(new JMenuItem("HP9810A")).addActionListener(this);
+		runMenu.add(new JMenuItem("HP9810A2")).addActionListener(this);
+		runMenu.add(new JMenuItem("HP9820A")).addActionListener(this);
+		runMenu.add(new JMenuItem("HP9821A")).addActionListener(this);
+		runMenu.add(new JMenuItem("HP9830A")).addActionListener(this);
+		runMenu.add(new JMenuItem("HP9830B")).addActionListener(this);
+		runMenu.addSeparator();
+		runMenu.add(new JMenuItem("Exit")).addActionListener(this);
 		menuBar.add(runMenu);
 		
 		c.gridx = 0;
@@ -131,7 +131,7 @@ class GO9800Window extends JDialog implements ActionListener
 		contentPane.add(menuBar, c);
 		
     JButton logo = new JButton();
-    logo.setIcon(new ImageIcon(new ImageMedia("media/HP9800/HP9800_Emulator.jpg").getImage()));
+    logo.setIcon(new ImageIcon(new ImageMedia("media/HP9800/HP9800_Emulator.jpg", null).getImage()));
     logo.setBackground(gray);
     logo.setMargin(new Insets(0, 0, 0, 20));
     logo.setHorizontalAlignment(SwingConstants.LEFT);
@@ -139,13 +139,6 @@ class GO9800Window extends JDialog implements ActionListener
 		c.gridy = 1;
 		contentPane.add(logo, c);
 		
-		hp9810a.addActionListener(this);
-		hp9810a2.addActionListener(this);
-		hp9820a.addActionListener(this);
-		hp9821a.addActionListener(this);
-		hp9830a.addActionListener(this);
-		hp9830b.addActionListener(this);
-
 		// TextArea for stdout
 		JTextArea textArea = new JTextArea(20, 80);
 		textArea.setEditable(false);
@@ -180,7 +173,6 @@ class GO9800Window extends JDialog implements ActionListener
 	  Constructor<?> cons;  // constructor method
 
     Emulator emu = new Emulator(machine);
-		SoundMedia.enable(true);
 
     // create object for mainframe class dynamically using Reflection API
     formpara = new Class[]{Emulator.class};
