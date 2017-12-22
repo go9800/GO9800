@@ -85,7 +85,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public int DISPLAY_W = 320;
   public int DISPLAY_H = 118;
   public int LED_X = +100;
-  public int LED_Y = +25;
+  public int LED_Y = +27;
   public int LED_DOT_SIZE = 3; // used in HP9820/21/30 only
 
   public int PAPER_HEIGHT = 168;

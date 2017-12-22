@@ -84,48 +84,48 @@ public class HP9810AMainframe extends HP9800Mainframe
   // the following constants are used in HP9810A only
   
   // ROM template size
-  static int TEMPLATE1_X = 117;
-  static int TEMPLATE1_Y = 271;
-  static int TEMPLATE_W = 147;
-  static int TEMPLATE_H = 254;
+  int TEMPLATE1_X = 117;
+  int TEMPLATE1_Y = 271;
+  int TEMPLATE_W = 147;
+  int TEMPLATE_H = 254;
   public double TEMPLATE_S = -0.025;
-  static int TEMPLATE2_X = 262;
-  static int TEMPLATE2_Y = 291;
-  static int TEMPLATE2_W = 645;
-  static int TEMPLATE2_H = 252;
+  int TEMPLATE2_X = 262;
+  int TEMPLATE2_Y = 291;
+  int TEMPLATE2_W = 645;
+  int TEMPLATE2_H = 252;
   
   // click area for ROM block exchange
-  static int ROM_X = 25;
-  static int ROM_Y = 5;
-  static int ROM_W = 150;
-  static int ROM_H = 45;
+  int ROM_X = 25;
+  int ROM_Y = 5;
+  int ROM_W = 150;
+  int ROM_H = 45;
   // click area for keyboard overlay
-  static int OVERLAY_X = 105;
-  static int OVERLAY_Y = 255;
-  static int OVERLAY_W = 150;
-  static int OVERLAY_H = 60;
+  int OVERLAY_X = 105;
+  int OVERLAY_Y = 255;
+  int OVERLAY_W = 150;
+  int OVERLAY_H = 60;
   // click area for instructions window
-  static int INSTRUCTIONS_X = 765;
-  static int INSTRUCTIONS_Y = 40;
-  static int INSTRUCTIONS_W = 230;
-  static int INSTRUCTIONS_H = 30;
+  int INSTRUCTIONS_X = 765;
+  int INSTRUCTIONS_Y = 40;
+  int INSTRUCTIONS_W = 230;
+  int INSTRUCTIONS_H = 30;
 
   // Indicator LEDs
-  static int LED1_X = 134;
-  static int LED2_X = 175;
-  static int LED3_X = 217;
+  int LED1_X = 134;
+  int LED2_X = 175;
+  int LED3_X = 217;
 
-  static int STATUS_X = 342;
-  static int FLOAT_X = 426;
-  static int FIX_X = 468;
-  static int RUN_X = 552;
-  static int PRGM_X = 595;
-  static int KEYLOG_X = 679;
-  static int CARD_X = 848;
-  static int LED_LAMP_Y = 274;
-  static int LED_WH = 18;
+  int STATUS_X = 342;
+  int FLOAT_X = 426;
+  int FIX_X = 468;
+  int RUN_X = 552;
+  int PRGM_X = 595;
+  int KEYLOG_X = 679;
+  int CARD_X = 848;
+  int LED_LAMP_Y = 274;
+  int LED_WH = 18;
   
-  public static int LED_SEGMENT_SIZE = 4;
+  public int LED_SEGMENT_SIZE = 4;
 
 
   public HP9810AMainframe(Emulator emu)
