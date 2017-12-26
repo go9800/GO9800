@@ -54,7 +54,6 @@ package io;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.ImageObserver;
 import java.awt.print.*;
 import java.util.*;
 import javax.sound.sampled.*;
@@ -310,19 +309,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
 
   public class mouseListener extends MouseAdapter
   {}
-  /*
-  public void update(Graphics g)
-  {
-    // avoid flickering when drawing resized window
-  	// also wait for image processing after ROM module change
-  	
-  	try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) { }
-		
-  	paint(g);
-  }
-  */
+
   public void paint(Graphics g)
   {
   	super.paint(g);

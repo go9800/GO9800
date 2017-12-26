@@ -45,41 +45,7 @@ public class SoundMedia
   private AudioInputStream ais;
   private SoundController controller;
   private Clip soundClip;
-  /*
-  private static boolean enabled = true;
-  private static final Mixer smMixer;
-  private static final boolean DIRECT = false;
-  private static int maxlines;
-  private static Vector<Clip> clipList;
-  
-  static {
-    Mixer mixer = null;
-    
-  	// save all sounds in clipList for later disposeAll()
-  	clipList = new Vector<Clip>();
 
-  	try {
-      mixer = AudioSystem.getMixer(null); // default mixer
-      if ((maxlines = mixer.getMaxLines(new Line.Info(SourceDataLine.class))) !=
-        AudioSystem.NOT_SPECIFIED && maxlines < 16) {
-        // Default sound output on Linux only uses the hardware mixer, often limited
-        // to four lines. In this case find the Java Sound software mixer. This also
-        // indirectly works around the inability of the Linux hardware mixer
-        // to handle mono files.
-        Mixer.Info[] mixers = AudioSystem.getMixerInfo();
-        for (int mixeri = 0; mixeri < mixers.length; mixeri++) {
-          if (mixers[mixeri].getName().equals("Java Sound Audio Engine")) {
-            mixer = AudioSystem.getMixer(mixers[mixeri]);
-            break;
-          }
-        }
-      }
-    } catch(IllegalArgumentException e) {
-    }
-    
-    smMixer = mixer;
-  }
-	*/
   public SoundMedia(String soundFile, SoundController controller, boolean discardable)
   {
   	if(controller == null)
@@ -110,17 +76,7 @@ public class SoundMedia
       System.err.println(soundFile + ": " + e);
     }
   }
-  /*
-  public static void enable(boolean value)
-  {
-    enabled = value;
-  }
 
-  public static boolean isEnabled()
-  {
-    return(enabled);
-  }
-  */
   public void loop()
   {
     if(controller.isEnabled() && (soundClip != null)) {
@@ -184,28 +140,7 @@ public class SoundMedia
 
   public void close()
   {
-    soundClip.close();
-  }
-  /*
-  public int getMaxLines()
-  {
-  	return(maxlines);
-  }
-  
-  public static void disposeAll()
-  {
-  	Clip soundClip;
-
-  	// delete all soundClips
-  	while(!clipList.isEmpty())
-  	{
-  		soundClip = clipList.lastElement();
-  		soundClip.stop();
+  	if(soundClip != null)
   		soundClip.close();
-  		clipList.removeElement(soundClip);
-  	}
-  	
-  	System.out.println("Sound threads stopped.");
   }
-  */
 }

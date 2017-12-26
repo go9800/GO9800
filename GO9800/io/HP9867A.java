@@ -33,7 +33,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
-public class HP9867A extends IOdevice //Frame implements KeyListener
+public class HP9867A extends IOdevice
 {
   private static final long serialVersionUID = 1L;
 
@@ -112,16 +112,6 @@ public class HP9867A extends IOdevice //Frame implements KeyListener
       setLocation(220 + unit * 20, unit * 20);
       setResizable(false);
       setVisible(true);
-      // wait until background image has been loaded
-      synchronized(hp9867Image) {
-      	while(hp9867Image.getWidth(this) <= 0) {
-      		try
-      		{
-      			hp9867Image.wait(100);
-      		} catch (InterruptedException e)
-      		{ }
-      	}
-      }
 
       setState(ICONIFIED);
       setSize(hp9867Image.getWidth(this) + getInsets().left + getInsets().right, hp9867Image.getHeight(this) + getInsets().top + getInsets().bottom);

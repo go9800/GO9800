@@ -113,17 +113,6 @@
         setForeground(Color.WHITE);
 
         setVisible(true);
-        // wait until background image has been loaded
-        synchronized(hp9865aImage) {
-        	while(hp9865aImage.getWidth(this) <= 0) {
-        		try
-        		{
-        			hp9865aImage.wait(100);
-        		} catch (InterruptedException e)
-        		{ }
-        	}
-        }
-
         setState(ICONIFIED);
         setSize(hp9865aImage.getWidth(this) + getInsets().left + getInsets().right, hp9865aImage.getHeight(this) + getInsets().top + getInsets().bottom);
       }

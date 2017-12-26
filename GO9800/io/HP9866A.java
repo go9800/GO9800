@@ -445,7 +445,7 @@ public class HP9866A extends IOdevice implements Printable
   public void close()
   {
   	// stop all sound threads
-    printSound.close();
+		printSound.close();
 
   	super.close();
   }

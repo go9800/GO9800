@@ -28,6 +28,8 @@ import io.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;
+import java.util.Enumeration;
+
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -99,12 +101,14 @@ public class HP9800Window extends JFrame implements ActionListener
   	viewMenu.add(hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel")).addActionListener(this);
   	menuBar.add(viewMenu);
 
-  	JMenu printMenu = new JMenu("Print");
-  	printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
-  	printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
-  	printMenu.addSeparator();
-  	printMenu.add(new JMenuItem("Clear")).addActionListener(this);
-  	menuBar.add(printMenu);
+  	if(!machine.startsWith("HP9830")) {
+  		JMenu printMenu = new JMenu("Print");
+  		printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
+  		printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+  		printMenu.addSeparator();
+  		printMenu.add(new JMenuItem("Clear")).addActionListener(this);
+  		menuBar.add(printMenu);
+  	}
 
   	JMenu optionsMenu = new JMenu("Options");
   	optionsMenu.add(debugItem = new JCheckBoxMenuItem("Debug")).addActionListener(this);
@@ -113,6 +117,15 @@ public class HP9800Window extends JFrame implements ActionListener
   	fanSoundItem.setSelected(true);
   	allSoundItem.setSelected(true);
   	menuBar.add(optionsMenu);
+
+  	IOdevice device;
+  	JMenu devicesMenu = new JMenu("Devices");
+  	for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
+    	device = devices.nextElement();
+    	if(device.isVisible())
+    		devicesMenu.add(new JMenuItem(device.hpName)).addActionListener(this);
+  	}
+  	menuBar.add(devicesMenu);
 
   	c.gridx = 0;
   	c.gridy = 0;
@@ -184,6 +197,18 @@ public class HP9800Window extends JFrame implements ActionListener
     	mainframe.page = 0;
     	mainframe.repaint();
   	}
+		
+		IOdevice device;
+  	for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
+    	device = devices.nextElement();
+    	if(device.hpName.equals(cmd)) {
+    		if(device.getState() == ICONIFIED)
+      		device.setState(NORMAL);
+    		else
+      		device.setState(ICONIFIED);
+    	}
+  	}
+
 	}
 
   class WindowListener extends WindowAdapter
