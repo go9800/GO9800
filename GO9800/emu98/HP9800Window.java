@@ -47,13 +47,12 @@ public class HP9800Window extends JFrame implements ActionListener
   Console console;  // class variable from HP9800Mainframe
   HP2116Panel hp2116panel;  // class variable from HP9800Mainframe
 
-  int MENU_H = 23;
-  
   Color gray = new Color(230, 230, 230);
   Color beige = new Color(215, 213, 178);
   Color brown = new Color(87, 87, 75);
   
-	JPanel mainframePanel;
+  int MENU_H = 23;
+  
   JMenuBar menuBar;
   JCheckBoxMenuItem keyMapItem, consoleItem, hp2116PanelItem;
   JCheckBoxMenuItem debugItem, fanSoundItem, allSoundItem;
@@ -67,7 +66,7 @@ public class HP9800Window extends JFrame implements ActionListener
   	emu = mainframe.emu;
   	console = mainframe.console;
   	hp2116panel = mainframe.hp2116panel;
-  	mainframe.hp9800Window = this;
+  	mainframe.setHP9800Window(this);
 
   	GridBagLayout gridbag = new GridBagLayout();
   	GridBagConstraints c = new GridBagConstraints();
@@ -79,7 +78,6 @@ public class HP9800Window extends JFrame implements ActionListener
     UIManager.put("MenuBar.background", beige);
     UIManager.put("Menu.background", beige);
     UIManager.put("MenuItem.background", beige);
-    UIManager.put("CheckBoxMenuItem.background", beige);
     UIManager.put("CheckBoxMenuItem.background", beige);
     
   	// Menu bar
@@ -94,13 +92,15 @@ public class HP9800Window extends JFrame implements ActionListener
 
   	JMenu viewMenu = new JMenu("View");
   	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
+  	viewMenu.add(new JMenuItem("Natural Size")).addActionListener(this);
   	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
   	viewMenu.addSeparator();
   	viewMenu.add(keyMapItem = new JCheckBoxMenuItem("Key Map")).addActionListener(this);
   	viewMenu.add(consoleItem = new JCheckBoxMenuItem("Console")).addActionListener(this);
   	viewMenu.add(hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel")).addActionListener(this);
   	menuBar.add(viewMenu);
-
+  	
+  	// add print menu only for models with internal printer
   	if(!machine.startsWith("HP9830")) {
   		JMenu printMenu = new JMenu("Print");
   		printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
@@ -109,7 +109,7 @@ public class HP9800Window extends JFrame implements ActionListener
   		printMenu.add(new JMenuItem("Clear")).addActionListener(this);
   		menuBar.add(printMenu);
   	}
-
+  	
   	JMenu optionsMenu = new JMenu("Options");
   	optionsMenu.add(debugItem = new JCheckBoxMenuItem("Debug")).addActionListener(this);
   	optionsMenu.add(fanSoundItem = new JCheckBoxMenuItem("Fan Sound")).addActionListener(this);
@@ -163,7 +163,9 @@ public class HP9800Window extends JFrame implements ActionListener
   	} else if(cmd.equals("Hide Menu")) {
   		menuBar.setVisible(false);
   	} else if(cmd.equals("Normal Size")) {
-  		mainframe.setSize();
+  		mainframe.setNormalSize();
+  	} else if(cmd.equals("Natural Size")) {
+  		mainframe.setNaturalSize();
   	} else if(cmd.equals("Key Map")) {
   		keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
     	mainframe.repaint();
@@ -202,10 +204,10 @@ public class HP9800Window extends JFrame implements ActionListener
   	for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
     	device = devices.nextElement();
     	if(device.hpName.equals(cmd)) {
-    		if(device.getState() == ICONIFIED)
-      		device.setState(NORMAL);
+    		if(device.deviceWindow.getState() == ICONIFIED)
+      		device.deviceWindow.setState(NORMAL);
     		else
-      		device.setState(ICONIFIED);
+      		device.deviceWindow.setState(ICONIFIED);
     	}
   	}
 
@@ -235,12 +237,12 @@ public class HP9800Window extends JFrame implements ActionListener
   	System.out.println("HP9800 Emulator terminated.");
   }
 
-  public void setSize()
+  public void setFrameSize()
   {
     setSize(new Dimension(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom));
   }
   
-  public void setSize(Boolean showMenuBar)
+  public void setFrameSize(Boolean showMenuBar)
   {
     setSize(new Dimension(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (showMenuBar ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom));
     menuBar.setVisible(showMenuBar);
@@ -302,7 +304,7 @@ public class HP9800Window extends JFrame implements ActionListener
             break;
             
           case 'M':
-          	setSize(!menuBar.isVisible());
+          	setFrameSize(!menuBar.isVisible());
           	break;
 
           case 'P':

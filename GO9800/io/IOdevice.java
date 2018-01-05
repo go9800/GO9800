@@ -19,10 +19,11 @@
 
 /*
  * 01.04.2010 Class created 
- * 24.10.2017 Rel. 2.10: Added method close()
- * 25.10.2017 Rel. 2.03 Changed static access to IOregister
+ * 24.10.2017 Rel. 2.10 Added method close()
+ * 25.10.2017 Rel. 2.10 Changed static access to IOregister
  * 25.10.2017 Rel. 2.10 Added method close() to stop thread
- * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
+ * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
  */
 
 package io;
@@ -30,14 +31,18 @@ package io;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-public class IOdevice extends Frame implements KeyListener, MouseListener
+
+public class IOdevice extends JPanel implements KeyListener, MouseListener
 {
   public String hpName = null;
 
   private static final long serialVersionUID = 1L;
   protected IOinterface ioInterface;
-  protected WindowAdapter winListener;
+  public JFrame deviceWindow;
+  public Boolean createWindow = true; // set to false if no separate DeviceWindow is needed
   
   public IOdevice()
   {
@@ -46,7 +51,6 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
   
   public IOdevice(String hpName, IOinterface ioInterface)
   {
-    super(hpName);
     this.hpName = hpName; // device name comes from child class
     
     // connection to ioInterface
@@ -55,31 +59,27 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
     // add device to list for later cleanup
     ioInterface.mainframe.ioDevices.add(this);
     
-    addKeyListener(this);
+    //addKeyListener(this);
     addMouseListener(this);
-    addWindowListener(winListener = new windowListener());
-    addComponentListener(new ComponentRepaintAdapter());
 
     setBackground(Color.WHITE);
     setForeground(Color.BLACK);
   }
   
-  class windowListener extends WindowAdapter
+  public boolean needsWindow()
   {
-    public void windowClosing(WindowEvent event)
-    {
-      close();
-    }
+  	return(createWindow);
   }
-
-  // Repaint after window resize
-  class ComponentRepaintAdapter extends ComponentAdapter
+  
+  public void setDeviceWindow(JFrame window)
   {
-    public void componentResized(ComponentEvent event)
-    {
-      event.getComponent().repaint();
-    }
-  }  
+  	this.deviceWindow = window;
+  	
+  	if(createWindow) {
+  		deviceWindow.addKeyListener(this);
+  		// do only for a separate window
+  	}
+  }
   
   // MouseListener methods
   
@@ -136,7 +136,7 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
 
     case 'S':
       ioInterface.highSpeed = !ioInterface.highSpeed;
-      this.setTitle(hpName + (ioInterface.highSpeed? " High Speed" : ""));
+      deviceWindow.setTitle(hpName + (ioInterface.highSpeed? " High Speed" : ""));
       break;
 
     default:
@@ -172,8 +172,10 @@ public class IOdevice extends Frame implements KeyListener, MouseListener
   	// stop all threads including sounds and images and free all ressources
     ioInterface.stop();  // stop interface thread
     ioInterface.mainframe.ioDevices.removeElement(this);  // remove device object from devices list
-    setVisible(false);  // close window
-    dispose();  // and remove it
+    setVisible(false);  // close panel
+    
+    if(createWindow)
+    	deviceWindow.dispose();  // close window
     
     System.out.println(hpName + " unloaded.");
   }

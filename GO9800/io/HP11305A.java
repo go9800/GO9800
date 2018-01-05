@@ -22,9 +22,13 @@
  * 05.04.2010 Rel. 1.50 Class now inherited from IOdevice and completely reworked
  * 25.10.2017 Rel. 2.03 Changed static access to ioUnit, removed deprecated use of ioRegister
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
  */
 
 package io;
+
+
+import emu98.DeviceWindow;
 
 public class HP11305A extends IOdevice
 {
@@ -50,6 +54,8 @@ public class HP11305A extends IOdevice
   
   private HP9867A[] hp9867a;
   //private Image hp11305aImage;
+  private int numDiscs = 1;
+  private int numUnits = 1;
   private int platter = 0, head = 0, cylinder = 0, sector = 0;
   private int accessMode = 0, initialize = 0;
   private boolean debug = false;
@@ -57,9 +63,7 @@ public class HP11305A extends IOdevice
   public HP11305A(String[] parameters, IOinterface ioInterface)
   {
     super("HP11305A", ioInterface);
-
-    int numDiscs = 1;
-    int numUnits = 1;
+    createWindow = false; // this device doesn't need a window
 
     try {
       numDiscs = Integer.parseInt(parameters[0]);
@@ -68,23 +72,26 @@ public class HP11305A extends IOdevice
       System.out.println(e.toString());
     }
 
+    numUnits *= numDiscs;
     BUSY_TIMER = ioInterface.ioUnit.time_10ms;
     
     hp9867a = new HP9867A[4];
-    numUnits *= numDiscs;
     HP9867A.time_10ms = BUSY_TIMER;
     
     for(int unit = 0; unit < numUnits && unit < 4; unit++) {
-      hp9867a[unit] = new HP9867A(unit, numDiscs, null, ioInterface); 
+      hp9867a[unit] = new HP9867A(unit, numDiscs, null, ioInterface);
+      hp9867a[unit].setDeviceWindow(new DeviceWindow(hp9867a[unit]));  // create JFrame for device
       
       if(numDiscs != 1) {
         // create fixed disc of HP9867B
         unit++;
         hp9867a[unit] = new HP9867A(unit, numDiscs, hp9867a[unit-1], ioInterface);
+        hp9867a[unit].createWindow = false; // this device doesn't need a separate JFrame
+        hp9867a[unit].setDeviceWindow(hp9867a[unit-1].deviceWindow);  //  use JFrame of the preceeding device
       }
     }
   }
-
+  
   public int output(int status)
   {
     debug = ioInterface.ioUnit.console.getDebugMode();

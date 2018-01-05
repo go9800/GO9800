@@ -272,6 +272,10 @@ public class Configuration
         System.exit(1);      
       }
     }
+    
+    // create JFrame for device if necessary
+    if(ioDevice.needsWindow())
+    	ioDevice.setDeviceWindow(new DeviceWindow(ioDevice));
 
     if(ioInterface != null) {
       // set link from interface to device

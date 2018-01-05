@@ -24,7 +24,8 @@
  * 09.05.2012 Rel. 1.60 Added SO status flags for file closing
  * 09.05.2012 Rel. 1.60 Bugfix: added missing method setInterface (fixes null pointer error when canceling file dialog)
  * 11.05.2012 Rel. 1.60 Added buffered output window 
- * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
+ * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
 */
 
 package io;
@@ -34,6 +35,8 @@ import java.awt.event.*;
 import java.awt.print.*;
 import java.io.*;
 import java.util.Vector;
+
+import emu98.DeviceWindow;
 
 public class HP11202HostFileIO extends HostIO implements Printable
 {
@@ -57,13 +60,8 @@ public class HP11202HostFileIO extends HostIO implements Printable
   public HP11202HostFileIO(String[] parameters, IOinterface ioInterface)
   {
     super("HP11202A File-I/O", ioInterface); // set window title
+    createWindow = false;  // this device doesn't need a window
     hp11202Interface = (HP11202A)ioInterface;
-
-    removeWindowListener(winListener);
-    addWindowListener(new windowListener());
-
-    setSize(250, 500);
-    setLocation(1000, 0);
 
     fontSize = 12;
     font = new Font("Monospaced", Font.PLAIN, fontSize);
@@ -84,19 +82,7 @@ public class HP11202HostFileIO extends HostIO implements Printable
       base = 8;
     }
   }
-
-  class windowListener extends WindowAdapter
-  {
-    public void windowClosing(WindowEvent event)
-    {
-      setVisible(false);  // close window
-      dispose();  // and remove it
-      
-      outFile = closeFile(outFile);
-      inFile = closeFile(inFile);
-    }
-  }
-
+  
   public void keyPressed(KeyEvent event)
   {
     int keyCode = event.getKeyCode();
@@ -231,7 +217,7 @@ public class HP11202HostFileIO extends HostIO implements Printable
     if(!fileSelector)
       return(null);
     
-    FileDialog fileDialog = new FileDialog(this, "Open HP11202A " + (out? "Output" : "Input") + " File");
+    FileDialog fileDialog = new FileDialog(deviceWindow, "Open HP11202A " + (out? "Output" : "Input") + " File");
     fileDialog.setBackground(Color.WHITE);
     fileDialog.setVisible(true);
     RandomAccessFile ioFile = null;
@@ -350,5 +336,12 @@ public class HP11202HostFileIO extends HostIO implements Printable
     }
     
     return(-1);
+  }
+  
+  public void close()
+  {
+    outFile = closeFile(outFile);
+    inFile = closeFile(inFile);
+    super.close();
   }
 }

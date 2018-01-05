@@ -24,7 +24,8 @@
  * 16.10.2007 Rel. 1.20 Changed frame size control
  * 22.01.2009 Rel. 1.40 Added high-speed mode and keyPressed()
  * 20.03.2009 Rel. 1.40 Added synchronized(keyboardImage) before visualizing main window to avoid flickering
- * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
+ * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
  */
 
 package io;
@@ -33,45 +34,47 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
+import javax.swing.JFrame;
+
 public class HP9867A extends IOdevice
 {
   private static final long serialVersionUID = 1L;
 
-  public static int LOADSW_X = 700;
-  public static int LOADSW_Y = 236;
-  public static int DRIVE_POWER_X = 596;
-  public static int DRIVE_POWER_Y = 216;
-  public static int DRIVE_POWER_W = 38;
-  public static int DRIVE_POWER_H = 40;
-  public static int DOOR_UNLOCKED_X = 494;
-  public static int DOOR_UNLOCKED_Y = 216;
-  public static int DOOR_UNLOCKED_W = 37;
-  public static int DOOR_UNLOCKED_H = 40;
-  public static int SWITCH_LOAD_X = 693;
-  public static int SWITCH_LOAD_Y = 225;
-  public static int SWITCH_LOAD_W = 15;
-  public static int SWITCH_LOAD_H = 19;
-  public static int DRIVE_READY_X = 546;
-  public static int DRIVE_READY_Y = 217;
-  public static int DRIVE_READY_W = 37;
-  public static int DRIVE_READY_H = 40;
-  public static int PROTECT_LD_X = 443;
-  public static int PROTECT_LD_Y = 238;
-  public static int PROTECT_LD_W = 38;
-  public static int PROTECT_LD_H = 19;
-  public static int PROTECT_UD_X = 443;
-  public static int PROTECT_UD_Y = 217;
-  public static int PROTECT_UD_W = 38;
-  public static int PROTECT_UD_H = 20;
+  public int LOADSW_X = 700;
+  public int LOADSW_Y = 236;
+  public int DRIVE_POWER_X = 596;
+  public int DRIVE_POWER_Y = 216;
+  public int DRIVE_POWER_W = 38;
+  public int DRIVE_POWER_H = 40;
+  public int DOOR_UNLOCKED_X = 494;
+  public int DOOR_UNLOCKED_Y = 216;
+  public int DOOR_UNLOCKED_W = 37;
+  public int DOOR_UNLOCKED_H = 40;
+  public int SWITCH_LOAD_X = 693;
+  public int SWITCH_LOAD_Y = 225;
+  public int SWITCH_LOAD_W = 15;
+  public int SWITCH_LOAD_H = 19;
+  public int DRIVE_READY_X = 546;
+  public int DRIVE_READY_Y = 217;
+  public int DRIVE_READY_W = 37;
+  public int DRIVE_READY_H = 40;
+  public int PROTECT_LD_X = 443;
+  public int PROTECT_LD_Y = 238;
+  public int PROTECT_LD_W = 38;
+  public int PROTECT_LD_H = 19;
+  public int PROTECT_UD_X = 443;
+  public int PROTECT_UD_Y = 217;
+  public int PROTECT_UD_W = 38;
+  public int PROTECT_UD_H = 20;
 
-  public static int STATUS_X = 300;
-  public static int STATUS_Y = 250;
+  public int STATUS_X = 300;
+  public int STATUS_Y = 245;
   
   Image hp9867Image;
   Image drivePowerImage, doorUnlockedImage, driveReadyImage, protectLdImage, protectUdImage, loadSwitchImage;
   RandomAccessFile diskFile;
-  HP9867A statusFrame;
-  String statusString = "", prevStatus = "";
+  HP9867A primaryDevice; // device which has window and displays status
+  String statusString = "";
   private String windowTitle;
   int accessMode = -1;
   int unit;
@@ -84,52 +87,55 @@ public class HP9867A extends IOdevice
   private boolean highSpeed;
   static int time_10ms = 10;
 
-  public HP9867A(int unit, int numDiscs, HP9867A dispFrame, IOinterface ioInterface)
+  public HP9867A(int unit, int numDiscs, HP9867A primaryDevice, IOinterface ioInterface)
   {
-    super("HP9867A Unit " + unit, ioInterface);
-    windowTitle = "HP9867A Unit " + unit;
+  	super("HP9867A Unit " + unit, ioInterface);
+  	windowTitle = "HP9867A Unit " + unit;
 
-    this.unit = unit;
-    this.numDiscs = numDiscs;
+  	this.unit = unit;
+  	this.numDiscs = numDiscs;
 
-    if(dispFrame == null) {
-      statusFrame = this;
-      addKeyListener(this);
-      addWindowListener(new windowListener());
-      addMouseListener(new mouseListener());
+  	if(primaryDevice == null) {
+  		this.primaryDevice = this;
+  		addKeyListener(this);
+  		addMouseListener(new mouseListener());
 
-      //hp9867Image = new ImageMedia("media/HP9880A/HP9867" + (numDiscs == 1? "A" : "B") + ".jpg").getImage();
-      hp9867Image = new ImageMedia("media/HP9880A/HP9867B.jpg", ioInterface.mainframe.imageController).getImage();
-      drivePowerImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_POWER.jpg", ioInterface.mainframe.imageController).getImage();
-      doorUnlockedImage = new ImageMedia("media/HP9880A/HP9867B_DOOR_UNLOCKED.jpg", ioInterface.mainframe.imageController).getImage();
-      driveReadyImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_READY.jpg", ioInterface.mainframe.imageController).getImage();
-      protectLdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_LD.jpg", ioInterface.mainframe.imageController).getImage();
-      protectUdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_UD.jpg", ioInterface.mainframe.imageController).getImage();
-      loadSwitchImage = new ImageMedia("media/HP9880A/HP9867B_LOAD_SWITCH.jpg", ioInterface.mainframe.imageController).getImage();
+  		//hp9867Image = new ImageMedia("media/HP9880A/HP9867" + (numDiscs == 1? "A" : "B") + ".jpg").getImage();
+  		hp9867Image = new ImageMedia("media/HP9880A/HP9867B.jpg", ioInterface.mainframe.imageController).getImage();
+  		drivePowerImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_POWER.jpg", ioInterface.mainframe.imageController).getImage();
+  		doorUnlockedImage = new ImageMedia("media/HP9880A/HP9867B_DOOR_UNLOCKED.jpg", ioInterface.mainframe.imageController).getImage();
+  		driveReadyImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_READY.jpg", ioInterface.mainframe.imageController).getImage();
+  		protectLdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_LD.jpg", ioInterface.mainframe.imageController).getImage();
+  		protectUdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_UD.jpg", ioInterface.mainframe.imageController).getImage();
+  		loadSwitchImage = new ImageMedia("media/HP9880A/HP9867B_LOAD_SWITCH.jpg", ioInterface.mainframe.imageController).getImage();
+  	} else {
+  		this.primaryDevice = primaryDevice;
+  		primaryDevice.windowTitle = "HP9867B Unit " + (unit-1) + "+" + unit;
+  	}
 
-      setBackground(Color.BLACK);
+  	// load standard disc file
+  	try{
+  		diskFile = new RandomAccessFile("applications/HP9830/HP9880-UNIT" + unit + ".disc", "rw");
+  	} catch (FileNotFoundException e) {
+  	}
 
-      setLocation(220 + unit * 20, unit * 20);
-      setResizable(false);
-      setVisible(true);
-
-      setState(ICONIFIED);
-      setSize(hp9867Image.getWidth(this) + getInsets().left + getInsets().right, hp9867Image.getHeight(this) + getInsets().top + getInsets().bottom);
-    } else {
-        statusFrame = dispFrame;
-        statusFrame.windowTitle = "HP9867B Unit " + (unit-1) + "+" + unit;
-        statusFrame.setTitle(statusFrame.windowTitle);
-      }
-
-      // load standard disc file
-      try{
-        diskFile = new RandomAccessFile("applications/HP9830/HP9880-UNIT" + unit + ".disc", "rw");
-      } catch (FileNotFoundException e) {
-      }
-
-      System.out.println("HP9867" + (numDiscs == 1? "A" : "B") + " Mass Memory Storage Unit " + unit + " loaded.");
-    }
+  	System.out.println("HP9867" + (numDiscs == 1? "A" : "B") + " Mass Memory Storage Unit " + unit + " loaded.");
+  }
   
+	public void setDeviceWindow(JFrame window)
+	{
+  	super.setDeviceWindow(window);
+		deviceWindow.setTitle(primaryDevice.windowTitle);
+
+		if(createWindow) {
+			deviceWindow.setResizable(false);
+			deviceWindow.setLocation(220 + unit * 20, unit * 20);
+			deviceWindow.setSize(hp9867Image.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9867Image.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
+			deviceWindow.setState(Frame.ICONIFIED);
+			deviceWindow.setVisible(true);
+		}
+	}
+
   class windowListener extends WindowAdapter
   {
     public void windowClosing(WindowEvent event)
@@ -145,7 +151,7 @@ public class HP9867A extends IOdevice
     
     closeDiskFile();
 
-    FileDialog fileDialog = new FileDialog(this, "Load Cartridge for Disk Unit " + unit);
+    FileDialog fileDialog = new FileDialog(deviceWindow, "Load Cartridge for Disk Unit " + unit);
     fileDialog.setBackground(Color.WHITE);
     fileDialog.setVisible(true);
 
@@ -162,7 +168,7 @@ public class HP9867A extends IOdevice
         return(false);
       }
 
-      statusFrame.driveReady = true;
+      primaryDevice.driveReady = true;
       doorUnlocked = false;
       repaint(DOOR_UNLOCKED_X + l, DOOR_UNLOCKED_Y + t, DOOR_UNLOCKED_W + DRIVE_READY_W + 20, DOOR_UNLOCKED_H);
       repaint(SWITCH_LOAD_X + l , SWITCH_LOAD_Y + t, SWITCH_LOAD_W, SWITCH_LOAD_H);
@@ -198,7 +204,7 @@ public class HP9867A extends IOdevice
       
       if(x > LOADSW_X - 10 && x < LOADSW_X + 10)
         if(y > LOADSW_Y - 10 && y < LOADSW_Y + 10) {
-          statusFrame.driveReady = false;
+          primaryDevice.driveReady = false;
           doorUnlocked = true;
           repaint(DOOR_UNLOCKED_X + l, DOOR_UNLOCKED_Y + t, DOOR_UNLOCKED_W + DRIVE_READY_W + 20, DOOR_UNLOCKED_H);
           openDiskFile();
@@ -234,8 +240,8 @@ public class HP9867A extends IOdevice
 
     switch(keyCode) {
     case 'S':
-      statusFrame.highSpeed = !statusFrame.highSpeed;
-      this.setTitle(statusFrame.windowTitle + (statusFrame.highSpeed? " High Speed" : ""));
+      primaryDevice.highSpeed = !primaryDevice.highSpeed;
+      deviceWindow.setTitle(primaryDevice.windowTitle + (primaryDevice.highSpeed? " High Speed" : ""));
       break;
 
     default:
@@ -261,7 +267,7 @@ public class HP9867A extends IOdevice
       if(powerOn)
         g.drawImage(drivePowerImage, x + DRIVE_POWER_X, y + DRIVE_POWER_Y, DRIVE_POWER_W, DRIVE_POWER_H, this);
       
-      if(statusFrame.driveReady)
+      if(primaryDevice.driveReady)
         g.drawImage(driveReadyImage, x + DRIVE_READY_X, y + DRIVE_READY_Y, DRIVE_READY_W, DRIVE_READY_H, this);
       
       if(doorUnlocked)
@@ -275,20 +281,18 @@ public class HP9867A extends IOdevice
       if(driveProtectU)
         g.drawImage(protectUdImage, x + PROTECT_UD_X, y + PROTECT_UD_Y, PROTECT_UD_W, PROTECT_UD_H, this);
     }
+    
+    drawStatus(g);
   }
 
-  void drawStatus()
+  void drawStatus(Graphics g)
   {
-    int x = statusFrame.getInsets().left;
-    int y = statusFrame.getInsets().top;
-    Graphics g = statusFrame.getGraphics();
-    Font font = new Font("Monospaced", Font.BOLD, 20);
-    g.setFont(font);
-
-    // overpaint previous status
-    g.setColor(new Color(180, 170, 170));
-    g.drawString(statusFrame.prevStatus, x + STATUS_X, y + STATUS_Y);
+    int x = 0;
+    int y = 0;
     
+    Font font = new Font("Monospaced", Font.BOLD, 20);
+    g.setFont(font); 
+
     switch(accessMode) {
     case 0:
       // write mode
@@ -306,7 +310,7 @@ public class HP9867A extends IOdevice
       g.setColor(Color.YELLOW);
     }
     
-    g.drawString(statusFrame.statusString, x + STATUS_X, y + STATUS_Y);
+    g.drawString(primaryDevice.statusString, x + STATUS_X, y + STATUS_Y);
   }
 
   public int output(int head, int cylinder, int sector, int mode)
@@ -314,7 +318,7 @@ public class HP9867A extends IOdevice
     int address;
     int record;
     
-    if(diskFile == null || doorUnlocked || !statusFrame.driveReady)
+    if(diskFile == null || doorUnlocked || !primaryDevice.driveReady)
       return(HP11305A.POWER_ON | HP11305A.DRIVE_UNSAFE_ERROR);
 
     if((head > 1) || (cylinder > 202) || (sector > 22) || ((sector & 1) != 0))
@@ -322,16 +326,15 @@ public class HP9867A extends IOdevice
 
     record = (head * 203  + cylinder) * 24 + sector;
     
-    statusFrame.prevStatus = statusFrame.statusString;
-    statusFrame.statusString = (numDiscs == 1 ? "" : ((unit & 1) == 0 ? "U" : "L")) + Integer.toString(record);
+    primaryDevice.statusString = (numDiscs == 1 ? "" : ((unit & 1) == 0 ? "U" : "L")) + Integer.toString(record);
     accessMode = mode;
-    drawStatus();
+    primaryDevice.repaint(STATUS_X, STATUS_Y - 15, 50, 20);
     
     try {
       diskFile.seek(256 * record);
       
       // sleep 10ms for approx. realistic timing
-      if(!statusFrame.highSpeed) {
+      if(!primaryDevice.highSpeed) {
         try {
           Thread.sleep(time_10ms);
         } catch (InterruptedException e) { }
@@ -361,14 +364,5 @@ public class HP9867A extends IOdevice
     }
 
     return(HP11305A.POWER_ON);
-  }
-  
-  public void close()
-  {
-    setVisible(false);  // close window
-    dispose();  // and remove it
-    ioInterface.mainframe.ioDevices.removeElement(this);  // remove device object from devices list
-
-    System.out.println("HP9867 Unit " + unit + " unloaded.");
   }
 }

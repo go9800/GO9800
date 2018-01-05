@@ -117,6 +117,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public ROMselector romSelector;
   public InstructionsWindow instructionsWindow;
   public HP9800Window hp9800Window;
+  public HP9865A tapeDevice;
   public Emulator emu;
   
   // List of all IOinterfaces and IOdevices for cleanup
@@ -196,11 +197,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     // fixed window size ratio
     addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
-        SwingUtilities.invokeLater(new Runnable() {
-          public void run() {
-          	normalizeSize();
-          }
-        });
+       	normalizeSize();
       }
     });
 		
@@ -236,13 +233,18 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     }
   }
   
+  public void setHP9800Window(HP9800Window hp9800Window)
+  {
+  	this.hp9800Window = hp9800Window;
+  }
+  
   public void setConfiguration(Configuration config)
   {
   	this.config = config;
   }
   
   // set standard size of HP9800Mainframe panel
-  public void setSize()
+  public void setNormalSize()
   {
   	Dimension normalSize;
   	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -254,11 +256,22 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     normalSize = new Dimension(KEYB_W + getInsets().left + getInsets().right, KEYB_H + getInsets().top + getInsets().bottom);
     setPreferredSize(normalSize);
     
+    double pixels = 17.52 / Toolkit.getDefaultToolkit().getScreenResolution() / 1000.;
+  	Dimension naturalSize = new Dimension();
+  	naturalSize.setSize(pixels / normalSize.getWidth(), pixels / normalSize.getHeight());
+    
     // check if normalSize fits in screenSize
     if(normalSize.getHeight() > screenSize.getHeight())
     	setSize(screenSize); // resize to screen on smaller devices
     else
     	setSize(normalSize);
+  }
+  
+  public void setNaturalSize()
+  {
+    double pixels = 0.96 * 17.52 * Toolkit.getDefaultToolkit().getScreenResolution();
+    
+   	setSize((int)pixels, (int)(pixels / aspectRatio));
   }
   
   // set size of HP9800Mainframe panel with fixed aspect ratio
@@ -283,11 +296,8 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   	
   	setSize(actualSize);
   	if(hp9800Window != null)
-  		hp9800Window.setSize();
+  		hp9800Window.setFrameSize();
   }
-  
-  public void setTapeDevice(HP9865A tapeDevice)
-  {}
   
   public void closeAllDevices()
   {

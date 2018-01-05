@@ -34,7 +34,11 @@
 
 package io.HP9821A;
 
+import java.awt.Graphics;
 import java.awt.event.*;
+
+import javax.swing.JFrame;
+
 import io.*;
 import io.HP9820A.HP9820AMainframe;
 import emu98.*;
@@ -56,7 +60,9 @@ public class HP9821AMainframe extends HP9820AMainframe
       {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0777, -1, -1, -1, -1, -1, -1},
   };
 
-  HP9865A tapeDevice;
+  int xTapeStatus = 875;
+  int yTapeStatus = 165;
+
   HP9865Interface hp9865Interface; 
   boolean tapeLoaded = false;
   
@@ -128,7 +134,6 @@ public class HP9821AMainframe extends HP9820AMainframe
     INSTRUCTIONS_W = 230;
     INSTRUCTIONS_H = 30;
 
-
     addMouseListener(new mouseListener());
     
     // create beeper (card reader)
@@ -137,9 +142,13 @@ public class HP9821AMainframe extends HP9820AMainframe
     // create internal tape drive
     hp9865Interface = new HP9865Interface(Integer.valueOf(10), this);
     tapeDevice = new HP9865A(5, hp9865Interface);
-    hp9865Interface.setDevice(tapeDevice); 
-    tapeDevice.setStatusFrame(hp9800Window, 875, 165);
+    tapeDevice.createWindow = false; // this device doesn't need a separate window 
     tapeDevice.hpName = "HP9865A";
+    tapeDevice.setDeviceWindow(hp9800Window); // set parent Frame for dialogs
+  	tapeDevice.setStatusPanel(this, xTapeStatus, yTapeStatus); // set panel for tape status output
+
+    
+    hp9865Interface.setDevice(tapeDevice); 
     hp9865Interface.start();
 
     romSelector.addRomButton("media/HP9821A/HP11XXXX_Slot.png", "HP11XXXX");
@@ -153,8 +162,13 @@ public class HP9821AMainframe extends HP9820AMainframe
  		driveloadedImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Loaded.png", imageController);
     blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png", imageController);
 
-    setSize();
+    setNormalSize();
     System.out.println("HP9821 Mainframe loaded.");
+  }
+  
+  public void setHP9800Window(HP9800Window hp9800Window)
+  {
+  	this.hp9800Window = hp9800Window;
   }
   
   class mouseListener extends MouseAdapter

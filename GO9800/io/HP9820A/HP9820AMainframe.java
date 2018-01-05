@@ -159,7 +159,7 @@ public class HP9820AMainframe extends HP9800Mainframe
     keyboardImageMedia = new ImageMedia("media/HP9820A/HP9820A_Keyboard.png", imageController);
     blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png", imageController);
 
-    setSize();
+    setNormalSize();
     System.out.println("HP9820 Mainframe loaded.");
   }
   
@@ -375,6 +375,10 @@ public class HP9820AMainframe extends HP9800Mainframe
 
   	displayPrintOutput(g2d);
   	displayKeyMatrix(g2d);
+  	
+  	// draw internal tape status only for HP9821A
+  	if(this.tapeDevice != null)
+  		tapeDevice.drawStatus(g2d);
   }
 
   public void displayClickAreas(Graphics2D g2d)

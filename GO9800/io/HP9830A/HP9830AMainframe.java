@@ -64,13 +64,15 @@ import io.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.swing.JFrame;
+
 import emu98.*;
 
 public class HP9830AMainframe extends HP9800Mainframe
 {
   private static final long serialVersionUID = 1L;
 
-  static int ledMatrixValues[][] = {
+  int ledMatrixValues[][] = {
     {0x3e, 0x41, 0x5d, 0x55, 0x3c}, // @ 
     {0x3f, 0x48, 0x48, 0x48, 0x3f}, // A 
     {0x7f, 0x49, 0x49, 0x49, 0x36}, // B
@@ -137,8 +139,8 @@ public class HP9830AMainframe extends HP9800Mainframe
     {0x30, 0x40, 0x45, 0x48, 0x30} // ?
   };
 
-  static int[] HP9830keyOffsetX = {90, 90, 70, 60, 80, 80, 80, 80}; // offset of leftmost key in row
-  static int[][] HP9830keyCodes = {
+  int[] HP9830keyOffsetX = {90, 90, 70, 60, 80, 80, 80, 80}; // offset of leftmost key in row
+  int[][] HP9830keyCodes = {
     {-1, -1, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', -1, -1, -1, 013, -1, '0', '.', ',', -1, '+', -1},
     {-1, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', -1, -1, 013, -1, '1', '2', '3', -1, '-', -1},
     {034, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':',  -1, 0153, -1, '4', '5', '6', -1, '*', -1},
@@ -150,13 +152,15 @@ public class HP9830AMainframe extends HP9800Mainframe
   };
 
   // click area for ROM block exchange
-  static int ROM_X = 0;
-  static int ROM_Y = 0;
-  static int ROM_W = 30;
-  static int ROM_H = 100;
+  int ROM_X = 0;
+  int ROM_Y = 0;
+  int ROM_W = 30;
+  int ROM_H = 100;
+  
+  int xTapeStatus = 825;
+  int yTapeStatus = 50;
 
   HP9830ROMslots romSlots;
-  HP9865A tapeDevice;
   HP9865Interface hp9865Interface;
 
   Image[] ledMatrix;
@@ -208,10 +212,12 @@ public class HP9830AMainframe extends HP9800Mainframe
     // create internal tape drive
     hp9865Interface = new HP9865Interface(Integer.valueOf(10), this);
     tapeDevice = new HP9865A(10, hp9865Interface);
-    hp9865Interface.setDevice(tapeDevice); 
-
-    tapeDevice.setStatusFrame(hp9800Window, 825, 50);
+    tapeDevice.createWindow = false; // this device doesn't need a separate window 
     tapeDevice.hpName = "HP9865A";
+    tapeDevice.setDeviceWindow(hp9800Window); // set parent Frame for dialogs
+  	tapeDevice.setStatusPanel(this, xTapeStatus, yTapeStatus); // set panel for tape status output
+  	
+    hp9865Interface.setDevice(tapeDevice); 
     hp9865Interface.start();
 
  		keyboardImageMedia = new ImageMedia("media/HP9830A/HP9830A_Keyboard.png", imageController);
@@ -219,10 +225,15 @@ public class HP9830AMainframe extends HP9800Mainframe
  		driveloadedImageMedia = new ImageMedia("media/HP9830A/HP9830A_Drive_Loaded.png", imageController);
     romSlots = new HP9830ROMslots(this);
 
-    setSize();
+    setNormalSize();
     System.out.println("HP9830 Mainframe loaded.");
   }
-
+  
+  public void setHP9800Window(HP9800Window hp9800Window)
+  {
+  	this.hp9800Window = hp9800Window;
+  }
+  
   class mouseListener extends MouseAdapter
   {
     public void mousePressed(MouseEvent event)
@@ -342,6 +353,10 @@ public class HP9830AMainframe extends HP9800Mainframe
   	}
 
   	displayKeyMatrix(g2d);
+  	
+  	// draw internal tape status
+  	if(this.tapeDevice != null)
+  		tapeDevice.drawStatus(g2d);
   }
 
   public void displayClickAreas(Graphics2D g2d)

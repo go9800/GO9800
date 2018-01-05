@@ -74,11 +74,12 @@ class GO9800Window extends JDialog implements ActionListener
 		public void write(byte[] buffer, int offset, int length)
 		{
 			stdout.append(new String(buffer, offset, length));
+			stdout.repaint(100);
 		}
 
 		public void write(int b) throws IOException
 		{
-			write (new byte[] {(byte)b}, 0, 1);
+			write(new byte[] {(byte)b}, 0, 1);
 		}
 	}
 
@@ -246,7 +247,7 @@ public class GO9800
     
     GO9800Window go9800 = new GO9800Window();
     
-    System.out.println("HP Series 9800 Emulator Release 2.1b6 Dec 23 2017, Copyright (C) 2006-2018 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.1b7 Jan 04 2018, Copyright (C) 2006-2018 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to");
     System.out.println("redistribute it under certain conditions.\n");

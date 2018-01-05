@@ -30,6 +30,7 @@
  * 16.10.2007 Rel. 1.20 Changed frame size control
  * 09.02.2010 Rel. 1.42 Added stopping of HP11200 thread before unloading
  * 03.04.2010 Rel. 1.50 Class now inherited from IOdevice and completely reworked
+ * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
  */
 
 package io;
@@ -37,6 +38,8 @@ package io;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import javax.swing.JFrame;
+
 
 public class HP9860A extends IOdevice
 {
@@ -59,18 +62,24 @@ public class HP9860A extends IOdevice
     // create motor sound
     cardReaderSound = new SoundMedia("media/HP9860A/HP9860_CARD.wav", ioInterface.mainframe.soundController, false);
     hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg", ioInterface.mainframe.imageController).getImage();
-    setResizable(false);
-    setLocation(740,0);
-    setBackground(Color.BLACK);
-
-    setVisible(true);
-    setState(ICONIFIED);
-    setSize(hp9860aImage.getWidth(this) + getInsets().left + getInsets().right, hp9860aImage.getHeight(this) + getInsets().top + getInsets().bottom);
+  }
+  
+  public void setDeviceWindow(JFrame window)
+  {
+  	super.setDeviceWindow(window);
+  	
+  	if(createWindow) {
+  		deviceWindow.setResizable(false);
+  		deviceWindow.setLocation(740, 0);
+  		deviceWindow.setState(Frame.ICONIFIED);
+  		deviceWindow.setSize(hp9860aImage.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9860aImage.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
+  		deviceWindow.setVisible(true);
+  	}
   }
 
   boolean openInputFile()
   {
-    FileDialog fileDialog = new FileDialog(this, "Load Card");
+    FileDialog fileDialog = new FileDialog(deviceWindow, "Load Card");
     fileDialog.setBackground(Color.WHITE);
     fileDialog.setVisible(true);
 

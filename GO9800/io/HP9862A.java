@@ -33,7 +33,9 @@
  * 01.04.2010 Rel. 1.50 Class now inherited from IOdevice and completely reworked
  * 19.03.2011 Rel. 1.50 Added method print()
  * 20.11.2011 Rel. 1.51 SHIFT+DELETE key resizes window to default
- * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
+ * 30.12.2017 Rel. 2.10 Use Graphics2D for scaling, positioning, and rendering
+ * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
  */
 
 package io;
@@ -43,9 +45,19 @@ import java.awt.event.*;
 import java.awt.print.*;
 import java.util.Vector;
 
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import emu98.DeviceWindow;
 import emu98.IOunit;
 
-public class HP9862A extends IOdevice implements Printable
+public class HP9862A extends IOdevice implements ActionListener, Printable
 {
   private static final long serialVersionUID = 1L;
   
@@ -59,14 +71,25 @@ public class HP9862A extends IOdevice implements Printable
   public static final int POWER = 0x0200;
   public static final int PEN_IN = 0x0800;
   
-  static final int DEFAULT_SIZE = 500;
+  final int PLOT_W = 10000;
+  final int PLOT_H = 10000;
+  final int DEFAULT_SIZE = 500;
   
   HP9862Interface hp9862Interface;
   //Image hp9862aImage;
   SoundMedia plotSound, moveSound, penDownSound, penUpSound;
+  Color beige = new Color(215, 213, 178);
+  Graphics2D g2d;
+  Stroke stroke;
+
+  double aspectRatio = 1.;
+	double widthScale = 1., heightScale = 1.;
+  int MENU_H = 23;
+
+  JPanel devicePanel;
+	
   Vector<PlotterPoint> points;
   int numPoints;
-  int x0, y0, plotSize = DEFAULT_SIZE;
   
   int[] outByte;
   int byteCount;
@@ -94,16 +117,18 @@ public class HP9862A extends IOdevice implements Printable
   {
     super("HP9862A", ioInterface); // set window title
     hp9862Interface = (HP9862Interface)ioInterface;
-
+    
     plotSound = new SoundMedia("media/HP9862A/HP9862_PLOT.wav", ioInterface.mainframe.soundController, true);
     moveSound = new SoundMedia("media/HP9862A/HP9862_MOVE.wav", ioInterface.mainframe.soundController, true);
     penDownSound = new SoundMedia("media/HP9862A/HP9862_PEN_DOWN.wav", ioInterface.mainframe.soundController, true);
     penUpSound = new SoundMedia("media/HP9862A/HP9862_PEN_UP.wav", ioInterface.mainframe.soundController, true);
 
-    setSize(DEFAULT_SIZE + 30, DEFAULT_SIZE + 20);
     //hp9862aImage = getToolkit().getImage("media/HP9862A/HP9862A.jpg");
 
     refPoint = new PlotterPoint(0, 0, 0);
+    
+    // set line width
+    stroke = new BasicStroke(7);
 
     // inititalize buffer for coordinate byte
     outByte = new int[4];
@@ -114,11 +139,119 @@ public class HP9862A extends IOdevice implements Printable
     printJob = PrinterJob.getPrinterJob();
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
-
-    setState(ICONIFIED);
-    setVisible(true);
+    /*
+    // get window scaling factors
+    addComponentListener(new ComponentAdapter() {
+      public void componentResized(ComponentEvent e) {
+       	normalizeSize();
+      }
+    });
+		*/
+    setNormalSize();
   }
   
+	public void setDeviceWindow(JFrame window)
+	{
+  	super.setDeviceWindow(window);
+
+		if(createWindow) {
+			deviceWindow.setResizable(true);
+			deviceWindow.setLocation(0, 0);
+	  	deviceWindow.setSize(DEFAULT_SIZE + 30, DEFAULT_SIZE + 20);
+			deviceWindow.setState(Frame.ICONIFIED);
+			deviceWindow.setVisible(true);
+			/*
+	  	JMenu runMenu = new JMenu("Run");
+	  	runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
+	  	runMenu.addSeparator();
+	  	runMenu.add(new JMenuItem("Exit")).addActionListener(this);
+	  	deviceWindow.getJMenuBar().add(runMenu);
+
+	  	JMenu viewMenu = new JMenu("View");
+	  	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
+	  	deviceWindow.getJMenuBar().add(viewMenu);
+	  	
+			JMenu printMenu = new JMenu("Print");
+			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
+			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+			printMenu.addSeparator();
+			printMenu.add(new JMenuItem("Clear")).addActionListener(this);
+			deviceWindow.getJMenuBar().add(printMenu);
+			*/
+		}
+	}
+
+  public void actionPerformed(ActionEvent event)
+	{
+		String cmd = event.getActionCommand();
+	/*	
+		if(cmd.equals("High Speed")) {
+      hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
+      this.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
+	  } else if(cmd.equals("Exit")) {
+	  	close();
+  	} else if(cmd.equals("Hide Menu")) {
+  		menuBar.setVisible(false);
+  	} else if(cmd.equals("Normal Size")) {
+  		mainframe.setSize();
+  	} else if(cmd.equals("Page Format")) {
+    	mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
+  	} else if(cmd.equals("Hardcopy")) {
+    	mainframe.printJob.printDialog();
+      try {
+      	mainframe.printJob.print();
+      } catch (PrinterException e) { }
+  	} else if(cmd.equals("Clear")) {
+    	mainframe.initializeBuffer();
+    	mainframe.page = 0;
+    	mainframe.repaint();
+  	}
+  	*/
+	}
+  
+  public Graphics2D getG2D(Graphics g)
+  {
+  	Graphics2D g2d = (Graphics2D)g;
+
+  	if(g2d != null) {
+  		g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
+  		g2d.scale(widthScale, heightScale);  // scale graphics to required size
+  		
+  		// enable antialiasing for higher quality of plotter output
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+  	}
+
+  	return(g2d);
+  }
+
+  // set standard size of device panel
+  public void setNormalSize()
+  {
+  	Dimension normalSize;
+  	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+  	
+    // set panel to standard size
+    normalSize = new Dimension(DEFAULT_SIZE + getInsets().left + getInsets().right, DEFAULT_SIZE + getInsets().top + getInsets().bottom);
+    setPreferredSize(normalSize);
+    
+    // check if normalSize fits in screenSize
+    if(normalSize.getHeight() > screenSize.getHeight())
+    	setSize(screenSize); // resize to screen on smaller devices
+    else
+    	setSize(normalSize);
+  }
+  
+  public void normalizeSize()
+  {
+  	// actual size of keyboard area
+  	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
+  	
+  	// scale factors for drawing
+  	widthScale = actualSize.getWidth() / PLOT_W;
+  	heightScale = actualSize.getHeight() / PLOT_H;
+  }
+
   public void keyPressed(KeyEvent event)
   {
     int keyCode = event.getKeyCode();
@@ -162,7 +295,7 @@ public class HP9862A extends IOdevice implements Printable
 
     case 'S':
       hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
-      this.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
+      deviceWindow.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
       break;
 
     default:
@@ -176,25 +309,24 @@ public class HP9862A extends IOdevice implements Printable
   {
     PlotterPoint point, tempRef;
     
+  	Graphics2D g2d = (Graphics2D)g;
+  	
+		// enable antialiasing for higher quality of plotter output
+		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+
     pf = pageFormat;
     
-    x0 = (int)pf.getImageableX();
-    y0 = (int)(pf.getImageableHeight() + pf.getImageableY());
-    if(pf.getImageableWidth() > pf.getImageableHeight())
-      plotSize = (int)pf.getImageableHeight();
-    else
-      plotSize = (int)pf.getImageableWidth();
+		g2d.translate(pf.getImageableX(), pf.getImageableY()); // translate graphics to painting area
+		g2d.scale(pf.getImageableWidth() / PLOT_W, pf.getImageableHeight() / PLOT_H);  // scale graphics to page size
+
     tempRef = new PlotterPoint(0, 0, 0);
     
-    int x = (int)pf.getImageableX();
-    int y = (int)pf.getImageableY();
-
-    g.setColor(Color.WHITE);
-    g.fillRect(x, y, (int)pf.getImageableWidth(), (int)pf.getImageableHeight());
+    g2d.setColor(Color.WHITE);
+    g2d.fillRect(0, 0, PLOT_W, PLOT_H);
 
     for(int i = 0; i < numPoints; i++) {
       point = (PlotterPoint)points.elementAt(i);
-      plot(g, point, tempRef);
+      plot(g2d, point, tempRef);
     }
     
     // only one page to print
@@ -207,69 +339,71 @@ public class HP9862A extends IOdevice implements Printable
   public void paint(Graphics g)
   {
     PlotterPoint point, tempRef;
-    
-    x0 = getInsets().left;
-    y0 = getHeight() - 10;
-    plotSize = y0 - getInsets().top;
+
+    super.paint(g);
+   	g2d = getG2D(g);
+   	normalizeSize();
+
     tempRef = new PlotterPoint(0, 0, 0);
     
-    int x = getInsets().left;
-    int y = getInsets().top;
-
     //boolean backgroundImage = g.drawImage(hp9862aImage, x, y, getWidth(), getHeight(), this);
 
     //if(backgroundImage) {
-    g.setColor(Color.WHITE);
-    g.fillRect(x, y, getWidth() - x, getHeight() - y);
+    g2d.setColor(Color.WHITE);
+    g2d.fillRect(0, 0, PLOT_W, PLOT_H);
 
     for(int i = 0; i < numPoints; i++) {
       point = (PlotterPoint)points.elementAt(i);
-      plot(g, point, tempRef);
+      plot(g2d, point, tempRef);
     }
     //}
   }
   
-  public void plot(Graphics g, PlotterPoint pos, PlotterPoint ref)
+  public void plot(Graphics2D g2d, PlotterPoint pos, PlotterPoint ref)
   {
+    if(g2d == null)
+    	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
     if(pos.color != 0) {
       switch(pos.color) {
       case 2:
-        g.setColor(Color.GREEN);
+        g2d.setColor(Color.GREEN);
         break;
         
       case 3:
-        g.setColor(Color.RED);
+        g2d.setColor(Color.RED);
         break;
         
       case 4:
-        g.setColor(Color.BLUE);
+        g2d.setColor(Color.BLUE);
         break;
         
       case 5:
-        g.setColor(Color.CYAN);
+        g2d.setColor(Color.CYAN);
         break;
         
       case 6:
-        g.setColor(Color.MAGENTA);
+        g2d.setColor(Color.MAGENTA);
         break;
         
       case 7:
-        g.setColor(Color.YELLOW);
+        g2d.setColor(Color.YELLOW);
         break;
         
       case 8:
-        g.setColor(Color.ORANGE);
+        g2d.setColor(Color.ORANGE);
         break;
         
       case 9:
-        g.setColor(Color.PINK);
+        g2d.setColor(Color.PINK);
         break;
         
       default:
-        g.setColor(Color.BLACK);
+        g2d.setColor(Color.BLACK);
       }
       
-      g.drawLine(x0 + ref.x * plotSize/10000, y0 - ref.y * plotSize/10000, x0 + pos.x * plotSize/10000, y0 - pos.y * plotSize/10000);
+      g2d.setStroke(stroke);
+      g2d.drawLine(ref.x, PLOT_H - ref.y, pos.x, PLOT_H - pos.y);
     }
     
     ref.x = pos.x;
@@ -306,7 +440,7 @@ public class HP9862A extends IOdevice implements Printable
       PlotterPoint point = new PlotterPoint(refPoint.x, refPoint.y, color);
       points.addElement(point);
       numPoints++;
-      plot(getGraphics(), point, refPoint);
+      plot(null, point, refPoint);
 
       // status = not ready -> delay for pen movement
       status = POWER;
@@ -368,7 +502,7 @@ public class HP9862A extends IOdevice implements Printable
           PlotterPoint point = new PlotterPoint(x, y, color);
           points.addElement(point);
           numPoints++;
-          plot(getGraphics(), point, refPoint);
+          plot(null, point, refPoint);
         }
 
         // status = not ready -> delay for plotter movement

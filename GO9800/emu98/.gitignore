@@ -68,3 +68,6 @@
 /HP9800Window.class
 /HP9800Window$WindowListener.class
 /HP9800Window$HP9800KeyListener.class
+/DeviceFrame.class
+/DeviceWindow.class
+/DeviceWindow$windowListener.class

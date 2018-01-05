@@ -22,6 +22,7 @@
  * 19.03.2011 Rel. 1.50 Added method print()
  * 20.11.2011 Rel. 1.51 SHIFT+DELETE key resizes window to default
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
  */
 
 package io;
@@ -30,6 +31,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;
 import java.util.Vector;
+
+import javax.swing.JFrame;
 
 import emu98.IOunit;
 
@@ -186,7 +189,6 @@ public class HP9866B extends IOdevice implements Printable
   {
     super("HP9866B", ioInterface); // set window title
     hp9866Interface = (HP9866Interface)ioInterface;
-    addWindowListener(new windowListener());
 
     // load print sound
     printSound = new SoundMedia("media/HP9866A/HP9866_PRINT.wav", ioInterface.mainframe.soundController, false);
@@ -194,8 +196,6 @@ public class HP9866B extends IOdevice implements Printable
     paperColor = Color.WHITE;
     printColor = Color.BLUE;
 
-    setSize(575, 250);
-    setLocation(190, 0);
     //hp9866bImage = getToolkit().getImage("media/HP9866A/HP9866B.jpg");
     page = 0;
 
@@ -205,26 +205,25 @@ public class HP9866B extends IOdevice implements Printable
     printJob = PrinterJob.getPrinterJob();
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
-
-    setState(ICONIFIED);
-    setVisible(true);
   }
 
-  class windowListener extends WindowAdapter
-  {
-    public void windowOpened(WindowEvent event)
-    {
-      // create LED matrix images after window is set visible
-      printMatrix = new Image[128];
+	public void setDeviceWindow(JFrame window)
+	{
+  	super.setDeviceWindow(window);
 
-      makeFont(printDotHeight);
-    }
-  }
-
+		if(createWindow) {
+			deviceWindow.setResizable(true);
+			deviceWindow.setBackground(paperColor);
+			deviceWindow.setLocation(0, 0);
+			deviceWindow.setSize(575, 250);
+			deviceWindow.setState(Frame.ICONIFIED);
+			deviceWindow.setVisible(true);
+		}
+	}
+	
   public void keyPressed(KeyEvent event)
   {
     int keyCode = event.getKeyCode();
-    //System.out.println(keyCode);
 
     int windowDotRows = getHeight() - 8 -  getInsets().top;  // # dot rows in output area
     int numPages = numDotRows * printDotHeight / windowDotRows;  // # of pages to display
@@ -259,7 +258,7 @@ public class HP9866B extends IOdevice implements Printable
 
     case 'S':
       hp9866Interface.highSpeed = !hp9866Interface.highSpeed;
-      this.setTitle("HP9866B" + (hp9866Interface.highSpeed? " High Speed" : ""));
+      deviceWindow.setTitle("HP9866B" + (hp9866Interface.highSpeed? " High Speed" : ""));
       break;
 
     case 'P':
@@ -417,6 +416,13 @@ public class HP9866B extends IOdevice implements Printable
     //int x = getInsets().left;
     //int y = getInsets().top;
 
+    if(printMatrix == null) {
+      // create LED matrix images
+      printMatrix = new Image[128];
+
+      makeFont(printDotHeight);
+    }
+
     //boolean backgroundImage = g.drawImage(hp9866bImage, x, y, 1000, 370, this);
 
     //if(backgroundImage) {
@@ -427,6 +433,9 @@ public class HP9866B extends IOdevice implements Printable
       int yBottom = getHeight() - 8;  // lowest print dot positon
       int windowDotRows = yBottom - yTop;  // # dot rows in output area
       int y = yBottom + page * windowDotRows;  // y-position of actual displayed page
+
+      g.setColor(Color.WHITE);
+      g.fillRect(0, 0, getWidth(), getHeight());
 
       g.setColor(printColor);
 

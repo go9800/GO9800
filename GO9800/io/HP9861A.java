@@ -27,7 +27,8 @@
  * 12.02.2011 Rel. 1.50 Scrolling and paint method reworked
  * 19.03.2011 Rel. 1.50 Added method print()
  * 20.11.2011 Rel. 1.51 SHIFT+DELETE key resizes window to default
- * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
+ * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
  */
 
 package io;
@@ -36,7 +37,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;
 import java.util.Vector;
-
+import javax.swing.JFrame;
 import emu98.IOunit;
 
 public class HP9861A extends IOdevice implements Printable
@@ -82,8 +83,6 @@ public class HP9861A extends IOdevice implements Printable
     crSound = new SoundMedia("media/HP9861A/HP9861_CR.wav", soundController, true);
     lfSound = new SoundMedia("media/HP9861A/HP9861_LF.wav", soundController, true);
 
-    setSize(1010, 250);
-    setLocation(0, 0);
     //hp9861aImage = getToolkit().getImage("media/HP9861A/HP9861A.jpg");
     page = 0;
     ribbon = BLACK_RBN;
@@ -91,7 +90,7 @@ public class HP9861A extends IOdevice implements Printable
     fontSize = 12;
     font = new Font("Monospaced", Font.PLAIN, fontSize);
     setFont(font);
-
+    
     tab = new boolean[WIDTH];
     for(int i = 0; i < WIDTH; i++)
       tab[i] = false;
@@ -103,9 +102,19 @@ public class HP9861A extends IOdevice implements Printable
     printJob = PrinterJob.getPrinterJob();
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
-
-    setState(ICONIFIED);
-    setVisible(true);
+  }
+  
+  public void setDeviceWindow(JFrame window)
+  {
+  	super.setDeviceWindow(window);
+  	
+  	if(createWindow) {
+  		deviceWindow.setResizable(true);
+  		deviceWindow.setLocation(0, 0);
+  		deviceWindow.setSize(1010, 250);
+  		deviceWindow.setState(Frame.ICONIFIED);
+  		deviceWindow.setVisible(true);
+  	}
   }
 
   public void keyPressed(KeyEvent event)
@@ -146,7 +155,7 @@ public class HP9861A extends IOdevice implements Printable
 
     case 'S':
       hp11201a.highSpeed = !hp11201a.highSpeed;
-      this.setTitle("HP9861A" + (hp11201a.highSpeed? " High Speed" : ""));
+      deviceWindow.setTitle("HP9861A" + (hp11201a.highSpeed? " High Speed" : ""));
       break;
 
     case 'P':
@@ -258,6 +267,9 @@ public class HP9861A extends IOdevice implements Printable
     int yBottom = getHeight() - 8;  // lowest print positon
     int windowDotRows = yBottom - yTop;  // # dot rows in output area
     int y = yBottom + page * windowDotRows;  // y-position of actual displayed page
+
+    g.setColor(Color.WHITE);
+    g.fillRect(0, 0, getWidth(), getHeight());
 
     typeLine(g, lineBuffer.toString(), x, y);
 
