@@ -33,10 +33,13 @@ import java.awt.print.*;
 import java.util.Vector;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 import emu98.IOunit;
 
-public class HP9866A extends IOdevice implements Printable
+public class HP9866A extends IOdevice implements Printable, ActionListener
+
 {
   static int printMatrixValues[][] = {
     {0x00, 0x00, 0x00, 0x00, 0x00},
@@ -170,6 +173,9 @@ public class HP9866A extends IOdevice implements Printable
   };
   static int numChars = 96;
   
+  // HP9866A/B print width: 8" (80 chars)
+  double REAL_W = 8.0, REAL_H = 5.0;
+
   Image[] printMatrix;
 
   private static final long serialVersionUID = 1L;
@@ -181,13 +187,14 @@ public class HP9866A extends IOdevice implements Printable
   private int printDotHeight = 1, printDotWidth = 1;
   private Color printColor, paperColor;
   private int numLines, numDotRows, page;
-  private PrinterJob printJob;
-  private PageFormat pageFormat;
 
   public HP9866A(IOinterface ioInterface)
   {
     super("HP9866A", ioInterface); // set window title
     hp9866Interface = (HP9866Interface)ioInterface;
+
+    NORMAL_W = 570;
+    NORMAL_H = 260;
 
     printSound = new SoundMedia("media/HP9866A/HP9866_PRINT.wav", ioInterface.mainframe.soundController, false);
 
@@ -209,30 +216,117 @@ public class HP9866A extends IOdevice implements Printable
 
 		if(createWindow) {
 			deviceWindow.setResizable(true);
-			deviceWindow.setBackground(paperColor);
 			deviceWindow.setLocation(0, 0);
-			deviceWindow.setSize(575, 250);
 			deviceWindow.setState(Frame.ICONIFIED);
 			deviceWindow.setVisible(true);
+			
+	  	JMenu runMenu = new JMenu("Run");
+	  	runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
+	  	runMenu.addSeparator();
+	  	runMenu.add(new JMenuItem("Exit")).addActionListener(this);
+	  	menuBar.add(runMenu);
+
+	  	JMenu viewMenu = new JMenu("View");
+	  	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
+	  	viewMenu.addSeparator();
+	  	viewMenu.add(new JMenuItem("First Page")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Previous Page")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Next Page")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Last Page")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Clear")).addActionListener(this);
+	  	viewMenu.addSeparator();
+	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
+	  	menuBar.add(viewMenu);
+	  	
+			JMenu printMenu = new JMenu("Print");
+			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
+			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+			menuBar.add(printMenu);
+			
+			menuBar.setVisible(true);
 		}
+		
+		setNormalSize();
 	}
+	
+	public void actionPerformed(ActionEvent event)
+	{
+		String cmd = event.getActionCommand();
+		
+    int windowDotRows = unscaledHeight - 8;  // # dot rows in output area
+    int numPages = numDotRows * printDotHeight / windowDotRows;  // # of pages to display
+		
+		if(cmd.equals("High Speed")) {
+			hp9866Interface.highSpeed = !hp9866Interface.highSpeed;
+      deviceWindow.setTitle("HP9866B" + (hp9866Interface.highSpeed? " High Speed" : ""));
+	  } else if(cmd.equals("Exit")) {
+	  	close();
+  	} else if(cmd.equals("Normal Size")) {
+  		setNormalSize();
+  	} else if(cmd.equals("Real Size")) {
+  		setRealSize(REAL_W, REAL_H);
+  	} else if(cmd.equals("First Page")) {
+      page = numPages;
+  	} else if(cmd.equals("Previous Page")) {
+      if(++page > numPages) page = numPages;
+  	} else if(cmd.equals("Next Page")) {
+      if(--page < 0) page = 0;
+  	} else if(cmd.equals("Last Page")) {
+      page = 0;
+  	} else if(cmd.equals("Clear")) {
+    	initializeBuffer();
+  	} else if(cmd.equals("Hide Menu")) {
+  		if(extDeviceWindow != null)
+  			extDeviceWindow.setFrameSize(!menuBar.isVisible());
+  	} else if(cmd.equals("Page Format")) {
+    	pageFormat = printJob.pageDialog(pageFormat);
+  	} else if(cmd.equals("Hardcopy")) {
+    	printJob.printDialog();
+      try {
+      	printJob.print();
+      } catch (PrinterException e) { }
+  	}
+		
+    repaint();
+	}
+	
+	public void normalizeSize(int width, int height)
+  {
+  	super.normalizeSize(width, height);
+  	heightScale = widthScale; //scale is determined only by window width
+  }
+  
+  public Graphics2D getG2D(Graphics g)
+  {
+  	Graphics2D g2d = (Graphics2D)g;
+
+  	if(g2d != null) {
+  		g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
+  		g2d.scale(widthScale, heightScale);  // scale graphics to required size
+  		
+  		// enable bicubic interpolation for higher quality of scaled bitmaps
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC));
+  	}
+
+  	return(g2d);
+  }
 
   public void keyPressed(KeyEvent event)
   {
     int keyCode = event.getKeyCode();
-    //System.out.println(keyCode);
 
-    int windowDotRows = getHeight() - 8 -  getInsets().top;  // # dot rows in output area
+    int windowDotRows = unscaledHeight - 8;  // # dot rows in output area
     int numPages = numDotRows * printDotHeight / windowDotRows;  // # of pages to display
     
     switch(keyCode) {
     case KeyEvent.VK_PAGE_DOWN:
-      page++;
-      if(page > numPages) page = numPages;
+      if(--page < 0) page = 0;
       break;
 
     case KeyEvent.VK_PAGE_UP:
-      if(--page < 0) page = 0;
+      page++;
+      if(page > numPages) page = numPages;
       break;
 
     case KeyEvent.VK_END:
@@ -247,17 +341,23 @@ public class HP9866A extends IOdevice implements Printable
       initializeBuffer();
       page = 0;
       if(event.isShiftDown()) {
-        setSize(575, 250);
+        setNormalSize();
         printDotHeight = 1;
         makeFont(printDotHeight);
       }
       break;
 
-    case 'S':
-      hp9866Interface.highSpeed = !hp9866Interface.highSpeed;
-      deviceWindow.setTitle("HP9866A" + (hp9866Interface.highSpeed? " High Speed" : ""));
+    case 'M':
+      if(event.isControlDown())
+    		if(extDeviceWindow != null)
+    			extDeviceWindow.setFrameSize(!menuBar.isVisible());
+    	break;
+    	
+    case 'N':
+      if(event.isControlDown())
+      	setNormalSize();
       break;
-
+    	
     case 'P':
     case KeyEvent.VK_INSERT:
       if(event.isShiftDown())
@@ -269,6 +369,18 @@ public class HP9866A extends IOdevice implements Printable
         } catch (PrinterException e) { }
       }
       return;
+
+    case 'R':
+      if(event.isControlDown())
+      	setRealSize(REAL_W, REAL_H);
+      break;
+    	
+    case 'S':
+      if(event.isControlDown()) {
+      	hp9866Interface.highSpeed = !hp9866Interface.highSpeed;
+      	deviceWindow.setTitle("HP9866B" + (hp9866Interface.highSpeed? " High Speed" : ""));
+      }
+      break;
 
     default:
       switch(event.getKeyChar()) {
@@ -333,38 +445,50 @@ public class HP9866A extends IOdevice implements Printable
   {
     String printLine;
     int charCode;
+    double scale;
 
-    Graphics2D g2 = (Graphics2D)g;
+    Graphics2D g2d = (Graphics2D)g;
     pf = pageFormat;
-    // HP9866A/B print width: 8" (80 chars)
-    double scale = pf.getImageableWidth() / 520. / printDotHeight;
+		
+    scale = pf.getImageableWidth() / 72. / REAL_W; // scale graphics to fit page width
+    
+    // enable bicubic interpolation for higher quality of scaled bitmaps
+		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC));
+		g2d.scale(scale, scale);  // scale graphics to page size
+		g2d.translate(pf.getImageableX(), pf.getImageableY()); // translate graphics to painting area
 
-    int x = (int)(pf.getImageableX() / scale) + 1;  // leftmost print positon
-    int yTop = (int)(pf.getImageableY() / scale);  // topmost print dot position
-    int yBottom = (int)((pf.getImageableHeight() + pf.getImageableY()) / scale);  // lowest print dot positon
-    int windowDotRows = (int)(pf.getImageableHeight() / scale);  // # dot rows in output area
+  	unscaledHeight = (int)(pf.getImageableHeight() / scale);
+
+    int x = 1;  // leftmost print positon
+    int yTop = 1;  // topmost print dot position
+    int yBottom = unscaledHeight;  // lowest print dot positon
+    int windowDotRows = unscaledHeight;  // # dot rows in output area
 
     int numPages = numDotRows * printDotHeight / windowDotRows;  // # of pages to display
     if(page > numPages)
       return(NO_SUCH_PAGE);
 
-    // print pages in reverse order
-    int y = yBottom + (numPages - page) * windowDotRows;  // y-position of actual displayed page
+    // print pages in regular order
+    int y = yTop - page * windowDotRows;  // y-position relative to actual printed page 
+    
+    g2d.setColor(printColor);
 
-    g2.scale(scale, scale);
-    g.setColor(printColor);
+    for(int i = 0; i < numLines; i++) {
+    	printLine = printBuffer.elementAt(i).toString();
 
-    for(int i = numLines - 1; i >= 0; i--) {
-      printLine = printBuffer.elementAt(i).toString();
+    	// is print y-position in visible area? If no: skip line
+    	if(y >= yTop) {
+    		// is print y-position below lowest visible dot row? If yes: page is done
+    		if(y >= yBottom) 
+    			break; 
 
-      y -= 10 * printDotHeight;  // advance one character line (10 dot rows)
-      if(y > yBottom) continue;  // is print y-position below lowest visible dot row? If yes: try next line
-      if(y < yTop - 10 * printDotHeight) break;  // is print y-position above highest visible dot row? If yes: we are done
-
-      for(int j = 0; j < printLine.length(); j++) {
-        charCode = (int)printLine.charAt(j) & 0x7f;
-        g.drawImage(printMatrix[charCode], x + j * (7 * printDotHeight), y, 5 * printDotHeight, 7 * printDotHeight, this);
-      }
+    		for(int j = 0; j < printLine.length(); j++) {
+    			charCode = (int)printLine.charAt(j) & 0x7f;
+    			if(j < 80)
+    				g2d.drawImage(printMatrix[charCode], x + j * (7 * printDotHeight), y, 5 * printDotHeight, 7 * printDotHeight, this);
+    		}
+    	}
+    	y += 10 * printDotHeight;  // advance one character line (10 dot rows)
     }
 
     return(PAGE_EXISTS);
@@ -373,48 +497,45 @@ public class HP9866A extends IOdevice implements Printable
   
   public void paint(Graphics g)
   {
-    String printLine;
-    int charCode;
-    //int x = getInsets().left;
-    //int y = getInsets().top;
-    
-    if(printMatrix == null) {
-      // create LED matrix images
-      printMatrix = new Image[128];
+  	String printLine;
+  	int charCode;
 
-      makeFont(printDotHeight);
-    }
+  	if(printMatrix == null) {
+  		// create LED matrix images once
+  		printMatrix = new Image[128];
 
-    //boolean backgroundImage = g.drawImage(hp9866AImage, x, y, 1000, 370, this);
+  		makeFont(printDotHeight);
+  	}
 
-    //if(backgroundImage) {
-      //x = getInsets().left + 270;
-      //y = getInsets().top + 180;
-      int x = getInsets().left + 4;  // leftmost print positon
-      int yTop = getInsets().top;  // topmost print dot position
-      int yBottom = getHeight() - 8;  // lowest print dot positon
-      int windowDotRows = yBottom - yTop;  // # dot rows in output area
-      int y = yBottom + page * windowDotRows;  // y-position of actual displayed page
+  	super.paint(g);
+  	g2d = getG2D(g);
+  	normalizeSize(NORMAL_W, NORMAL_H);
+  	int unscaledHeight = (int)((getHeight() - getInsets().top - getInsets().bottom) / heightScale);
 
-      g.setColor(Color.WHITE);
-      g.fillRect(0, 0, getWidth(), getHeight());
+  	int x = 4;    // leftmost print positon
+  	int yTop = 0; // topmost print dot position
+  	int yBottom = unscaledHeight - 8;  // lowest print dot positon
+  	int windowDotRows = yBottom - yTop;  // # dot rows in output area
+  	int y = yBottom + page * windowDotRows;  // y-position of actual displayed page
 
-      g.setColor(printColor);
+  	g2d.setColor(Color.WHITE);
+  	g2d.fillRect(0, 0, NORMAL_W, unscaledHeight);
 
-      for(int i = numLines - 1; i >= 0; i--) {
-        printLine = printBuffer.elementAt(i).toString();
+  	g2d.setColor(printColor);
 
-        y -= 10 * printDotHeight;  // advance one character line (10 dot rows)
-        if(y > yBottom) continue;  // is print y-position below lowest visible dot row? If yes: try next line
-        if(y < yTop - 10 * printDotHeight) break;  // is print y-position above highest visible dot row? If yes: we are done
+  	for(int i = numLines - 1; i >= 0; i--) {
+  		printLine = printBuffer.elementAt(i).toString();
 
-        for(int j = 0; j < printLine.length(); j++) {
-          charCode = (int)printLine.charAt(j) & 0x7f;
-          if(charCode >= 96) charCode -= 32;
-          g.drawImage(printMatrix[charCode], x + j * (7 * printDotHeight), y, 5 * printDotHeight, 7 * printDotHeight, this);
-        }
-      }
-    //}
+  		y -= 10 * printDotHeight;  // advance one character line (10 dot rows)
+  		if(y > yBottom) continue;  // is print y-position below lowest visible dot row? If yes: try next line
+  		if(y < yTop - 10 * printDotHeight) break;  // is print y-position above highest visible dot row? If yes: we are done
+
+  		for(int j = 0; j < printLine.length(); j++) {
+  			charCode = (int)printLine.charAt(j) & 0x7f;
+  			if(j < 80)
+  				g2d.drawImage(printMatrix[charCode], x + j * (7 * printDotHeight), y, 5 * printDotHeight, 7 * printDotHeight, this);
+  		}
+  	}
   }
 
   public void initializeBuffer()

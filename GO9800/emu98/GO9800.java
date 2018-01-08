@@ -61,6 +61,7 @@ class GO9800Window extends JDialog implements ActionListener
 	private static final long serialVersionUID = 1L;
   private HP9800Mainframe mainframe = null;
   private Configuration config;
+  JScrollPane scrollPane;
 
 	class JTextAreaOutputStream extends OutputStream
 	{
@@ -74,7 +75,6 @@ class GO9800Window extends JDialog implements ActionListener
 		public void write(byte[] buffer, int offset, int length)
 		{
 			stdout.append(new String(buffer, offset, length));
-			stdout.repaint(100);
 		}
 
 		public void write(int b) throws IOException
@@ -148,7 +148,7 @@ class GO9800Window extends JDialog implements ActionListener
 		textArea.setForeground(Color.blue);
 
 		// ScrollPane for textArea
-		JScrollPane scrollPane = new JScrollPane (textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane = new JScrollPane (textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		c.gridy = 2;
     c.weightx = 1.;
@@ -247,7 +247,7 @@ public class GO9800
     
     GO9800Window go9800 = new GO9800Window();
     
-    System.out.println("HP Series 9800 Emulator Release 2.1b7 Jan 04 2018, Copyright (C) 2006-2018 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.1b8 Jan 08 2018, Copyright (C) 2006-2018 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to");
     System.out.println("redistribute it under certain conditions.\n");

@@ -58,7 +58,6 @@ import java.awt.print.*;
 import java.util.*;
 import javax.sound.sampled.*;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import emu98.*;
 
@@ -267,9 +266,9 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     	setSize(normalSize);
   }
   
-  public void setNaturalSize()
+  public void setRealSize()
   {
-    double pixels = 0.96 * 17.52 * Toolkit.getDefaultToolkit().getScreenResolution();
+    double pixels = 17.5 * Toolkit.getDefaultToolkit().getScreenResolution();
     
    	setSize((int)pixels, (int)(pixels / aspectRatio));
   }

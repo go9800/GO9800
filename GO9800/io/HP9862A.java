@@ -44,17 +44,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;
 import java.util.Vector;
-
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-
-import emu98.DeviceWindow;
 import emu98.IOunit;
 
 public class HP9862A extends IOdevice implements ActionListener, Printable
@@ -71,35 +63,21 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
   public static final int POWER = 0x0200;
   public static final int PEN_IN = 0x0800;
   
-  final int PLOT_W = 10000;
-  final int PLOT_H = 10000;
-  final int DEFAULT_SIZE = 500;
+  double REAL_W = 15.0, REAL_H = 10.0;
+  int PLOT_W = 10000, PLOT_H = 10000;
   
   HP9862Interface hp9862Interface;
   //Image hp9862aImage;
   SoundMedia plotSound, moveSound, penDownSound, penUpSound;
-  Color beige = new Color(215, 213, 178);
-  Graphics2D g2d;
   Stroke stroke;
-
-  double aspectRatio = 1.;
-	double widthScale = 1., heightScale = 1.;
-  int MENU_H = 23;
-
-  JPanel devicePanel;
-	
   Vector<PlotterPoint> points;
   int numPoints;
-  
   int[] outByte;
   int byteCount;
   PlotterPoint refPoint;
   int color = 0;
   int penColor = 1;
   boolean bcdMode = false;
-  
-  private PrinterJob printJob;
-  private PageFormat pageFormat;
   
   private class PlotterPoint
   {
@@ -123,6 +101,8 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     penDownSound = new SoundMedia("media/HP9862A/HP9862_PEN_DOWN.wav", ioInterface.mainframe.soundController, true);
     penUpSound = new SoundMedia("media/HP9862A/HP9862_PEN_UP.wav", ioInterface.mainframe.soundController, true);
 
+    NORMAL_W = 750;
+    NORMAL_H = 500;
     //hp9862aImage = getToolkit().getImage("media/HP9862A/HP9862A.jpg");
 
     refPoint = new PlotterPoint(0, 0, 0);
@@ -147,7 +127,6 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
       }
     });
 		*/
-    setNormalSize();
   }
   
 	public void setDeviceWindow(JFrame window)
@@ -157,57 +136,62 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 		if(createWindow) {
 			deviceWindow.setResizable(true);
 			deviceWindow.setLocation(0, 0);
-	  	deviceWindow.setSize(DEFAULT_SIZE + 30, DEFAULT_SIZE + 20);
 			deviceWindow.setState(Frame.ICONIFIED);
 			deviceWindow.setVisible(true);
-			/*
+			
 	  	JMenu runMenu = new JMenu("Run");
 	  	runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
 	  	runMenu.addSeparator();
 	  	runMenu.add(new JMenuItem("Exit")).addActionListener(this);
-	  	deviceWindow.getJMenuBar().add(runMenu);
+	  	menuBar.add(runMenu);
 
 	  	JMenu viewMenu = new JMenu("View");
 	  	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Clear")).addActionListener(this);
+	  	viewMenu.addSeparator();
 	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
-	  	deviceWindow.getJMenuBar().add(viewMenu);
+	  	menuBar.add(viewMenu);
 	  	
 			JMenu printMenu = new JMenu("Print");
 			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
 			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
-			printMenu.addSeparator();
-			printMenu.add(new JMenuItem("Clear")).addActionListener(this);
-			deviceWindow.getJMenuBar().add(printMenu);
-			*/
+			menuBar.add(printMenu);
+			
+			menuBar.setVisible(true);
 		}
+		
+    setNormalSize();
 	}
 
   public void actionPerformed(ActionEvent event)
 	{
 		String cmd = event.getActionCommand();
-	/*	
+		
 		if(cmd.equals("High Speed")) {
       hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
-      this.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
+      deviceWindow.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
 	  } else if(cmd.equals("Exit")) {
 	  	close();
-  	} else if(cmd.equals("Hide Menu")) {
-  		menuBar.setVisible(false);
   	} else if(cmd.equals("Normal Size")) {
-  		mainframe.setSize();
-  	} else if(cmd.equals("Page Format")) {
-    	mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
-  	} else if(cmd.equals("Hardcopy")) {
-    	mainframe.printJob.printDialog();
-      try {
-      	mainframe.printJob.print();
-      } catch (PrinterException e) { }
+  		setNormalSize();
+  	} else if(cmd.equals("Real Size")) {
+  		setRealSize(REAL_W, REAL_H);
   	} else if(cmd.equals("Clear")) {
-    	mainframe.initializeBuffer();
-    	mainframe.page = 0;
-    	mainframe.repaint();
+    	initializeBuffer();
+  	} else if(cmd.equals("Hide Menu")) {
+  		if(extDeviceWindow != null)
+  			extDeviceWindow.setFrameSize(!menuBar.isVisible());
+  	} else if(cmd.equals("Page Format")) {
+    	pageFormat = printJob.pageDialog(pageFormat);
+  	} else if(cmd.equals("Hardcopy")) {
+    	printJob.printDialog();
+      try {
+      	printJob.print();
+      } catch (PrinterException e) { }
   	}
-  	*/
+		
+    repaint();
 	}
   
   public Graphics2D getG2D(Graphics g)
@@ -225,33 +209,6 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
   	return(g2d);
   }
 
-  // set standard size of device panel
-  public void setNormalSize()
-  {
-  	Dimension normalSize;
-  	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-  	
-    // set panel to standard size
-    normalSize = new Dimension(DEFAULT_SIZE + getInsets().left + getInsets().right, DEFAULT_SIZE + getInsets().top + getInsets().bottom);
-    setPreferredSize(normalSize);
-    
-    // check if normalSize fits in screenSize
-    if(normalSize.getHeight() > screenSize.getHeight())
-    	setSize(screenSize); // resize to screen on smaller devices
-    else
-    	setSize(normalSize);
-  }
-  
-  public void normalizeSize()
-  {
-  	// actual size of keyboard area
-  	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
-  	
-  	// scale factors for drawing
-  	widthScale = actualSize.getWidth() / PLOT_W;
-  	heightScale = actualSize.getHeight() / PLOT_H;
-  }
-
   public void keyPressed(KeyEvent event)
   {
     int keyCode = event.getKeyCode();
@@ -264,9 +221,10 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
       break;
 
     case KeyEvent.VK_DELETE:
-      initializeBuffer();
-      if(event.isShiftDown())
-        setSize(DEFAULT_SIZE + 30, DEFAULT_SIZE + 20);
+      if(event.isShiftDown()) {
+      	initializeBuffer();
+      	setNormalSize();
+      }
       break;
 
     case KeyEvent.VK_UP:
@@ -280,7 +238,18 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 
     case KeyEvent.VK_RIGHT:
       break;
-      
+
+    case 'M':
+      if(event.isControlDown())
+    		if(extDeviceWindow != null)
+    			extDeviceWindow.setFrameSize(!menuBar.isVisible());
+    	break;
+    	
+    case 'N':
+      if(event.isControlDown())
+      	setNormalSize();
+      break;
+    	
     case 'P':
     case KeyEvent.VK_INSERT:
       if(event.isShiftDown())
@@ -293,9 +262,16 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
       }
       return;
 
+    case 'R':
+      if(event.isControlDown())
+      	setRealSize(REAL_W, REAL_H);
+      break;
+    	
     case 'S':
-      hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
-      deviceWindow.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
+      if(event.isControlDown()) {
+      	hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
+      	deviceWindow.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
+      }
       break;
 
     default:
@@ -313,16 +289,14 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
   	
 		// enable antialiasing for higher quality of plotter output
 		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-
-    pf = pageFormat;
-    
 		g2d.translate(pf.getImageableX(), pf.getImageableY()); // translate graphics to painting area
 		g2d.scale(pf.getImageableWidth() / PLOT_W, pf.getImageableHeight() / PLOT_H);  // scale graphics to page size
 
+    pf = pageFormat;
     tempRef = new PlotterPoint(0, 0, 0);
     
     g2d.setColor(Color.WHITE);
-    g2d.fillRect(0, 0, PLOT_W, PLOT_H);
+    //g2d.fillRect(0, 0, PLOT_W, PLOT_H);
 
     for(int i = 0; i < numPoints; i++) {
       point = (PlotterPoint)points.elementAt(i);
@@ -342,7 +316,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 
     super.paint(g);
    	g2d = getG2D(g);
-   	normalizeSize();
+   	normalizeSize(PLOT_W, PLOT_H);
 
     tempRef = new PlotterPoint(0, 0, 0);
     

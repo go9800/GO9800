@@ -47,9 +47,9 @@ public class HP9800Window extends JFrame implements ActionListener
   Console console;  // class variable from HP9800Mainframe
   HP2116Panel hp2116panel;  // class variable from HP9800Mainframe
 
+  Color hpBeige = new Color(215, 213, 178);
+  Color hpBrown = new Color(87, 87, 75);
   Color gray = new Color(230, 230, 230);
-  Color beige = new Color(215, 213, 178);
-  Color brown = new Color(87, 87, 75);
   
   int MENU_H = 23;
   
@@ -75,10 +75,10 @@ public class HP9800Window extends JFrame implements ActionListener
   	contentPane.setLayout(gridbag);
   	setContentPane(contentPane);
   	
-    UIManager.put("MenuBar.background", beige);
-    UIManager.put("Menu.background", beige);
-    UIManager.put("MenuItem.background", beige);
-    UIManager.put("CheckBoxMenuItem.background", beige);
+    UIManager.put("MenuBar.background", hpBeige);
+    UIManager.put("Menu.background", hpBeige);
+    UIManager.put("MenuItem.background", hpBeige);
+    UIManager.put("CheckBoxMenuItem.background", hpBeige);
     
   	// Menu bar
   	menuBar = new JMenuBar();
@@ -92,7 +92,7 @@ public class HP9800Window extends JFrame implements ActionListener
 
   	JMenu viewMenu = new JMenu("View");
   	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
-  	viewMenu.add(new JMenuItem("Natural Size")).addActionListener(this);
+  	viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
   	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
   	viewMenu.addSeparator();
   	viewMenu.add(keyMapItem = new JCheckBoxMenuItem("Key Map")).addActionListener(this);
@@ -134,7 +134,7 @@ public class HP9800Window extends JFrame implements ActionListener
   	contentPane.add(menuBar, c);
 
   	// Panel for drawing of calculator mainframe
-  	mainframe.setBackground(brown);
+  	mainframe.setBackground(hpBrown);
   	c.gridy = 1;
   	c.weightx = 1.;
   	c.weighty = 1.;
@@ -164,8 +164,8 @@ public class HP9800Window extends JFrame implements ActionListener
   		menuBar.setVisible(false);
   	} else if(cmd.equals("Normal Size")) {
   		mainframe.setNormalSize();
-  	} else if(cmd.equals("Natural Size")) {
-  		mainframe.setNaturalSize();
+  	} else if(cmd.equals("Real Size")) {
+  		mainframe.setRealSize();
   	} else if(cmd.equals("Key Map")) {
   		keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
     	mainframe.repaint();
@@ -239,12 +239,12 @@ public class HP9800Window extends JFrame implements ActionListener
 
   public void setFrameSize()
   {
-    setSize(new Dimension(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom));
+    setSize(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
   }
   
   public void setFrameSize(Boolean showMenuBar)
   {
-    setSize(new Dimension(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (showMenuBar ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom));
+    setSize(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (showMenuBar ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
     menuBar.setVisible(showMenuBar);
   }
   

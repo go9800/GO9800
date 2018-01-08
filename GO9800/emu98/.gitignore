@@ -71,3 +71,4 @@
 /DeviceFrame.class
 /DeviceWindow.class
 /DeviceWindow$windowListener.class
+/DeviceWindow$componentListener.class

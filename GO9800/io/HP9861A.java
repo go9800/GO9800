@@ -38,13 +38,19 @@ import java.awt.event.*;
 import java.awt.print.*;
 import java.util.Vector;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+
 import emu98.IOunit;
 
-public class HP9861A extends IOdevice implements Printable
+public class HP9861A extends IOdevice implements ActionListener, Printable
 {
   private static final long serialVersionUID = 1L;
+  
+  // HP9861A print width: 16" (92 chars)
+  double REAL_W = 16.0, REAL_H = 5.0;
+
   HP11201A hp11201a;
-  //Image hp9861aImage;
   SoundMedia typeSound, spaceSound, crSound, lfSound;
   SoundController soundController;
   private Vector<StringBuffer> printBuffer;
@@ -76,6 +82,9 @@ public class HP9861A extends IOdevice implements Printable
     super("HP9861A", ioInterface); // set window title
     hp11201a = (HP11201A)ioInterface;
 
+    NORMAL_W = 1010;
+    NORMAL_H = 260;
+
     // load print sound
     soundController = ioInterface.mainframe.soundController;
     typeSound = new SoundMedia("media/HP9861A/HP9861_TYPE.wav", soundController, true);
@@ -104,17 +113,105 @@ public class HP9861A extends IOdevice implements Printable
     pageFormat = printJob.defaultPage();
   }
   
-  public void setDeviceWindow(JFrame window)
-  {
+	public void setDeviceWindow(JFrame window)
+	{
   	super.setDeviceWindow(window);
-  	
-  	if(createWindow) {
-  		deviceWindow.setResizable(true);
-  		deviceWindow.setLocation(0, 0);
-  		deviceWindow.setSize(1010, 250);
-  		deviceWindow.setState(Frame.ICONIFIED);
-  		deviceWindow.setVisible(true);
+
+		if(createWindow) {
+			deviceWindow.setResizable(true);
+			deviceWindow.setLocation(0, 0);
+			deviceWindow.setState(Frame.ICONIFIED);
+			deviceWindow.setVisible(true);
+			
+	  	JMenu runMenu = new JMenu("Run");
+	  	runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
+	  	runMenu.addSeparator();
+	  	runMenu.add(new JMenuItem("Exit")).addActionListener(this);
+	  	menuBar.add(runMenu);
+
+	  	JMenu viewMenu = new JMenu("View");
+	  	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
+	  	viewMenu.addSeparator();
+	  	viewMenu.add(new JMenuItem("First Page")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Previous Page")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Next Page")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Last Page")).addActionListener(this);
+	  	viewMenu.add(new JMenuItem("Clear")).addActionListener(this);
+	  	viewMenu.addSeparator();
+	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
+	  	menuBar.add(viewMenu);
+	  	
+			JMenu printMenu = new JMenu("Print");
+			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
+			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+			menuBar.add(printMenu);
+			
+			menuBar.setVisible(true);
+		}
+		
+		setNormalSize();
+	}
+
+  public void actionPerformed(ActionEvent event)
+	{
+		String cmd = event.getActionCommand();
+    int windowDotRows = getHeight() - 8 -  getInsets().top;  // # dot rows in output area
+    int numPages = numLines * fontSize / windowDotRows;  // # of pages to display
+		
+		if(cmd.equals("High Speed")) {
+			hp11201a.highSpeed = !hp11201a.highSpeed;
+      deviceWindow.setTitle("HP9861A" + (hp11201a.highSpeed? " High Speed" : ""));
+	  } else if(cmd.equals("Exit")) {
+	  	close();
+  	} else if(cmd.equals("Normal Size")) {
+  		setNormalSize();
+  	} else if(cmd.equals("Real Size")) {
+  		setRealSize(REAL_W, REAL_H);
+  	} else if(cmd.equals("First Page")) {
+      page = numPages;
+  	} else if(cmd.equals("Previous Page")) {
+      if(++page > numPages) page = numPages;
+  	} else if(cmd.equals("Next Page")) {
+      if(--page < 0) page = 0;
+  	} else if(cmd.equals("Last Page")) {
+      page = 0;
+  	} else if(cmd.equals("Clear")) {
+    	initializeBuffer();
+  	} else if(cmd.equals("Hide Menu")) {
+  		if(extDeviceWindow != null)
+  			extDeviceWindow.setFrameSize(!menuBar.isVisible());
+  	} else if(cmd.equals("Page Format")) {
+    	pageFormat = printJob.pageDialog(pageFormat);
+  	} else if(cmd.equals("Hardcopy")) {
+    	printJob.printDialog();
+      try {
+      	printJob.print();
+      } catch (PrinterException e) { }
   	}
+		
+    repaint();
+	}
+  
+  public void normalizeSize(int width, int height)
+  {
+  	super.normalizeSize(width, height);
+  	heightScale = widthScale; //scale is determined only by window width
+  }
+  
+  public Graphics2D getG2D(Graphics g)
+  {
+  	Graphics2D g2d = (Graphics2D)g;
+
+  	if(g2d != null) {
+  		g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
+  		g2d.scale(widthScale, heightScale);  // scale graphics to required size
+  		
+  		// enable text antialiasing for higher quality of scaled output
+  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+  	}
+
+  	return(g2d);
   }
 
   public void keyPressed(KeyEvent event)
@@ -126,12 +223,12 @@ public class HP9861A extends IOdevice implements Printable
 
     switch(keyCode) {
     case KeyEvent.VK_PAGE_DOWN:
-      page++;
-      if(page > numPages) page = numPages;
+      if(--page < 0) page = 0;
       break;
 
     case KeyEvent.VK_PAGE_UP:
-      if(--page < 0) page = 0;
+      page++;
+      if(page > numPages) page = numPages;
       break;
 
     case KeyEvent.VK_END:
@@ -153,11 +250,17 @@ public class HP9861A extends IOdevice implements Printable
       }
       break;
 
-    case 'S':
-      hp11201a.highSpeed = !hp11201a.highSpeed;
-      deviceWindow.setTitle("HP9861A" + (hp11201a.highSpeed? " High Speed" : ""));
+    case 'M':
+      if(event.isControlDown())
+    		if(extDeviceWindow != null)
+    			extDeviceWindow.setFrameSize(!menuBar.isVisible());
+    	break;
+    	
+    case 'N':
+      if(event.isControlDown())
+      	setNormalSize();
       break;
-
+    	
     case 'P':
     case KeyEvent.VK_INSERT:
       if(event.isShiftDown())
@@ -169,6 +272,18 @@ public class HP9861A extends IOdevice implements Printable
         } catch (PrinterException e) { }
       }
       return;
+
+    case 'R':
+      if(event.isControlDown())
+      	setRealSize(REAL_W, REAL_H);
+      break;
+    	
+    case 'S':
+    	if(event.isControlDown()) {
+    		hp11201a.highSpeed = !hp11201a.highSpeed;
+    		deviceWindow.setTitle("HP9861A" + (hp11201a.highSpeed? " High Speed" : ""));
+    	}
+      break;
 
     default:
       switch(event.getKeyChar()) {
@@ -200,24 +315,27 @@ public class HP9861A extends IOdevice implements Printable
     repaint();
   }
 
-  private void typeLine(Graphics g, String line, int x, int y)
+  private void typeLine(Graphics2D g2d, String line, int x, int y)
   {
     char c;
     int xmin = x;
     
+    if(g2d == null)
+    	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+
     for(int i = 0; i < line.length(); i++) {
       c = line.charAt(i);
       switch(c) {
       case BLACK_RBN:
-        g.setColor(Color.BLACK);
+        g2d.setColor(Color.BLACK);
         break;
         
       case RED_RBN:
-        g.setColor(Color.RED);
+        g2d.setColor(Color.RED);
         break;
         
       case BSP:
-        x -= g.getFontMetrics().charWidth(' ');
+        x -= g2d.getFontMetrics().charWidth(' ');
         if(x < xmin)
           x = xmin;
         break;
@@ -227,15 +345,16 @@ public class HP9861A extends IOdevice implements Printable
         break;
         
       default:
-        g.drawString(Character.toString(c), x, y);
-        x += g.getFontMetrics().charWidth(c); 
+        g2d.setFont(font);
+        g2d.drawString(Character.toString(c), x, y);
+        x += g2d.getFontMetrics().charWidth(c); 
       }
     }
   }
   
   public int print(Graphics g, PageFormat pf, int page)
   {
-    Graphics2D g2 = (Graphics2D)g;
+    Graphics2D g2d = (Graphics2D)g;
     pf = pageFormat;
 
     double scale = pf.getImageableWidth() / 40. / fontSize;
@@ -249,12 +368,11 @@ public class HP9861A extends IOdevice implements Printable
     int y = (int)(pf.getImageableY() / scale);  // topmost print position
     int lineNum = page * windowLines;
 
-    g2.scale(scale, scale);
-    g.setFont(font);
+    g2d.setFont(font);
 
     for(int i = lineNum; i < lineNum + windowLines && i < numLines; i++) {
       y += fontSize;  // advance one character line
-      typeLine(g, printBuffer.elementAt(i).toString(), x, y);
+      typeLine(g2d, printBuffer.elementAt(i).toString(), x, y);
     }
 
     return(PAGE_EXISTS);
@@ -262,22 +380,28 @@ public class HP9861A extends IOdevice implements Printable
 
   public void paint(Graphics g)
   {
-    int x = getInsets().left + 4;  // leftmost print positon
-    int yTop = getInsets().top;  // topmost print position
-    int yBottom = getHeight() - 8;  // lowest print positon
-    int windowDotRows = yBottom - yTop;  // # dot rows in output area
-    int y = yBottom + page * windowDotRows;  // y-position of actual displayed page
+  	super.paint(g);
+  	g2d = getG2D(g);
+  	normalizeSize(NORMAL_W, NORMAL_H);
+  	unscaledHeight = (int)((getHeight() - getInsets().top - getInsets().bottom) / heightScale);
+
+    int x = 4;  // leftmost print positon
+    int yTop = 0;  // topmost print position
+    int yBottom = unscaledHeight - 8;  // lowest print positon
+  	int windowDotRows = yBottom - yTop;  // # dot rows in output area
+  	int y = yBottom + page * windowDotRows;  // y-position of actual displayed page
 
     g.setColor(Color.WHITE);
-    g.fillRect(0, 0, getWidth(), getHeight());
+  	g2d.fillRect(0, 0, NORMAL_W, unscaledHeight);
+    g2d.setFont(font);
 
-    typeLine(g, lineBuffer.toString(), x, y);
+    typeLine(g2d, lineBuffer.toString(), x, y);
 
     for(int i = numLines - 1; i >= 0; i--) {
       y -= fontSize;  // advance one character line
       if(y > yBottom) continue;  // is print y-position below lowest visible line? If yes: try next line
       if(y < yTop - fontSize) break;  // is print y-position above highest visible line? If yes: we are done
-      typeLine(g, printBuffer.elementAt(i).toString(), x, y);
+      typeLine(g2d, printBuffer.elementAt(i).toString(), x, y);
     }
   }
 
@@ -387,9 +511,9 @@ public class HP9861A extends IOdevice implements Printable
       status = 0;
 
       if(page == 0) {
-        int x = getInsets().left + 4;  // leftmost print position
-        int y = getHeight() - 8;
-        typeLine(getGraphics(), lineBuffer.toString(), x, y);
+        int x = 4;  // leftmost print position
+        int y = unscaledHeight - 8;
+        typeLine(null, lineBuffer.toString(), x, y);
       }
       
       pos++;
