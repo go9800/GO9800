@@ -72,6 +72,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
 
   public int KEYB_W = 1000;
   public int KEYB_H = 578;
+  public double REAL_W = 17.5;
   
   public int DRIVE_X;
   public int DRIVE_Y;
@@ -268,7 +269,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   
   public void setRealSize()
   {
-    double pixels = 17.5 * Toolkit.getDefaultToolkit().getScreenResolution();
+    double pixels = REAL_W * Toolkit.getDefaultToolkit().getScreenResolution();
     
    	setSize((int)pixels, (int)(pixels / aspectRatio));
   }
@@ -453,23 +454,28 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     int dotRow;
     int i, j, n, xd;
 
+    Graphics2D g2d = (Graphics2D)g;
     pf = pageFormat;
 
+    // enable antialiasing for higher quality of printer output
+		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+		g2d.translate(pf.getImageableX(), pf.getImageableY()); // translate graphics to painting area
+		
     // number of printer paper columns (16+2 characters each) on paper sheet  
     int numCols = (int)(pf.getImageableWidth() / paperColWidth);
     // number of full printer lines (7 + 3 dot rows) on paper height
     int numFullLines = (int)(pf.getImageableHeight() / 10) * 10;
     
-    int yTop = (int)pf.getImageableY();  // topmost print dot position
-    int yBottom = (int)pf.getImageableY() + numFullLines - 1;  // lowest print dot positon
+    int yTop = 1;  // topmost print dot position
+    int yBottom = numFullLines - 1;  // lowest print dot positon
     int windowDotRows = numFullLines * numCols;  // # dot rows in output area
 
     int numPages = numLines / windowDotRows;  // # of pages to display
     if(page > numPages)
       return(NO_SUCH_PAGE);
     
-    int x = (int)pf.getImageableX() + 1;
-    int y = yTop + 1;
+    int x = 1;
+    int y = yTop;
     int rowNum = page * windowDotRows;
     
     g.setColor(Color.BLUE);
@@ -482,7 +488,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
         for(n = 4; n >= 0; n--) {
           if((dotRow & 1) != 0) {
             xd = x + 7 * j + n;
-            g.drawLine(xd, y, xd, y);
+            g2d.drawLine(xd, y, xd, y);
           }
 
           dotRow >>= 1;

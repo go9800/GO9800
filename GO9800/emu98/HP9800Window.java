@@ -307,6 +307,10 @@ public class HP9800Window extends JFrame implements ActionListener
           	setFrameSize(!menuBar.isVisible());
           	break;
 
+          case 'N':
+          	mainframe.setNormalSize();
+          	break;
+
           case 'P':
             if(event.isShiftDown())
             	mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
@@ -322,6 +326,8 @@ public class HP9800Window extends JFrame implements ActionListener
             if(event.isAltDown())
               synchronized(mainframe.ioUnit) {
               	mainframe.ioUnit.reset = true;
+              } else {
+              	mainframe.setRealSize();
               }
             break;
 

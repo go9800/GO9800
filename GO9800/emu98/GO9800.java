@@ -247,7 +247,7 @@ public class GO9800
     
     GO9800Window go9800 = new GO9800Window();
     
-    System.out.println("HP Series 9800 Emulator Release 2.1b8 Jan 08 2018, Copyright (C) 2006-2018 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.1b9 Jan 08 2018, Copyright (C) 2006-2018 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to");
     System.out.println("redistribute it under certain conditions.\n");

@@ -263,14 +263,16 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
     	
     case 'P':
     case KeyEvent.VK_INSERT:
-      if(event.isShiftDown())
-        pageFormat = printJob.pageDialog(pageFormat);
-      else {
-        printJob.printDialog();
-        try {
-          printJob.print();
-        } catch (PrinterException e) { }
-      }
+    	if(event.isControlDown()) {
+    		if(event.isShiftDown())
+    			pageFormat = printJob.pageDialog(pageFormat);
+    		else {
+    			printJob.printDialog();
+    			try {
+    				printJob.print();
+    			} catch (PrinterException e) { }
+    		}
+    	}
       return;
 
     case 'R':
