@@ -122,7 +122,7 @@ public class HP9800Window extends JFrame implements ActionListener
   	JMenu devicesMenu = new JMenu("Devices");
   	for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
     	device = devices.nextElement();
-    	if(device.isVisible())
+    	if(device.needsWindow())
     		devicesMenu.add(new JMenuItem(device.hpName)).addActionListener(this);
   	}
   	menuBar.add(devicesMenu);

@@ -53,7 +53,6 @@ public class HP11305A extends IOdevice
   protected static int BUSY_TIMER = 10;
   
   private HP9867A[] hp9867a;
-  //private Image hp11305aImage;
   private int numDiscs = 1;
   private int numUnits = 1;
   private int platter = 0, head = 0, cylinder = 0, sector = 0;
