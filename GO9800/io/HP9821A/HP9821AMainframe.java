@@ -143,7 +143,6 @@ public class HP9821AMainframe extends HP9820AMainframe
     hp9865Interface = new HP9865Interface(Integer.valueOf(10), this);
     tapeDevice = new HP9865A(5, hp9865Interface);
     tapeDevice.createWindow = false; // this device doesn't need a separate window 
-    tapeDevice.hpName = "HP9865A";
     tapeDevice.setDeviceWindow(hp9800Window); // set parent Frame for dialogs
   	tapeDevice.setStatusPanel(this, xTapeStatus, yTapeStatus); // set panel for tape status output
 

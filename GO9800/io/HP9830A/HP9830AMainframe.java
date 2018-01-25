@@ -60,13 +60,10 @@
 package io.HP9830A;
 
 import io.*;
-
+import emu98.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import javax.swing.JFrame;
-
-import emu98.*;
 
 public class HP9830AMainframe extends HP9800Mainframe
 {
@@ -213,7 +210,6 @@ public class HP9830AMainframe extends HP9800Mainframe
     hp9865Interface = new HP9865Interface(Integer.valueOf(10), this);
     tapeDevice = new HP9865A(10, hp9865Interface);
     tapeDevice.createWindow = false; // this device doesn't need a separate window 
-    tapeDevice.hpName = "HP9865A";
     tapeDevice.setDeviceWindow(hp9800Window); // set parent Frame for dialogs
   	tapeDevice.setStatusPanel(this, xTapeStatus, yTapeStatus); // set panel for tape status output
   	
@@ -331,7 +327,7 @@ public class HP9830AMainframe extends HP9800Mainframe
   	int x = 0, y = 0; // positioning is done by g2d.translate()
   	int charCode;
 
-  	// normalize frame and get scaling parameters
+  	// normalize frame and get Graphics2D and scaling parameters
   	super.paint(g);
 
   	// scale keyboard image to normal size
@@ -416,4 +412,10 @@ public class HP9830AMainframe extends HP9800Mainframe
 
   public void printOutput(int dotGroup)
   {}
+  
+  public void close()
+  {
+  	romSlots.dispose();
+  	super.close();
+  }
 }

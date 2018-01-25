@@ -148,7 +148,6 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 	  	JMenu viewMenu = new JMenu("View");
 	  	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
 	  	viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
-	  	viewMenu.add(new JMenuItem("Clear")).addActionListener(this);
 	  	viewMenu.addSeparator();
 	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
 	  	menuBar.add(viewMenu);
@@ -156,6 +155,8 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 			JMenu printMenu = new JMenu("Print");
 			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
 			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+			printMenu.addSeparator();
+			printMenu.add(new JMenuItem("Clear")).addActionListener(this);
 			menuBar.add(printMenu);
 			
 			menuBar.setVisible(true);
@@ -170,7 +171,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 		
 		if(cmd.equals("High Speed")) {
       hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
-      deviceWindow.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
+      deviceWindow.setTitle(hpName + (hp9862Interface.highSpeed? " High Speed" : ""));
 	  } else if(cmd.equals("Exit")) {
 	  	close();
   	} else if(cmd.equals("Normal Size")) {
@@ -272,7 +273,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     case 'S':
       if(event.isControlDown()) {
       	hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
-      	deviceWindow.setTitle("HP9862A" + (hp9862Interface.highSpeed? " High Speed" : ""));
+      	deviceWindow.setTitle(hpName + (hp9862Interface.highSpeed? " High Speed" : ""));
       }
       break;
 

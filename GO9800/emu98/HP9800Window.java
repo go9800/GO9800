@@ -225,14 +225,7 @@ public class HP9800Window extends JFrame implements ActionListener
   {
   	System.out.println("\nHP9800 Emulator shutdown initiated ...");
 
-  	mainframe.closeAllDevices(); // close all loaded devices
-  	mainframe.closeAllInterfaces(); // close remaining interfaces without device (MCR, Beeper etc.)
-  	emu.stop();
-  	hp2116panel.stop();
-  	mainframe.imageController.disposeAll();
-  	mainframe.soundController.disposeAll();
-  	mainframe.config.dispose();
-  	setVisible(false);
+  	mainframe.close();
   	dispose();
   	System.out.println("HP9800 Emulator terminated.");
   }

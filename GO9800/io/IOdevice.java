@@ -45,7 +45,7 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   public String hpName = null;
 
   private static final long serialVersionUID = 1L;
-  IOinterface ioInterface;
+  public IOinterface ioInterface;
   public JFrame deviceWindow;
   public DeviceWindow extDeviceWindow;
   public Boolean createWindow = true; // set to false if no separate DeviceWindow is needed
@@ -69,7 +69,8 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   
   public IOdevice(String hpName, IOinterface ioInterface)
   {
-    this.hpName = hpName; // device name comes from child class
+    // extend device name with #selectCode
+    this.hpName = hpName + " @" + ioInterface.selectCode; // device name comes from child class
     
     // connection to ioInterface
     this.ioInterface = ioInterface;

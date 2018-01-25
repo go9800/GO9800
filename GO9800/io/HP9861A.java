@@ -137,7 +137,6 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
 	  	viewMenu.add(new JMenuItem("Previous Page")).addActionListener(this);
 	  	viewMenu.add(new JMenuItem("Next Page")).addActionListener(this);
 	  	viewMenu.add(new JMenuItem("Last Page")).addActionListener(this);
-	  	viewMenu.add(new JMenuItem("Clear")).addActionListener(this);
 	  	viewMenu.addSeparator();
 	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
 	  	menuBar.add(viewMenu);
@@ -145,6 +144,8 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
 			JMenu printMenu = new JMenu("Print");
 			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
 			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+			printMenu.addSeparator();
+			printMenu.add(new JMenuItem("Clear")).addActionListener(this);
 			menuBar.add(printMenu);
 			
 			menuBar.setVisible(true);
@@ -161,7 +162,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
 		
 		if(cmd.equals("High Speed")) {
 			hp11201a.highSpeed = !hp11201a.highSpeed;
-      deviceWindow.setTitle("HP9861A" + (hp11201a.highSpeed? " High Speed" : ""));
+      deviceWindow.setTitle(hpName + (hp11201a.highSpeed? " High Speed" : ""));
 	  } else if(cmd.equals("Exit")) {
 	  	close();
   	} else if(cmd.equals("Normal Size")) {
@@ -283,7 +284,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
     case 'S':
     	if(event.isControlDown()) {
     		hp11201a.highSpeed = !hp11201a.highSpeed;
-    		deviceWindow.setTitle("HP9861A" + (hp11201a.highSpeed? " High Speed" : ""));
+    		deviceWindow.setTitle(hpName + (hp11201a.highSpeed? " High Speed" : ""));
     	}
       break;
 

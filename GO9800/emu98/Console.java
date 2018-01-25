@@ -579,10 +579,4 @@ public class Console extends JDialog implements ActionListener
         columnLabels.setText("A      B      E I      mcisKDPMCS      P       OPCODE  INSTR           AR1                     AR2");
     }
   }
-  
-  public void dispose()
-  {
-  	
-  }
-
 }  //  @jve:decl-index=0:visual-constraint="11,-154"
