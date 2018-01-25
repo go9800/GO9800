@@ -234,7 +234,6 @@ public class HP9866A extends IOdevice implements Printable, ActionListener
 	  	viewMenu.add(new JMenuItem("Previous Page")).addActionListener(this);
 	  	viewMenu.add(new JMenuItem("Next Page")).addActionListener(this);
 	  	viewMenu.add(new JMenuItem("Last Page")).addActionListener(this);
-	  	viewMenu.add(new JMenuItem("Clear")).addActionListener(this);
 	  	viewMenu.addSeparator();
 	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
 	  	menuBar.add(viewMenu);
@@ -242,6 +241,8 @@ public class HP9866A extends IOdevice implements Printable, ActionListener
 			JMenu printMenu = new JMenu("Print");
 			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
 			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+			printMenu.addSeparator();
+			printMenu.add(new JMenuItem("Clear")).addActionListener(this);
 			menuBar.add(printMenu);
 			
 			menuBar.setVisible(true);

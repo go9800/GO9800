@@ -52,7 +52,6 @@ package io;
 //import emu98.Emulator;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.util.StringTokenizer;
 import javax.swing.JFrame;
@@ -587,7 +586,7 @@ public class HP9865A extends IOdevice
 		runFlag = rewindFlag = inByteReady = outByteReady = false;
 
 		// draw status indicator string 
-		tapeStatusPanel.repaint(xTapeStatus, yTapeStatus - 15, 50, 20);
+		tapeStatusPanel.repaint(); //(xTapeStatus, yTapeStatus - 15, 50, 20);
 	}
 
 
@@ -659,7 +658,7 @@ public class HP9865A extends IOdevice
 					stopTape();
 				else
 					// draw status indicator string 
-					tapeStatusPanel.repaint(xTapeStatus, yTapeStatus - 15, 50, 20);
+					tapeStatusPanel.repaint(); //(xTapeStatus, yTapeStatus - 15, 50, 20);
 		}
 	}
 

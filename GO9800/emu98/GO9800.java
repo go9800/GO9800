@@ -56,11 +56,14 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 
-class GO9800Window extends JDialog implements ActionListener
+class GO9800Window extends JDialog implements ActionListener, Runnable
 {
 	private static final long serialVersionUID = 1L;
   private HP9800Mainframe mainframe = null;
   private Configuration config;
+  public String machine = "";
+  public boolean debug = false;
+  boolean update = false;
   JScrollPane scrollPane;
 
 	class JTextAreaOutputStream extends OutputStream
@@ -75,6 +78,7 @@ class GO9800Window extends JDialog implements ActionListener
 		public void write(byte[] buffer, int offset, int length)
 		{
 			stdout.append(new String(buffer, offset, length));
+			update = true;
 		}
 
 		public void write(int b) throws IOException
@@ -89,8 +93,12 @@ class GO9800Window extends JDialog implements ActionListener
 		if(cmd.equals("Exit")) {
 			dispose();
 			System.exit(0);
-		} else
-			start(cmd, false);
+		} else {
+			//start(cmd, false);
+			machine = cmd;
+			debug = false;
+    	new Thread(this, machine).start();
+		}
 	}
 
 	public GO9800Window()
@@ -165,7 +173,8 @@ class GO9800Window extends JDialog implements ActionListener
 		System.setErr(new PrintStream(out));
 	}
 	
-	public void start(String machine, boolean debug)
+	//public void start(String machine, boolean debug)
+	public void run()
 	{
 		// Reflection API for loading of calculator classes:
 	  Class<?>[] formpara;  // formal parameter class
@@ -212,6 +221,17 @@ class GO9800Window extends JDialog implements ActionListener
     HP9800Window hp9800Window = new HP9800Window(mainframe, machine);
     hp9800Window.setVisible(true);
     emu.start();
+    while(emu.running){
+    	try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {}
+    	
+    	// set scrollbar to lowest position
+    	if(update) {
+    		scrollPane.getVerticalScrollBar().setValue(100000000);
+    		update = false;
+    	}
+    }
 	}
 }
 
@@ -224,38 +244,39 @@ public class GO9800
   
   public static void main(String[] args)
   {
-    boolean debug = false;
-    String machine = "";
+    //boolean debug = false;
+    //String machine = "";
 
     if(args.length < 0 || args.length > 3){
       usage();
       System.exit(1);
     }
     
+    GO9800Window go9800 = new GO9800Window();
+    
     for(int i = 0; i < args.length; i++) {
       if(args[i].startsWith("-")) {
       	switch(args[i].charAt(1)) {
       		case 'd':
-      			debug = true;
+      			go9800.debug = true;
       	}
       } else { 
-        machine = args[i];
+        go9800.machine = args[i];
       }
     }
     
-    System.setProperty("awt.image.incrementalDraw", "false");
-    
-    GO9800Window go9800 = new GO9800Window();
-    
-    System.out.println("HP Series 9800 Emulator Release 2.1b9 Jan 08 2018, Copyright (C) 2006-2018 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.1b10 Jan 23 2018, Copyright (C) 2006-2018 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to");
     System.out.println("redistribute it under certain conditions.\n");
-    System.out.println("GO9800 is in no way associated with the Hewlett-Packard Company.");
-    System.out.println("Hewlett-Packard, HP, and the HP logos are all trademarks of the Hewlett-Packard Company.");
+    System.out.println("GO9800 is in no way associated with the Hewlett Packard Company or its subsidiaries.");
+    System.out.println("Hewlett-Packard, HP, and the HP logos are all trademarks of the Hewlett Packard Company.");
+    System.out.println("Original software is used in this distribution with permission of the Hewlett Packard Company.");
     System.out.println("This software is intended solely for research and education purposes.\n\n");
     
-    if(machine != "")
-    	go9800.start(machine, debug);
+    if(go9800.machine != "") {
+    	new Thread(go9800, go9800.machine).start();
+    	//go9800.start(machine, debug);
+    }
   }
 }

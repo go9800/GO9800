@@ -654,4 +654,18 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public void displayClickAreas(Graphics2D g2d)
   {
   }
+  
+  public void close()
+  {
+  	closeAllDevices(); // close all loaded devices
+  	closeAllInterfaces(); // close remaining interfaces without device (MCR, Beeper etc.)
+  	emu.stop();
+  	console.dispose();
+  	hp2116panel.stop();
+  	if(romSelector != null)	romSelector.dispose();
+  	if(instructionsWindow != null) instructionsWindow.dispose();
+  	imageController.disposeAll();
+  	soundController.disposeAll();
+  	config.dispose();
+  }
 }

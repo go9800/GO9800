@@ -154,5 +154,10 @@ public class HP9830ROMslots extends Frame
       }
     }
   }
-
+  
+  public void dispose()
+  {
+  	romSelector.dispose();
+  	super.dispose();
+  }
  }
