@@ -65,12 +65,13 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
   public boolean debug = false;
   boolean update = false;
   JScrollPane scrollPane;
+	JTextArea textArea = new JTextArea(20, 80); // TextArea for stdout
 
 	class JTextAreaOutputStream extends OutputStream
 	{
 		private final JTextArea stdout;
 
-		public JTextAreaOutputStream (JTextArea stdout)
+		public JTextAreaOutputStream(JTextArea stdout)
 		{
 			this.stdout = stdout;
 		}
@@ -93,6 +94,8 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		if(cmd.equals("Exit")) {
 			dispose();
 			System.exit(0);
+		} else if(cmd.equals("Clear")) {
+			textArea.setText(null);
 		} else {
 			//start(cmd, false);
 			machine = cmd;
@@ -132,6 +135,10 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		runMenu.add(new JMenuItem("Exit")).addActionListener(this);
 		menuBar.add(runMenu);
 		
+		JMenu viewMenu = new JMenu("View");
+		viewMenu.add(new JMenuItem("Clear")).addActionListener(this);
+		menuBar.add(viewMenu);
+		
 		c.gridx = 0;
 		c.gridy = 0;
     c.gridheight = 1;
@@ -148,10 +155,8 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		c.gridy = 1;
 		contentPane.add(logo, c);
 		
-		// TextArea for stdout
-		JTextArea textArea = new JTextArea(20, 80);
 		textArea.setEditable(false);
-		textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+		textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		textArea.setBackground(gray);
 		textArea.setForeground(Color.blue);
 
@@ -221,16 +226,19 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
     HP9800Window hp9800Window = new HP9800Window(mainframe, machine);
     hp9800Window.setVisible(true);
     emu.start();
+    
     while(emu.running){
     	try {
-				Thread.sleep(250);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {}
     	
     	// set scrollbar to lowest position
+    	/*
     	if(update) {
     		scrollPane.getVerticalScrollBar().setValue(100000000);
     		update = false;
     	}
+    	*/
     }
 	}
 }
@@ -265,7 +273,7 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.1b11 Jan 26 2018, Copyright (C) 2006-2018 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.1 Feb 11 2018, Copyright (C) 2006-2018 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to redistribute it under certain conditions.\n");
     System.out.println("GO9800 is in no way associated with the Hewlett Packard Company or its subsidiaries.");

@@ -132,7 +132,7 @@ public class HP9800Window extends JFrame implements ActionListener
   	c.fill = GridBagConstraints.HORIZONTAL;
   	c.anchor = GridBagConstraints.WEST;
   	contentPane.add(menuBar, c);
-
+  	
   	// Panel for drawing of calculator mainframe
   	mainframe.setBackground(hpBrown);
   	c.gridy = 1;
@@ -140,9 +140,10 @@ public class HP9800Window extends JFrame implements ActionListener
   	c.weighty = 1.;
   	c.fill = GridBagConstraints.BOTH;
   	contentPane.add(mainframe, c);
-
+  	
+  	//setUndecorated(true);
   	pack(); // put components on their correct places
-
+  	
   	addWindowListener(new WindowListener());
   	addKeyListener(new HP9800KeyListener());
 
