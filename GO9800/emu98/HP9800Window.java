@@ -36,7 +36,9 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 public class HP9800Window extends JFrame implements ActionListener
 {
@@ -74,6 +76,11 @@ public class HP9800Window extends JFrame implements ActionListener
   	JPanel contentPane = new JPanel();
   	contentPane.setLayout(gridbag);
   	setContentPane(contentPane);
+  	//JTabbedPane tabbedPane = new JTabbedPane(); // see setFrameSize()
+  	//tabbedPane.addTab(machine, contentPane);
+  	//setContentPane(tabbedPane);
+  	//setUndecorated(true);
+  	//setOpacity(0.8f);
   	
     UIManager.put("MenuBar.background", hpBeige);
     UIManager.put("Menu.background", hpBeige);
@@ -234,6 +241,8 @@ public class HP9800Window extends JFrame implements ActionListener
   public void setFrameSize()
   {
     setSize(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
+    // add 5 and 28 to FrameSize for tabbedPane
+    //setSize(mainframe.getWidth() + 5 + getInsets().left + getInsets().right, mainframe.getHeight() + 28 + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
   }
   
   public void setFrameSize(Boolean showMenuBar)

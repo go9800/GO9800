@@ -25,20 +25,14 @@ package emu98;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
 import io.IOdevice;
@@ -89,7 +83,7 @@ public class DeviceWindow extends JFrame
   	device.setMenuBar(menuBar); // menuBar is filled by device if needed
   	
 		// ScrollPane for device panel
-		JScrollPane deviceScrollPane = new JScrollPane (ioDevice, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		//JScrollPane deviceScrollPane = new JScrollPane (ioDevice, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
   	// Panel for drawing of device
   	c.gridy = 1;

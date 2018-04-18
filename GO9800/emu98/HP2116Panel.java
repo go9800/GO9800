@@ -110,6 +110,7 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
   public void stop()
   {
   	if(panelThread != null) {
+  		System.out.println("HP2116 Panel stopped.");
   		panelThread.stop();
   		panelThread = null;
   	}

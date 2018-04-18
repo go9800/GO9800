@@ -130,6 +130,7 @@ public class Emulator implements Runnable
   		running = false;
   		//emuThread.stop(); // avoid unsafe Thread.stop()
   		//emuThread = null;
+  		System.out.println("HP9800 CPU stopped.");
   	}
   }
 

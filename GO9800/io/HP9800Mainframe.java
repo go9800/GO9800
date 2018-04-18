@@ -280,6 +280,8 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   	// actual size of keyboard area
   	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
   	double aspectMismatch = actualSize.getWidth() / actualSize.getHeight() / aspectRatio;
+  	System.out.println(getHeight());
+  	System.out.println(getWidth());
   	
   	if(aspectMismatch > 1.02) {  // is actual aspect ratio more than 2% bigger than normal?
   		actualSize.width = (int)(actualSize.getHeight() * aspectRatio);  // then make width smaller
@@ -657,9 +659,10 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   
   public void close()
   {
+  	System.out.println("HP9800 Mainframe closing ...");
+  	emu.stop();
   	closeAllDevices(); // close all loaded devices
   	closeAllInterfaces(); // close remaining interfaces without device (MCR, Beeper etc.)
-  	emu.stop();
   	console.dispose();
   	hp2116panel.stop();
   	if(romSelector != null)	romSelector.dispose();
