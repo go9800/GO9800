@@ -57,103 +57,105 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   Color hpBeige = new Color(215, 213, 178);
   double aspectRatio = 1.;
   double widthScale = 1., heightScale = 1.;
-	int unscaledHeight;
-	int MENU_H = 23;
+  int unscaledHeight;
+  int MENU_H = 23;
   public int NORMAL_W = 500, NORMAL_H = 500;
-	
+
 
   public IOdevice()
   {
     // dummy constructor for Reflection API
   }
-  
+
   public IOdevice(String hpName, IOinterface ioInterface)
   {
     // extend device name with #selectCode
     this.hpName = hpName + " @" + ioInterface.selectCode; // device name comes from child class
-    
+
     // connection to ioInterface
     this.ioInterface = ioInterface;
-    
+
     // add device to list for later cleanup
     ioInterface.mainframe.ioDevices.add(this);
-    
+
     addMouseListener(this);
 
     setBackground(Color.WHITE);
     setForeground(Color.BLACK);
   }
-  
+
   public boolean needsWindow()
   {
-  	return(createWindow);
+    return(createWindow);
   }
-  
+
   // only register JFrame of DeviceWindow (e.g. from HP9800Window)
   public void setDeviceWindow(JFrame window)
   {
-  	deviceWindow = window;
-  	
-  	if(createWindow) {
-  		// do only for a separate window
-  		deviceWindow.addKeyListener(this);
-  	}
+    deviceWindow = window;
+
+    if(createWindow) {
+      // do only for a separate window
+      deviceWindow.addKeyListener(this);
+      deviceWindow.setState(Frame.ICONIFIED);
+      deviceWindow.setVisible(false);
+    }
   }
-  
+
   // register extended JFrame for use of extended methods
   public void setDeviceWindow(DeviceWindow window)
   {
-  	extDeviceWindow = window;
-  	setDeviceWindow((JFrame)window);
+    extDeviceWindow = window;
+    setDeviceWindow((JFrame)window);
   }
-  
+
   public void setMenuBar(JMenuBar menuBar)
   {
-  	this.menuBar = menuBar;
+    this.menuBar = menuBar;
   }
-  
+
   public void normalizeSize(int width, int height)
   {
-  	// actual size of keyboard area
-  	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
-  	
-  	// scale factors for drawing
-  	widthScale = actualSize.getWidth() / width;
-  	heightScale = actualSize.getHeight() / height;
+    // actual size of keyboard area
+    Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
+
+    // scale factors for drawing
+    widthScale = actualSize.getWidth() / width;
+    heightScale = actualSize.getHeight() / height;
   }
-  
+
   // set standard size of device panel
   public void setNormalSize()
   {
-  	Dimension normalSize;
-  	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-  	
+    Dimension normalSize;
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
     // set panel to standard size
     normalSize = new Dimension(NORMAL_W + getInsets().left + getInsets().right, NORMAL_H + getInsets().top + getInsets().bottom);
     setPreferredSize(normalSize);
-    
+
     // check if normalSize fits in screenSize
     if(normalSize.getHeight() > screenSize.getHeight())
-    	setSize(screenSize); // resize to screen on smaller devices
+      setSize(screenSize); // resize to screen on smaller devices
     else
-    	setSize(normalSize);
-    
+      setSize(normalSize);
+
     setWindowSize();
   }
-  
+
   public void setRealSize(double width, double height)
   {
-   	setSize((int)(width * Toolkit.getDefaultToolkit().getScreenResolution()), (int)(height * Toolkit.getDefaultToolkit().getScreenResolution()));
+    setSize((int)(width * Toolkit.getDefaultToolkit().getScreenResolution()), (int)(height * Toolkit.getDefaultToolkit().getScreenResolution()));
     setWindowSize();
   }
-  
+
   public void setWindowSize()
   {
-   	deviceWindow.setSize(getWidth() + deviceWindow.getInsets().left + deviceWindow.getInsets().right, getHeight() + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
+    deviceWindow.setSize(getWidth() + deviceWindow.getInsets().left + deviceWindow.getInsets().right, getHeight() + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
   }
 
   // MouseListener methods
-  
+
   public void mousePressed(MouseEvent event)
   {
   }
@@ -237,17 +239,17 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   public void soundStop()
   {
   }
-  
+
   public void close()
   {
-  	// stop all threads including sounds and images and free all ressources
+    // stop all threads including sounds and images and free all ressources
     ioInterface.stop();  // stop interface thread
     ioInterface.mainframe.ioDevices.removeElement(this);  // remove device object from devices list
     setVisible(false);  // close panel
-    
+
     if(createWindow)
-    	deviceWindow.dispose();  // close window
-    
+      deviceWindow.dispose();  // close window
+
     System.out.println(hpName + " unloaded.");
   }
 }

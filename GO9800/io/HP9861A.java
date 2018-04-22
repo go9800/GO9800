@@ -46,7 +46,7 @@ import emu98.IOunit;
 public class HP9861A extends IOdevice implements ActionListener, Printable
 {
   private static final long serialVersionUID = 1L;
-  
+
   // HP9861A print width: 16" (92 chars)
   double REAL_W = 16.0, REAL_H = 5.0;
 
@@ -63,10 +63,10 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
   private PrinterJob printJob;
   private PageFormat pageFormat;
   private boolean debug = false;
-  
+
   static final int WIDTH = 162;
   static final int LINE_END = 0x800;
-  
+
   static final int NOP = 0x00;
   static final int TAB_SET = 0x01;
   static final int BLACK_RBN = 0x07;
@@ -75,8 +75,8 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
   static final int TAB = 0x09;
   static final int TAB_CLR_ALL = 0x0b;
   static final int TAB_CLR = 0x0c;
-  
-  
+
+
   public HP9861A(IOinterface ioInterface)
   {
     super("HP9861A", ioInterface); // set window title
@@ -99,12 +99,12 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
     fontSize = 12;
     font = new Font("Monospaced", Font.PLAIN, fontSize);
     setFont(font);
-    
+
     tab = new boolean[WIDTH];
     for(int i = 0; i < WIDTH; i++)
       tab[i] = false;
     pos = 0;
-    
+
     initializeBuffer();
 
     // set Printable
@@ -112,107 +112,105 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
   }
-  
-	public void setDeviceWindow(JFrame window)
-	{
-  	super.setDeviceWindow(window);
 
-		if(createWindow) {
-			deviceWindow.setResizable(true);
-			deviceWindow.setLocation(0, 0);
-			deviceWindow.setState(Frame.ICONIFIED);
-			deviceWindow.setVisible(true);
-			
-	  	JMenu runMenu = new JMenu("Run");
-	  	runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
-	  	runMenu.addSeparator();
-	  	runMenu.add(new JMenuItem("Exit")).addActionListener(this);
-	  	menuBar.add(runMenu);
+  public void setDeviceWindow(JFrame window)
+  {
+    super.setDeviceWindow(window);
 
-	  	JMenu viewMenu = new JMenu("View");
-	  	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
-	  	viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
-	  	viewMenu.addSeparator();
-	  	viewMenu.add(new JMenuItem("First Page")).addActionListener(this);
-	  	viewMenu.add(new JMenuItem("Previous Page")).addActionListener(this);
-	  	viewMenu.add(new JMenuItem("Next Page")).addActionListener(this);
-	  	viewMenu.add(new JMenuItem("Last Page")).addActionListener(this);
-	  	viewMenu.addSeparator();
-	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
-	  	menuBar.add(viewMenu);
-	  	
-			JMenu printMenu = new JMenu("Print");
-			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
-			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
-			printMenu.addSeparator();
-			printMenu.add(new JMenuItem("Clear")).addActionListener(this);
-			menuBar.add(printMenu);
-			
-			menuBar.setVisible(true);
-		}
-		
-		setNormalSize();
-	}
+    if(createWindow) {
+      deviceWindow.setResizable(true);
+      deviceWindow.setLocation(0, 0);
+
+      JMenu runMenu = new JMenu("Run");
+      runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
+      runMenu.addSeparator();
+      runMenu.add(new JMenuItem("Exit")).addActionListener(this);
+      menuBar.add(runMenu);
+
+      JMenu viewMenu = new JMenu("View");
+      viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
+      viewMenu.addSeparator();
+      viewMenu.add(new JMenuItem("First Page")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Previous Page")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Next Page")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Last Page")).addActionListener(this);
+      viewMenu.addSeparator();
+      viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
+      menuBar.add(viewMenu);
+
+      JMenu printMenu = new JMenu("Print");
+      printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
+      printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+      printMenu.addSeparator();
+      printMenu.add(new JMenuItem("Clear")).addActionListener(this);
+      menuBar.add(printMenu);
+
+      menuBar.setVisible(true);
+    }
+
+    setNormalSize();
+  }
 
   public void actionPerformed(ActionEvent event)
-	{
-		String cmd = event.getActionCommand();
+  {
+    String cmd = event.getActionCommand();
     int windowDotRows = getHeight() - 8 -  getInsets().top;  // # dot rows in output area
     int numPages = numLines * fontSize / windowDotRows;  // # of pages to display
-		
-		if(cmd.equals("High Speed")) {
-			hp11201a.highSpeed = !hp11201a.highSpeed;
+
+    if(cmd.equals("High Speed")) {
+      hp11201a.highSpeed = !hp11201a.highSpeed;
       deviceWindow.setTitle(hpName + (hp11201a.highSpeed? " High Speed" : ""));
-	  } else if(cmd.equals("Exit")) {
-	  	close();
-  	} else if(cmd.equals("Normal Size")) {
-  		setNormalSize();
-  	} else if(cmd.equals("Real Size")) {
-  		setRealSize(REAL_W, REAL_H);
-  	} else if(cmd.equals("First Page")) {
+    } else if(cmd.equals("Exit")) {
+      close();
+    } else if(cmd.equals("Normal Size")) {
+      setNormalSize();
+    } else if(cmd.equals("Real Size")) {
+      setRealSize(REAL_W, REAL_H);
+    } else if(cmd.equals("First Page")) {
       page = numPages;
-  	} else if(cmd.equals("Previous Page")) {
+    } else if(cmd.equals("Previous Page")) {
       if(++page > numPages) page = numPages;
-  	} else if(cmd.equals("Next Page")) {
+    } else if(cmd.equals("Next Page")) {
       if(--page < 0) page = 0;
-  	} else if(cmd.equals("Last Page")) {
+    } else if(cmd.equals("Last Page")) {
       page = 0;
-  	} else if(cmd.equals("Clear")) {
-    	initializeBuffer();
-  	} else if(cmd.equals("Hide Menu")) {
-  		if(extDeviceWindow != null)
-  			extDeviceWindow.setFrameSize(!menuBar.isVisible());
-  	} else if(cmd.equals("Page Format")) {
-    	pageFormat = printJob.pageDialog(pageFormat);
-  	} else if(cmd.equals("Hardcopy")) {
-    	printJob.printDialog();
+    } else if(cmd.equals("Clear")) {
+      initializeBuffer();
+    } else if(cmd.equals("Hide Menu")) {
+      if(extDeviceWindow != null)
+        extDeviceWindow.setFrameSize(!menuBar.isVisible());
+    } else if(cmd.equals("Page Format")) {
+      pageFormat = printJob.pageDialog(pageFormat);
+    } else if(cmd.equals("Hardcopy")) {
+      printJob.printDialog();
       try {
-      	printJob.print();
+        printJob.print();
       } catch (PrinterException e) { }
-  	}
-		
+    }
+
     repaint();
-	}
-  
+  }
+
   public void normalizeSize(int width, int height)
   {
-  	super.normalizeSize(width, height);
-  	heightScale = widthScale; //scale is determined only by window width
+    super.normalizeSize(width, height);
+    heightScale = widthScale; //scale is determined only by window width
   }
-  
+
   public Graphics2D getG2D(Graphics g)
   {
-  	Graphics2D g2d = (Graphics2D)g;
+    Graphics2D g2d = (Graphics2D)g;
 
-  	if(g2d != null) {
-  		g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
-  		g2d.scale(widthScale, heightScale);  // scale graphics to required size
-  		
-  		// enable text antialiasing for higher quality of scaled output
-  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
-  	}
+    if(g2d != null) {
+      g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
+      g2d.scale(widthScale, heightScale);  // scale graphics to required size
 
-  	return(g2d);
+      // enable text antialiasing for higher quality of scaled output
+      g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+    }
+
+    return(g2d);
   }
 
   public void keyPressed(KeyEvent event)
@@ -253,39 +251,39 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
 
     case 'M':
       if(event.isControlDown())
-    		if(extDeviceWindow != null)
-    			extDeviceWindow.setFrameSize(!menuBar.isVisible());
-    	break;
-    	
+        if(extDeviceWindow != null)
+          extDeviceWindow.setFrameSize(!menuBar.isVisible());
+      break;
+
     case 'N':
       if(event.isControlDown())
-      	setNormalSize();
+        setNormalSize();
       break;
-    	
+
     case 'P':
     case KeyEvent.VK_INSERT:
-    	if(event.isControlDown()) {
-    		if(event.isShiftDown())
-    			pageFormat = printJob.pageDialog(pageFormat);
-    		else {
-    			printJob.printDialog();
-    			try {
-    				printJob.print();
-    			} catch (PrinterException e) { }
-    		}
-    	}
+      if(event.isControlDown()) {
+        if(event.isShiftDown())
+          pageFormat = printJob.pageDialog(pageFormat);
+        else {
+          printJob.printDialog();
+          try {
+            printJob.print();
+          } catch (PrinterException e) { }
+        }
+      }
       return;
 
     case 'R':
       if(event.isControlDown())
-      	setRealSize(REAL_W, REAL_H);
+        setRealSize(REAL_W, REAL_H);
       break;
-    	
+
     case 'S':
-    	if(event.isControlDown()) {
-    		hp11201a.highSpeed = !hp11201a.highSpeed;
-    		deviceWindow.setTitle(hpName + (hp11201a.highSpeed? " High Speed" : ""));
-    	}
+      if(event.isControlDown()) {
+        hp11201a.highSpeed = !hp11201a.highSpeed;
+        deviceWindow.setTitle(hpName + (hp11201a.highSpeed? " High Speed" : ""));
+      }
       break;
 
     default:
@@ -309,7 +307,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
           return;
         }
         break;
-      
+
       default:
         return;
       }
@@ -322,9 +320,9 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
   {
     char c;
     int xmin = x;
-    
+
     if(g2d == null)
-    	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+      g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
 
     for(int i = 0; i < line.length(); i++) {
       c = line.charAt(i);
@@ -332,21 +330,21 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
       case BLACK_RBN:
         g2d.setColor(Color.BLACK);
         break;
-        
+
       case RED_RBN:
         g2d.setColor(Color.RED);
         break;
-        
+
       case BSP:
         x -= g2d.getFontMetrics().charWidth(' ');
         if(x < xmin)
           x = xmin;
         break;
-        
+
       case '\r':
         x = xmin;
         break;
-        
+
       default:
         g2d.setFont(font);
         g2d.drawString(Character.toString(c), x, y);
@@ -354,7 +352,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
       }
     }
   }
-  
+
   public int print(Graphics g, PageFormat pf, int page)
   {
     Graphics2D g2d = (Graphics2D)g;
@@ -383,19 +381,19 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
 
   public void paint(Graphics g)
   {
-  	super.paint(g);
-  	g2d = getG2D(g);
-  	normalizeSize(NORMAL_W, NORMAL_H);
-  	unscaledHeight = (int)((getHeight() - getInsets().top - getInsets().bottom) / heightScale);
+    super.paint(g);
+    g2d = getG2D(g);
+    normalizeSize(NORMAL_W, NORMAL_H);
+    unscaledHeight = (int)((getHeight() - getInsets().top - getInsets().bottom) / heightScale);
 
     int x = 4;  // leftmost print positon
     int yTop = 0;  // topmost print position
     int yBottom = unscaledHeight - 8;  // lowest print positon
-  	int windowDotRows = yBottom - yTop;  // # dot rows in output area
-  	int y = yBottom + page * windowDotRows;  // y-position of actual displayed page
+    int windowDotRows = yBottom - yTop;  // # dot rows in output area
+    int y = yBottom + page * windowDotRows;  // y-position of actual displayed page
 
     g.setColor(Color.WHITE);
-  	g2d.fillRect(0, 0, NORMAL_W, unscaledHeight);
+    g2d.fillRect(0, 0, NORMAL_W, unscaledHeight);
     g2d.setFont(font);
 
     typeLine(g2d, lineBuffer.toString(), x, y);
@@ -415,32 +413,32 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
     printBuffer = new Vector<StringBuffer>();
     lineBuffer.append((char)ribbon);
   }
-  
+
   public int output(int status, int value)
   {
     int i;
     
     if(debug)
       ioInterface.ioUnit.console.append("HP9861A out: " + Integer.toHexString(value) + "\n");
-    
+
     hp11201a.timerValue = 30;
     status = IOunit.devStatusReady;
-    
+
     switch(value) {
     case NOP:
       pos = 0;
       return(status);
-      
+
     case TAB_SET:
       tab[pos] = true;
       break;
-      
+
     case BLACK_RBN:
     case RED_RBN:
       lineBuffer.append((char)value);
       ribbon = value;
       break;
-      
+
     case BSP:
       lineBuffer.append((char)value);
       if(!hp11201a.highSpeed)
@@ -450,7 +448,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
       hp11201a.timerValue = 70;
       status = 0;
       break;
-      
+
     case TAB:
       i = 1;
       if(!hp11201a.highSpeed)
@@ -464,15 +462,15 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
       hp11201a.timerValue *= i;
       status = 0;
       break;
-      
+
     case TAB_CLR:
       tab[pos] = false;
       break;
-      
+
     case TAB_CLR_ALL:
       for(i = 0; i <= pos ; i++)
         tab[i] = false;
-      
+
     case '\r':
       if(!hp11201a.highSpeed)
         crSound.start(); // play carriage return sound
@@ -484,7 +482,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
         value = '\r';
       else
         break;
-    
+
     case '\n':
       if(!hp11201a.highSpeed)
         lfSound.start(); // play line feed sound
@@ -494,12 +492,12 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
       lineBuffer.append((char)ribbon);
       for(i = 0; i < pos; i++)
         lineBuffer.append(' ');
-        
+
       repaint();
       hp11201a.timerValue = 120;
       status = 0;
       break;
-    
+
     default:
       lineBuffer.append((char)value);
       if(value == ' ') {
@@ -518,7 +516,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
         int y = unscaledHeight - 8;
         typeLine(null, lineBuffer.toString(), x, y);
       }
-      
+
       pos++;
     }
 
@@ -526,23 +524,23 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
       pos = WIDTH - 1;
       status |= LINE_END;
     }
-    
+
     return(status);
   }
-  
+
   public void soundStop()
   {
     crSound.stop();
   }
-  
+
   public void close()
   {
-  	// stop all sound threads
+    // stop all sound threads
     typeSound.close();
     spaceSound.close();
     crSound.close();
     lfSound.close();
 
-  	super.close();
+    super.close();
   }
 }

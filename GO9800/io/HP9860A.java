@@ -71,9 +71,7 @@ public class HP9860A extends IOdevice
   	if(createWindow) {
   		deviceWindow.setResizable(false);
   		deviceWindow.setLocation(740, 0);
-  		deviceWindow.setState(Frame.ICONIFIED);
   		deviceWindow.setSize(hp9860aImage.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9860aImage.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
-  		deviceWindow.setVisible(true);
   	}
   }
 

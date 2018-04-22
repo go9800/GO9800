@@ -69,7 +69,7 @@ public class HP9867A extends IOdevice
 
   public int STATUS_X = 300;
   public int STATUS_Y = 245;
-  
+
   Image hp9867Image;
   Image drivePowerImage, doorUnlockedImage, driveReadyImage, protectLdImage, protectUdImage, loadSwitchImage;
   RandomAccessFile diskFile;
@@ -89,66 +89,64 @@ public class HP9867A extends IOdevice
 
   public HP9867A(int unit, int numDiscs, HP9867A primaryDevice, IOinterface ioInterface)
   {
-  	super("HP9867A Unit " + unit, ioInterface);
-  	windowTitle = "HP9867A Unit " + unit;
+    super("HP9867A Unit " + unit, ioInterface);
+    windowTitle = "HP9867A Unit " + unit;
 
-  	this.unit = unit;
-  	this.numDiscs = numDiscs;
+    this.unit = unit;
+    this.numDiscs = numDiscs;
 
-  	if(primaryDevice == null) {
-  		this.primaryDevice = this;
-  		addKeyListener(this);
-  		addMouseListener(new mouseListener());
+    if(primaryDevice == null) {
+      this.primaryDevice = this;
+      addKeyListener(this);
+      addMouseListener(new mouseListener());
 
-  		//hp9867Image = new ImageMedia("media/HP9880A/HP9867" + (numDiscs == 1? "A" : "B") + ".jpg").getImage();
-  		hp9867Image = new ImageMedia("media/HP9880A/HP9867B.jpg", ioInterface.mainframe.imageController).getImage();
-  		drivePowerImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_POWER.jpg", ioInterface.mainframe.imageController).getImage();
-  		doorUnlockedImage = new ImageMedia("media/HP9880A/HP9867B_DOOR_UNLOCKED.jpg", ioInterface.mainframe.imageController).getImage();
-  		driveReadyImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_READY.jpg", ioInterface.mainframe.imageController).getImage();
-  		protectLdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_LD.jpg", ioInterface.mainframe.imageController).getImage();
-  		protectUdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_UD.jpg", ioInterface.mainframe.imageController).getImage();
-  		loadSwitchImage = new ImageMedia("media/HP9880A/HP9867B_LOAD_SWITCH.jpg", ioInterface.mainframe.imageController).getImage();
-  	} else {
-  		this.primaryDevice = primaryDevice;
-  		primaryDevice.windowTitle = "HP9867B Unit " + (unit-1) + "+" + unit;
-  	}
+      //hp9867Image = new ImageMedia("media/HP9880A/HP9867" + (numDiscs == 1? "A" : "B") + ".jpg").getImage();
+      hp9867Image = new ImageMedia("media/HP9880A/HP9867B.jpg", ioInterface.mainframe.imageController).getImage();
+      drivePowerImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_POWER.jpg", ioInterface.mainframe.imageController).getImage();
+      doorUnlockedImage = new ImageMedia("media/HP9880A/HP9867B_DOOR_UNLOCKED.jpg", ioInterface.mainframe.imageController).getImage();
+      driveReadyImage = new ImageMedia("media/HP9880A/HP9867B_DRIVE_READY.jpg", ioInterface.mainframe.imageController).getImage();
+      protectLdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_LD.jpg", ioInterface.mainframe.imageController).getImage();
+      protectUdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_UD.jpg", ioInterface.mainframe.imageController).getImage();
+      loadSwitchImage = new ImageMedia("media/HP9880A/HP9867B_LOAD_SWITCH.jpg", ioInterface.mainframe.imageController).getImage();
+    } else {
+      this.primaryDevice = primaryDevice;
+      primaryDevice.windowTitle = "HP9867B Unit " + (unit-1) + "+" + unit;
+    }
 
-  	// load standard disc file
-  	try{
-  		diskFile = new RandomAccessFile("applications/HP9830/HP9880-UNIT" + unit + ".disc", "rw");
-  	} catch (FileNotFoundException e) {
-  	}
+    // load standard disc file
+    try{
+      diskFile = new RandomAccessFile("applications/HP9830/HP9880-UNIT" + unit + ".disc", "rw");
+    } catch (FileNotFoundException e) {
+    }
 
-  	System.out.println("HP9867" + (numDiscs == 1? "A" : "B") + " Mass Memory Storage Unit " + unit + " loaded.");
+    System.out.println("HP9867" + (numDiscs == 1? "A" : "B") + " Mass Memory Storage Unit " + unit + " loaded.");
   }
-  
-	public void setDeviceWindow(JFrame window)
-	{
-  	super.setDeviceWindow(window);
-		deviceWindow.setTitle(primaryDevice.windowTitle);
 
-		if(createWindow) {
-			deviceWindow.setResizable(false);
-			deviceWindow.setLocation(220 + unit * 20, unit * 20);
-			deviceWindow.setSize(hp9867Image.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9867Image.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
-			deviceWindow.setState(Frame.ICONIFIED);
-			deviceWindow.setVisible(true);
-		}
-	}
+  public void setDeviceWindow(JFrame window)
+  {
+    super.setDeviceWindow(window);
+    deviceWindow.setTitle(primaryDevice.windowTitle);
+
+    if(createWindow) {
+      deviceWindow.setResizable(false);
+      deviceWindow.setLocation(220 + unit * 20, unit * 20);
+      deviceWindow.setSize(hp9867Image.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9867Image.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
+    }
+  }
 
   class windowListener extends WindowAdapter
   {
     public void windowClosing(WindowEvent event)
     {
-    	close();
-   }
+      close();
+    }
   }
- 
+
   public boolean openDiskFile()
   {
     int l = getInsets().left;
     int t = getInsets().top;
-    
+
     closeDiskFile();
 
     FileDialog fileDialog = new FileDialog(deviceWindow, "Load Cartridge for Disk Unit " + unit);
@@ -180,7 +178,7 @@ public class HP9867A extends IOdevice
 
     return(false);
   }
-  
+
   public boolean closeDiskFile()
   {
     if(diskFile != null) {
@@ -189,10 +187,10 @@ public class HP9867A extends IOdevice
         diskFile = null;
       } catch (IOException e) { }
     }
-    
+
     return(false);
   }
-  
+
   class mouseListener extends MouseAdapter
   {
     public void mousePressed(MouseEvent event)
@@ -201,7 +199,7 @@ public class HP9867A extends IOdevice
       int t = getInsets().top;
       int x = event.getX() - l;
       int y = event.getY() - t;
-      
+
       if(x > LOADSW_X - 10 && x < LOADSW_X + 10)
         if(y > LOADSW_Y - 10 && y < LOADSW_Y + 10) {
           primaryDevice.driveReady = false;
@@ -210,14 +208,14 @@ public class HP9867A extends IOdevice
           openDiskFile();
           return;
         }
-      
+
       if(x > PROTECT_UD_X && x < PROTECT_UD_X + PROTECT_UD_W)
         if(y > PROTECT_UD_Y - 10 && y < PROTECT_UD_Y + PROTECT_UD_H) {
           driveProtectU = !driveProtectU;
           repaint(PROTECT_UD_X + l, PROTECT_UD_Y + t, PROTECT_UD_W, PROTECT_UD_H);
           return;
         }
-      
+
       if(numDiscs > 1) {
         if(x > PROTECT_LD_X && x < PROTECT_LD_X + PROTECT_LD_W)
           if(y > PROTECT_LD_Y - 10 && y < PROTECT_LD_Y + PROTECT_LD_H) {
@@ -226,14 +224,14 @@ public class HP9867A extends IOdevice
             return;
           }
       }
-      
+
     }
 
     public void mouseReleased(MouseEvent event)
     {
     }
   }
-  
+
   public void keyPressed(KeyEvent event)
   {
     int keyCode = event.getKeyCode();
@@ -266,22 +264,22 @@ public class HP9867A extends IOdevice
     if(backgroundImage) {
       if(powerOn)
         g.drawImage(drivePowerImage, x + DRIVE_POWER_X, y + DRIVE_POWER_Y, DRIVE_POWER_W, DRIVE_POWER_H, this);
-      
+
       if(primaryDevice.driveReady)
         g.drawImage(driveReadyImage, x + DRIVE_READY_X, y + DRIVE_READY_Y, DRIVE_READY_W, DRIVE_READY_H, this);
-      
+
       if(doorUnlocked)
         g.drawImage(doorUnlockedImage, x + DOOR_UNLOCKED_X, y + DOOR_UNLOCKED_Y, DOOR_UNLOCKED_W, DOOR_UNLOCKED_H, this);
       else
         g.drawImage(loadSwitchImage, x + SWITCH_LOAD_X, y + SWITCH_LOAD_Y, SWITCH_LOAD_W, SWITCH_LOAD_H, this);
-      
+
       if(driveProtectL)
         g.drawImage(protectLdImage, x + PROTECT_LD_X, y + PROTECT_LD_Y, PROTECT_LD_W, PROTECT_LD_H, this);
-      
+
       if(driveProtectU)
         g.drawImage(protectUdImage, x + PROTECT_UD_X, y + PROTECT_UD_Y, PROTECT_UD_W, PROTECT_UD_H, this);
     }
-    
+
     drawStatus(g);
   }
 
@@ -289,7 +287,7 @@ public class HP9867A extends IOdevice
   {
     int x = 0;
     int y = 0;
-    
+
     Font font = new Font("Monospaced", Font.BOLD, 20);
     g.setFont(font); 
 
@@ -303,13 +301,13 @@ public class HP9867A extends IOdevice
       // read mode
       g.setColor(Color.GREEN);
       break;
-      
+
     case 2:
     case 3:
       // inititalize
       g.setColor(Color.YELLOW);
     }
-    
+
     g.drawString(primaryDevice.statusString, x + STATUS_X, y + STATUS_Y);
   }
 
@@ -317,7 +315,7 @@ public class HP9867A extends IOdevice
   {
     int address;
     int record;
-    
+
     if(diskFile == null || doorUnlocked || !primaryDevice.driveReady)
       return(HP11305A.POWER_ON | HP11305A.DRIVE_UNSAFE_ERROR);
 
@@ -325,21 +323,21 @@ public class HP9867A extends IOdevice
       return(HP11305A.POWER_ON | HP11305A.ADDRESS_ERROR);
 
     record = (head * 203  + cylinder) * 24 + sector;
-    
+
     primaryDevice.statusString = (numDiscs == 1 ? "" : ((unit & 1) == 0 ? "U" : "L")) + Integer.toString(record);
     accessMode = mode;
     primaryDevice.repaint(STATUS_X, STATUS_Y - 15, 50, 20);
-    
+
     try {
       diskFile.seek(256 * record);
-      
+
       // sleep 10ms for approx. realistic timing
       if(!primaryDevice.highSpeed) {
         try {
           Thread.sleep(time_10ms);
         } catch (InterruptedException e) { }
       }
-      
+
       // HP9867A is connected to extended memory in IOinterface (HP11273A) via HP11305A
       for(address = 0; address < 0400; address++) {
         if((mode & 1) != 0) {
@@ -355,7 +353,7 @@ public class HP9867A extends IOdevice
             if(driveProtectL)
               return(HP11305A.POWER_ON);
           }
-          
+
           diskFile.writeShort(ioInterface.mainframe.memory[077000 + address].getValue());
         }
       }

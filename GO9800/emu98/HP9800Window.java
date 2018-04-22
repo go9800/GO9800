@@ -52,9 +52,9 @@ public class HP9800Window extends JFrame implements ActionListener
   Color hpBeige = new Color(215, 213, 178);
   Color hpBrown = new Color(87, 87, 75);
   Color gray = new Color(230, 230, 230);
-  
+
   int MENU_H = 23;
-  
+
   JMenuBar menuBar;
   JCheckBoxMenuItem keyMapItem, consoleItem, hp2116PanelItem;
   JCheckBoxMenuItem debugItem, fanSoundItem, allSoundItem;
@@ -62,180 +62,184 @@ public class HP9800Window extends JFrame implements ActionListener
 
   public HP9800Window(HP9800Mainframe mainframe, String machine) 
   {
-  	super(machine);
+    super(machine);
 
-  	this.mainframe = mainframe;
-  	emu = mainframe.emu;
-  	console = mainframe.console;
-  	hp2116panel = mainframe.hp2116panel;
-  	mainframe.setHP9800Window(this);
+    this.mainframe = mainframe;
+    emu = mainframe.emu;
+    console = mainframe.console;
+    hp2116panel = mainframe.hp2116panel;
+    mainframe.setHP9800Window(this);
 
-  	GridBagLayout gridbag = new GridBagLayout();
-  	GridBagConstraints c = new GridBagConstraints();
+    GridBagLayout gridbag = new GridBagLayout();
+    GridBagConstraints c = new GridBagConstraints();
 
-  	JPanel contentPane = new JPanel();
-  	contentPane.setLayout(gridbag);
-  	setContentPane(contentPane);
-  	//JTabbedPane tabbedPane = new JTabbedPane(); // see setFrameSize()
-  	//tabbedPane.addTab(machine, contentPane);
-  	//setContentPane(tabbedPane);
-  	//setUndecorated(true);
-  	//setOpacity(0.8f);
-  	
+    JPanel contentPane = new JPanel();
+    contentPane.setLayout(gridbag);
+    setContentPane(contentPane);
+    //JTabbedPane tabbedPane = new JTabbedPane(); // see setFrameSize()
+    //tabbedPane.addTab(machine, contentPane);
+    //setContentPane(tabbedPane);
+    //setUndecorated(true);
+    //setOpacity(0.8f);
+
     UIManager.put("MenuBar.background", hpBeige);
     UIManager.put("Menu.background", hpBeige);
     UIManager.put("MenuItem.background", hpBeige);
     UIManager.put("CheckBoxMenuItem.background", hpBeige);
-    
-  	// Menu bar
-  	menuBar = new JMenuBar();
-  	menuBar.setMinimumSize(new Dimension(0, MENU_H));
 
-  	JMenu runMenu = new JMenu("Run");
-  	runMenu.add(new JMenuItem("Restart")).addActionListener(this);
-  	runMenu.addSeparator();
-  	runMenu.add(new JMenuItem("Exit")).addActionListener(this);
-  	menuBar.add(runMenu);
+    // Menu bar
+    menuBar = new JMenuBar();
+    menuBar.setMinimumSize(new Dimension(0, MENU_H));
 
-  	JMenu viewMenu = new JMenu("View");
-  	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
-  	viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
-  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
-  	viewMenu.addSeparator();
-  	viewMenu.add(keyMapItem = new JCheckBoxMenuItem("Key Map")).addActionListener(this);
-  	viewMenu.add(consoleItem = new JCheckBoxMenuItem("Console")).addActionListener(this);
-  	viewMenu.add(hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel")).addActionListener(this);
-  	menuBar.add(viewMenu);
-  	
-  	// add print menu only for models with internal printer
-  	if(!machine.startsWith("HP9830")) {
-  		JMenu printMenu = new JMenu("Print");
-  		printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
-  		printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
-  		printMenu.addSeparator();
-  		printMenu.add(new JMenuItem("Clear")).addActionListener(this);
-  		menuBar.add(printMenu);
-  	}
-  	
-  	JMenu optionsMenu = new JMenu("Options");
-  	optionsMenu.add(debugItem = new JCheckBoxMenuItem("Debug")).addActionListener(this);
-  	optionsMenu.add(fanSoundItem = new JCheckBoxMenuItem("Fan Sound")).addActionListener(this);
-  	optionsMenu.add(allSoundItem = new JCheckBoxMenuItem("All Sounds")).addActionListener(this);
-  	fanSoundItem.setSelected(true);
-  	allSoundItem.setSelected(true);
-  	menuBar.add(optionsMenu);
+    JMenu runMenu = new JMenu("Run");
+    runMenu.add(new JMenuItem("Restart")).addActionListener(this);
+    runMenu.addSeparator();
+    runMenu.add(new JMenuItem("Exit")).addActionListener(this);
+    menuBar.add(runMenu);
 
-  	IOdevice device;
-  	JMenu devicesMenu = new JMenu("Devices");
-  	for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
-    	device = devices.nextElement();
-    	if(device.needsWindow())
-    		devicesMenu.add(new JMenuItem(device.hpName)).addActionListener(this);
-  	}
-  	menuBar.add(devicesMenu);
+    JMenu viewMenu = new JMenu("View");
+    viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
+    viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
+    viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
+    viewMenu.addSeparator();
+    viewMenu.add(keyMapItem = new JCheckBoxMenuItem("Key Map")).addActionListener(this);
+    viewMenu.add(consoleItem = new JCheckBoxMenuItem("Console")).addActionListener(this);
+    viewMenu.add(hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel")).addActionListener(this);
+    menuBar.add(viewMenu);
 
-  	c.gridx = 0;
-  	c.gridy = 0;
-  	c.fill = GridBagConstraints.HORIZONTAL;
-  	c.anchor = GridBagConstraints.WEST;
-  	contentPane.add(menuBar, c);
-  	
-  	// Panel for drawing of calculator mainframe
-  	mainframe.setBackground(hpBrown);
-  	c.gridy = 1;
-  	c.weightx = 1.;
-  	c.weighty = 1.;
-  	c.fill = GridBagConstraints.BOTH;
-  	contentPane.add(mainframe, c);
-  	
-  	//setUndecorated(true);
-  	pack(); // put components on their correct places
-  	
-  	addWindowListener(new WindowListener());
-  	addKeyListener(new HP9800KeyListener());
+    // add print menu only for models with internal printer
+    if(!machine.startsWith("HP9830")) {
+      JMenu printMenu = new JMenu("Print");
+      printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
+      printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+      printMenu.addSeparator();
+      printMenu.add(new JMenuItem("Clear")).addActionListener(this);
+      menuBar.add(printMenu);
+    }
 
-  	setResizable(true); // this changes size of insets
+    JMenu optionsMenu = new JMenu("Options");
+    optionsMenu.add(debugItem = new JCheckBoxMenuItem("Debug")).addActionListener(this);
+    optionsMenu.add(fanSoundItem = new JCheckBoxMenuItem("Fan Sound")).addActionListener(this);
+    optionsMenu.add(allSoundItem = new JCheckBoxMenuItem("All Sounds")).addActionListener(this);
+    fanSoundItem.setSelected(true);
+    allSoundItem.setSelected(true);
+    menuBar.add(optionsMenu);
+
+    IOdevice device;
+    JMenu devicesMenu = new JMenu("Devices");
+    for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
+      device = devices.nextElement();
+      if(device.needsWindow()) {
+        devicesMenu.add(new JMenuItem(device.hpName)).addActionListener(this);
+        //tabbedPane.addTab(device.hpName, device);
+      }
+    }
+    menuBar.add(devicesMenu);
+
+    c.gridx = 0;
+    c.gridy = 0;
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.anchor = GridBagConstraints.WEST;
+    contentPane.add(menuBar, c);
+
+    // Panel for drawing of calculator mainframe
+    mainframe.setBackground(hpBrown);
+    c.gridy = 1;
+    c.weightx = 1.;
+    c.weighty = 1.;
+    c.fill = GridBagConstraints.BOTH;
+    contentPane.add(mainframe, c);
+
+    //setUndecorated(true);
+    pack(); // put components on their correct places
+
+    addWindowListener(new WindowListener());
+    addKeyListener(new HP9800KeyListener());
+
+    setResizable(true); // this changes size of insets
   }
 
   public void actionPerformed(ActionEvent event)
-	{
-		String cmd = event.getActionCommand();
-		
-		if(cmd.equals("Restart")) {
- 			mainframe.ioUnit.reset = true;
-	  } else if(cmd.equals("Exit")) {
-	  	exit();
-	  } else if(cmd.equals("Debug")) {
+  {
+    String cmd = event.getActionCommand();
+
+    if(cmd.equals("Restart")) {
+      mainframe.ioUnit.reset = true;
+    } else if(cmd.equals("Exit")) {
+      exit();
+    } else if(cmd.equals("Debug")) {
       console.setDebugMode(!console.getDebugMode());
-  		debugItem.setSelected(console.getDebugMode());
-  	} else if(cmd.equals("Hide Menu")) {
-  		menuBar.setVisible(false);
-  	} else if(cmd.equals("Normal Size")) {
-  		mainframe.setNormalSize();
-  	} else if(cmd.equals("Real Size")) {
-  		mainframe.setRealSize();
-  	} else if(cmd.equals("Key Map")) {
-  		keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
-    	mainframe.repaint();
-  	} else if(cmd.equals("Console")) {
+      debugItem.setSelected(console.getDebugMode());
+    } else if(cmd.equals("Hide Menu")) {
+      menuBar.setVisible(false);
+    } else if(cmd.equals("Normal Size")) {
+      mainframe.setNormalSize();
+    } else if(cmd.equals("Real Size")) {
+      mainframe.setRealSize();
+    } else if(cmd.equals("Key Map")) {
+      keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
+      mainframe.repaint();
+    } else if(cmd.equals("Console")) {
       console.setVisible(!console.isVisible());
-  		consoleItem.setSelected(console.isVisible());
-  	} else if(cmd.equals("HP2116 Panel")) {
+      consoleItem.setSelected(console.isVisible());
+    } else if(cmd.equals("HP2116 Panel")) {
       hp2116panel.setVisible(!hp2116panel.isVisible());
       hp2116PanelItem.setSelected(hp2116panel.isVisible());
-  	} else if(cmd.equals("Fan Sound")) {
-  		fanSoundItem.setSelected(mainframe.fanSound.toggle());
-  	} else if(cmd.equals("All Sounds")) {
+    } else if(cmd.equals("Fan Sound")) {
+      fanSoundItem.setSelected(mainframe.fanSound.toggle());
+    } else if(cmd.equals("All Sounds")) {
       if(mainframe.soundController.isEnabled()) {
-      	mainframe.fanSound.stop();
-      	mainframe.soundController.setEnabled(false);
+        mainframe.fanSound.stop();
+        mainframe.soundController.setEnabled(false);
       } else {
-      	mainframe.soundController.setEnabled(true);
+        mainframe.soundController.setEnabled(true);
         mainframe.fanSound.loop();
       }
       allSoundItem.setSelected(mainframe.soundController.isEnabled());
       fanSoundItem.setSelected(mainframe.soundController.isEnabled());
-  	} else if(cmd.equals("Page Format")) {
-    	mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
-  	} else if(cmd.equals("Hardcopy")) {
-    	mainframe.printJob.printDialog();
+    } else if(cmd.equals("Page Format")) {
+      mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
+    } else if(cmd.equals("Hardcopy")) {
+      mainframe.printJob.printDialog();
       try {
-      	mainframe.printJob.print();
+        mainframe.printJob.print();
       } catch (PrinterException e) { }
-  	} else if(cmd.equals("Clear")) {
-    	mainframe.initializeBuffer();
-    	mainframe.page = 0;
-    	mainframe.repaint();
-  	}
-		
-		IOdevice device;
-  	for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
-    	device = devices.nextElement();
-    	if(device.hpName.equals(cmd)) {
-    		if(device.deviceWindow.getState() == ICONIFIED)
-      		device.deviceWindow.setState(NORMAL);
-    		else
-      		device.deviceWindow.setState(ICONIFIED);
-    	}
-  	}
+    } else if(cmd.equals("Clear")) {
+      mainframe.initializeBuffer();
+      mainframe.page = 0;
+      mainframe.repaint();
+    }
 
-	}
+    IOdevice device;
+    for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
+      device = devices.nextElement();
+      if(device.hpName.equals(cmd)) {
+        if(!device.deviceWindow.isVisible()) {
+          device.deviceWindow.setVisible(true);
+          device.deviceWindow.setState(NORMAL);
+        }
+        else
+          device.deviceWindow.setState(1 - device.deviceWindow.getState()); // toggle ICONIFIED / NORMAL
+      }
+    }
+
+  }
 
   class WindowListener extends WindowAdapter
   {
-  	public void windowClosing(WindowEvent event)
-  	{
-  		exit();
-  	}
+    public void windowClosing(WindowEvent event)
+    {
+      exit();
+    }
   }
-  
+
   void exit()
   {
-  	System.out.println("\nHP9800 Emulator shutdown initiated ...");
+    System.out.println("\nHP9800 Emulator shutdown initiated ...");
 
-  	mainframe.close();
-  	dispose();
-  	System.out.println("HP9800 Emulator terminated.");
+    mainframe.close();
+    dispose();
+    System.out.println("HP9800 Emulator terminated.");
   }
 
   public void setFrameSize()
@@ -244,13 +248,13 @@ public class HP9800Window extends JFrame implements ActionListener
     // add 5 and 28 to FrameSize for tabbedPane
     //setSize(mainframe.getWidth() + 5 + getInsets().left + getInsets().right, mainframe.getHeight() + 28 + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
   }
-  
+
   public void setFrameSize(Boolean showMenuBar)
   {
     setSize(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (showMenuBar ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
     menuBar.setVisible(showMenuBar);
   }
-  
+
   class HP9800KeyListener implements KeyListener
   {
     public void keyPressed(KeyEvent event)
@@ -285,42 +289,42 @@ public class HP9800Window extends JFrame implements ActionListener
               emu.console.append(Integer.toOctalString(emu.memory[i].getValue()) + "\n");
             }
             break;
-          */ 
-          
+           */ 
+
           case 'C':
             hp2116panel.setVisible(!hp2116panel.isVisible());
             hp2116PanelItem.setSelected(hp2116panel.isVisible());
             break;
-          
+
           case 'D':
             console.setVisible(!console.isVisible());
             consoleItem.setSelected(console.isVisible());
             break;
 
           case 'F':
-          	fanSoundItem.setSelected(mainframe.fanSound.toggle());
+            fanSoundItem.setSelected(mainframe.fanSound.toggle());
             break;
-          
+
           case 'K':
-        		keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
-          	mainframe.repaint();
+            keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
+            mainframe.repaint();
             break;
-            
+
           case 'M':
-          	setFrameSize(!menuBar.isVisible());
-          	break;
+            setFrameSize(!menuBar.isVisible());
+            break;
 
           case 'N':
-          	mainframe.setNormalSize();
-          	break;
+            mainframe.setNormalSize();
+            break;
 
           case 'P':
             if(event.isShiftDown())
-            	mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
+              mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
             else {
-            	mainframe.printJob.printDialog();
+              mainframe.printJob.printDialog();
               try {
-              	mainframe.printJob.print();
+                mainframe.printJob.print();
               } catch (PrinterException e) { }
             }
             break;
@@ -328,18 +332,18 @@ public class HP9800Window extends JFrame implements ActionListener
           case 'R':
             if(event.isAltDown())
               synchronized(mainframe.ioUnit) {
-              	mainframe.ioUnit.reset = true;
+                mainframe.ioUnit.reset = true;
               } else {
-              	mainframe.setRealSize();
+                mainframe.setRealSize();
               }
             break;
 
           case 'S':
             if(mainframe.soundController.isEnabled()) {
-            	mainframe.fanSound.stop();
-            	mainframe.soundController.setEnabled(false);
+              mainframe.fanSound.stop();
+              mainframe.soundController.setEnabled(false);
             } else {
-            	mainframe.soundController.setEnabled(true);
+              mainframe.soundController.setEnabled(true);
               mainframe.fanSound.loop();
             }
             allSoundItem.setSelected(mainframe.soundController.isEnabled());
@@ -348,7 +352,7 @@ public class HP9800Window extends JFrame implements ActionListener
 
           case 'T':
             if(emu.measure) {
-            	emu.stopMeasure();
+              emu.stopMeasure();
               console.append("NumOps=" + emu.numOps);
               console.append(" Min=" + emu.minExecTime);
               console.append(" Max=" + emu.maxExecTime);
@@ -356,7 +360,7 @@ public class HP9800Window extends JFrame implements ActionListener
               if(!console.isVisible())
                 console.setVisible(true);
             } else
-            	emu.startMeasure();
+              emu.startMeasure();
             break;
 
           case KeyEvent.VK_PAGE_UP:
@@ -367,25 +371,25 @@ public class HP9800Window extends JFrame implements ActionListener
 
           case KeyEvent.VK_PAGE_DOWN:
             // paper page down
-          	mainframe.page++;
+            mainframe.page++;
             if(mainframe.page >= numPages) {
-            	mainframe.page = numPages;
-            	mainframe.repaint();
+              mainframe.page = numPages;
+              mainframe.repaint();
             }
             else
-            	mainframe.displayPrintOutput(null);
+              mainframe.displayPrintOutput(null);
             break;
 
           case KeyEvent.VK_DELETE:
             // clear print buffer
-          	mainframe.initializeBuffer();
-          	mainframe.page = 0;
-          	mainframe.repaint();
+            mainframe.initializeBuffer();
+            mainframe.page = 0;
+            mainframe.repaint();
             break;
 
           case KeyEvent.VK_HOME:
             // PAPER
-          	mainframe.paper(2);
+            mainframe.paper(2);
             keyCode = -1;
             break;
 
@@ -394,7 +398,7 @@ public class HP9800Window extends JFrame implements ActionListener
           return;
         }
 
-      strCode = Integer.toString(keyCode);
+        strCode = Integer.toString(keyCode);
       }
 
       if(event.isAltDown())
@@ -429,7 +433,7 @@ public class HP9800Window extends JFrame implements ActionListener
 
       if(keyCode == mainframe.STOP_KEYCODE) {
         // set STP flag
-      	mainframe.ioUnit.STP = true;
+        mainframe.ioUnit.STP = true;
       }
 
       event.consume(); // do not pass key event to host system 

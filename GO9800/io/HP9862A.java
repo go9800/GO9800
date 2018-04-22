@@ -52,20 +52,20 @@ import emu98.IOunit;
 public class HP9862A extends IOdevice implements ActionListener, Printable
 {
   private static final long serialVersionUID = 1L;
-  
+
   // calculator output status bits 
   static final int SYNC = 0x0100;
   static final int CODE = 0x0200;
   static final int PEN = 0x0400;
   static final int MANEUVER = 0x0800;
-  
+
   // calculator input status bits 
   public static final int POWER = 0x0200;
   public static final int PEN_IN = 0x0800;
-  
+
   double REAL_W = 15.0, REAL_H = 10.0;
   int PLOT_W = 10000, PLOT_H = 10000;
-  
+
   HP9862Interface hp9862Interface;
   //Image hp9862aImage;
   SoundMedia plotSound, moveSound, penDownSound, penUpSound;
@@ -78,11 +78,11 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
   int color = 0;
   int penColor = 1;
   boolean bcdMode = false;
-  
+
   private class PlotterPoint
   {
     int x, y, color;
-    
+
     PlotterPoint(int x, int y, int color)
     {
       this.x = x;
@@ -95,7 +95,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
   {
     super("HP9862A", ioInterface); // set window title
     hp9862Interface = (HP9862Interface)ioInterface;
-    
+
     plotSound = new SoundMedia("media/HP9862A/HP9862_PLOT.wav", ioInterface.mainframe.soundController, true);
     moveSound = new SoundMedia("media/HP9862A/HP9862_MOVE.wav", ioInterface.mainframe.soundController, true);
     penDownSound = new SoundMedia("media/HP9862A/HP9862_PEN_DOWN.wav", ioInterface.mainframe.soundController, true);
@@ -106,7 +106,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     //hp9862aImage = getToolkit().getImage("media/HP9862A/HP9862A.jpg");
 
     refPoint = new PlotterPoint(0, 0, 0);
-    
+
     // set line width
     stroke = new BasicStroke(7);
 
@@ -114,7 +114,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     outByte = new int[4];
     byteCount = 0;
     initializeBuffer();
-    
+
     // set Printable
     printJob = PrinterJob.getPrinterJob();
     printJob.setPrintable(this);
@@ -126,88 +126,86 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
        	normalizeSize();
       }
     });
-		*/
+     */
   }
-  
-	public void setDeviceWindow(JFrame window)
-	{
-  	super.setDeviceWindow(window);
 
-		if(createWindow) {
-			deviceWindow.setResizable(true);
-			deviceWindow.setLocation(0, 0);
-			deviceWindow.setState(Frame.ICONIFIED);
-			deviceWindow.setVisible(true);
-			
-	  	JMenu runMenu = new JMenu("Run");
-	  	runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
-	  	runMenu.addSeparator();
-	  	runMenu.add(new JMenuItem("Exit")).addActionListener(this);
-	  	menuBar.add(runMenu);
+  public void setDeviceWindow(JFrame window)
+  {
+    super.setDeviceWindow(window);
 
-	  	JMenu viewMenu = new JMenu("View");
-	  	viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
-	  	viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
-	  	viewMenu.addSeparator();
-	  	viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
-	  	menuBar.add(viewMenu);
-	  	
-			JMenu printMenu = new JMenu("Print");
-			printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
-			printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
-			printMenu.addSeparator();
-			printMenu.add(new JMenuItem("Clear")).addActionListener(this);
-			menuBar.add(printMenu);
-			
-			menuBar.setVisible(true);
-		}
-		
+    if(createWindow) {
+      deviceWindow.setResizable(true);
+      deviceWindow.setLocation(0, 0);
+
+      JMenu runMenu = new JMenu("Run");
+      runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
+      runMenu.addSeparator();
+      runMenu.add(new JMenuItem("Exit")).addActionListener(this);
+      menuBar.add(runMenu);
+
+      JMenu viewMenu = new JMenu("View");
+      viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
+      viewMenu.addSeparator();
+      viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
+      menuBar.add(viewMenu);
+
+      JMenu printMenu = new JMenu("Print");
+      printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
+      printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+      printMenu.addSeparator();
+      printMenu.add(new JMenuItem("Clear")).addActionListener(this);
+      menuBar.add(printMenu);
+
+      menuBar.setVisible(true);
+    }
+
     setNormalSize();
-	}
+  }
 
   public void actionPerformed(ActionEvent event)
-	{
-		String cmd = event.getActionCommand();
-		
-		if(cmd.equals("High Speed")) {
+  {
+    String cmd = event.getActionCommand();
+
+    if(cmd.equals("High Speed")) {
       hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
       deviceWindow.setTitle(hpName + (hp9862Interface.highSpeed? " High Speed" : ""));
-	  } else if(cmd.equals("Exit")) {
-	  	close();
-  	} else if(cmd.equals("Normal Size")) {
-  		setNormalSize();
-  	} else if(cmd.equals("Real Size")) {
-  		setRealSize(REAL_W, REAL_H);
-  	} else if(cmd.equals("Clear")) {
-    	initializeBuffer();
-  	} else if(cmd.equals("Hide Menu")) {
-  		if(extDeviceWindow != null)
-  			extDeviceWindow.setFrameSize(!menuBar.isVisible());
-  	} else if(cmd.equals("Page Format")) {
-    	pageFormat = printJob.pageDialog(pageFormat);
-  	} else if(cmd.equals("Hardcopy")) {
-    	printJob.printDialog();
+    } else if(cmd.equals("Exit")) {
+      close();
+    } else if(cmd.equals("Normal Size")) {
+      setNormalSize();
+    } else if(cmd.equals("Real Size")) {
+      setRealSize(REAL_W, REAL_H);
+    } else if(cmd.equals("Clear")) {
+      initializeBuffer();
+    } else if(cmd.equals("Hide Menu")) {
+      if(extDeviceWindow != null)
+        extDeviceWindow.setFrameSize(!menuBar.isVisible());
+    } else if(cmd.equals("Page Format")) {
+      pageFormat = printJob.pageDialog(pageFormat);
+    } else if(cmd.equals("Hardcopy")) {
+      printJob.printDialog();
       try {
-      	printJob.print();
+        printJob.print();
       } catch (PrinterException e) { }
-  	}
-		
+    }
+
     repaint();
-	}
-  
+  }
+
   public Graphics2D getG2D(Graphics g)
   {
-  	Graphics2D g2d = (Graphics2D)g;
+    Graphics2D g2d = (Graphics2D)g;
 
-  	if(g2d != null) {
-  		g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
-  		g2d.scale(widthScale, heightScale);  // scale graphics to required size
-  		
-  		// enable antialiasing for higher quality of plotter output
-  		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-  	}
+    if(g2d != null) {
+      g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
+      g2d.scale(widthScale, heightScale);  // scale graphics to required size
 
-  	return(g2d);
+      // enable antialiasing for higher quality of plotter output
+      g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+    }
+
+    return(g2d);
   }
 
   public void keyPressed(KeyEvent event)
@@ -223,8 +221,8 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 
     case KeyEvent.VK_DELETE:
       if(event.isShiftDown()) {
-      	initializeBuffer();
-      	setNormalSize();
+        initializeBuffer();
+        setNormalSize();
       }
       break;
 
@@ -242,38 +240,38 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 
     case 'M':
       if(event.isControlDown())
-    		if(extDeviceWindow != null)
-    			extDeviceWindow.setFrameSize(!menuBar.isVisible());
-    	break;
-    	
+        if(extDeviceWindow != null)
+          extDeviceWindow.setFrameSize(!menuBar.isVisible());
+      break;
+
     case 'N':
       if(event.isControlDown())
-      	setNormalSize();
+        setNormalSize();
       break;
-    	
+
     case 'P':
     case KeyEvent.VK_INSERT:
-    	if(event.isControlDown()) {
-    		if(event.isShiftDown())
-    			pageFormat = printJob.pageDialog(pageFormat);
-    		else {
-    			printJob.printDialog();
-    			try {
-    				printJob.print();
-    			} catch (PrinterException e) { }
-    		}
-    	}
+      if(event.isControlDown()) {
+        if(event.isShiftDown())
+          pageFormat = printJob.pageDialog(pageFormat);
+        else {
+          printJob.printDialog();
+          try {
+            printJob.print();
+          } catch (PrinterException e) { }
+        }
+      }
       return;
 
     case 'R':
       if(event.isControlDown())
-      	setRealSize(REAL_W, REAL_H);
+        setRealSize(REAL_W, REAL_H);
       break;
-    	
+
     case 'S':
       if(event.isControlDown()) {
-      	hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
-      	deviceWindow.setTitle(hpName + (hp9862Interface.highSpeed? " High Speed" : ""));
+        hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
+        deviceWindow.setTitle(hpName + (hp9862Interface.highSpeed? " High Speed" : ""));
       }
       break;
 
@@ -283,21 +281,21 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 
     repaint();
   }
-  
+
   public int print(Graphics g, PageFormat pf, int page)
   {
     PlotterPoint point, tempRef;
-    
-  	Graphics2D g2d = (Graphics2D)g;
-  	
-		// enable antialiasing for higher quality of plotter output
-		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-		g2d.translate(pf.getImageableX(), pf.getImageableY()); // translate graphics to painting area
-		g2d.scale(pf.getImageableWidth() / PLOT_W, pf.getImageableHeight() / PLOT_H);  // scale graphics to page size
+
+    Graphics2D g2d = (Graphics2D)g;
+
+    // enable antialiasing for higher quality of plotter output
+    g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+    g2d.translate(pf.getImageableX(), pf.getImageableY()); // translate graphics to painting area
+    g2d.scale(pf.getImageableWidth() / PLOT_W, pf.getImageableHeight() / PLOT_H);  // scale graphics to page size
 
     pf = pageFormat;
     tempRef = new PlotterPoint(0, 0, 0);
-    
+
     g2d.setColor(Color.WHITE);
     //g2d.fillRect(0, 0, PLOT_W, PLOT_H);
 
@@ -305,7 +303,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
       point = (PlotterPoint)points.elementAt(i);
       plot(g2d, point, tempRef);
     }
-    
+
     // only one page to print
     if(page == 0)
       return(PAGE_EXISTS);
@@ -318,11 +316,11 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     PlotterPoint point, tempRef;
 
     super.paint(g);
-   	g2d = getG2D(g);
-   	normalizeSize(PLOT_W, PLOT_H);
+    g2d = getG2D(g);
+    normalizeSize(PLOT_W, PLOT_H);
 
     tempRef = new PlotterPoint(0, 0, 0);
-    
+
     //boolean backgroundImage = g.drawImage(hp9862aImage, x, y, getWidth(), getHeight(), this);
 
     //if(backgroundImage) {
@@ -335,74 +333,74 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     }
     //}
   }
-  
+
   public void plot(Graphics2D g2d, PlotterPoint pos, PlotterPoint ref)
   {
     if(g2d == null)
-    	g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
+      g2d = getG2D(getGraphics());  // get current graphics if not given by paint()
 
     if(pos.color != 0) {
       switch(pos.color) {
       case 2:
         g2d.setColor(Color.GREEN);
         break;
-        
+
       case 3:
         g2d.setColor(Color.RED);
         break;
-        
+
       case 4:
         g2d.setColor(Color.BLUE);
         break;
-        
+
       case 5:
         g2d.setColor(Color.CYAN);
         break;
-        
+
       case 6:
         g2d.setColor(Color.MAGENTA);
         break;
-        
+
       case 7:
         g2d.setColor(Color.YELLOW);
         break;
-        
+
       case 8:
         g2d.setColor(Color.ORANGE);
         break;
-        
+
       case 9:
         g2d.setColor(Color.PINK);
         break;
-        
+
       default:
         g2d.setColor(Color.BLACK);
       }
-      
+
       g2d.setStroke(stroke);
       g2d.drawLine(ref.x, PLOT_H - ref.y, pos.x, PLOT_H - pos.y);
     }
-    
+
     ref.x = pos.x;
     ref.y = pos.y;
     ref.color = pos.color;
   }
-  
+
   public void initializeBuffer()
   {
     numPoints = 0;
     points = new Vector<PlotterPoint>();
   }
-  
+
   public int output(int status, int value)
   {
     int x, y;
-    
+
     // data output or pen control? 
     if((status & MANEUVER) != 0) {
       //moveSound.stop();
       hp9862Interface.timerValue = 100;
-      
+
       // pen control
       if((status & PEN) != 0) {
         if(color == 0 && !hp9862Interface.highSpeed)
@@ -413,7 +411,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
           penUpSound.start();
         color = 0;
       }
-      
+
       PlotterPoint point = new PlotterPoint(refPoint.x, refPoint.y, color);
       points.addElement(point);
       numPoints++;
@@ -429,31 +427,31 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
         byteCount = 0;
         bcdMode = ((status & CODE) == 0); // is data BCD encoded?
       }
-      
+
       if(bcdMode)
         value = 10 * (value >> 4) + (value & 0x0f);
-      
+
       outByte[byteCount] = value;
-      
+
       // last of 4 bytes?
       if(++byteCount == 4) {
         byteCount = 0;
         //plotSound.stop();
-        
+
         try {
-        if(bcdMode) {
-          x = outByte[0] * 100 + outByte[1];
-          y = outByte[2] * 100 + outByte[3];
-        } else {
-          x = (outByte[0] << 8) + outByte[1];
-          y = (outByte[2] << 8) + outByte[3];
-        }
+          if(bcdMode) {
+            x = outByte[0] * 100 + outByte[1];
+            y = outByte[2] * 100 + outByte[3];
+          } else {
+            x = (outByte[0] << 8) + outByte[1];
+            y = (outByte[2] << 8) + outByte[3];
+          }
         } catch (NullPointerException e) {
           // possible communication initialization problem with calculator 
           byteCount = 0;
           return(POWER);
         }
-        
+
         // relative movement?
         if((status & CODE) != 0) {
           x = refPoint.x + (short)x;  // treat x as 16bit signed integer
@@ -461,21 +459,21 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
           if(x < 0) x = 0;
           if(y < 0) y = 0;
         }
-        
+
         if((x == 9999) && (color == 0)) {
           if(y < 16) penColor = y;
         } else {
           // length of plot track, converted to time in ms
           int l = (int)Math.round(Math.hypot((double)(x - refPoint.x), (double)(y - refPoint.y)) * 0.35);
           hp9862Interface.timerValue = l;
-          
+
           if((x != refPoint.x || y != refPoint.y) && !hp9862Interface.highSpeed) {
             if(l > 200)
               moveSound.loop(); // play plot sound only if real move
             //else if(l > 50)
-              //plotSound.start(); // play plot sound only if real move
+            //plotSound.start(); // play plot sound only if real move
           }
-          
+
           PlotterPoint point = new PlotterPoint(x, y, color);
           points.addElement(point);
           numPoints++;
@@ -489,26 +487,26 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
         status = POWER | IOunit.devStatusReady;
       }
     }
-    
+
     if(color != 0)
       status |= PEN_IN;
 
     return(status);
   }
-  
+
   public void soundStop()
   {
     moveSound.stop();
   }
-  
+
   public void close()
   {
-  	// stop all sound threads
-  	plotSound.close();
-  	moveSound.close();
-  	penDownSound.close();
-  	penUpSound.close();
+    // stop all sound threads
+    plotSound.close();
+    moveSound.close();
+    penDownSound.close();
+    penUpSound.close();
 
-  	super.close();
+    super.close();
   }
 }
