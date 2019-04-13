@@ -154,7 +154,7 @@ public class ImageMedia extends JComponent
   			processedImage = (Image)imageOp.filter(bufferedImage, null);
   			
   			// wait for processing to finish
-        tracker.addImage(scaledImage, 1);
+        tracker.addImage(processedImage, 1);
         try {
           tracker.waitForID(1);
         } catch (InterruptedException e) { }

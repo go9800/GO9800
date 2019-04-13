@@ -294,9 +294,8 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   	actualSize.width += getInsets().left + getInsets().right;
   	actualSize.height += getInsets().top + getInsets().bottom;
   	
-  	setSize(actualSize);
   	if(hp9800Window != null)
-  		hp9800Window.setFrameSize();
+  		hp9800Window.setFrameSize(actualSize);
   }
   
   public void closeAllDevices()
@@ -323,7 +322,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public void paint(Graphics g)
   {
   	super.paint(g);
-  	normalizeSize();  // normalize aspect ratio and get scaling factors
+  	//normalizeSize();  // normalize aspect ratio and get scaling factors - not neccessary here
   	g2d = getG2D(g);
   }
   

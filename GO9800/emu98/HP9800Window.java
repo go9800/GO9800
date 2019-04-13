@@ -242,11 +242,11 @@ public class HP9800Window extends JFrame implements ActionListener
     System.out.println("HP9800 Emulator terminated.");
   }
 
-  public void setFrameSize()
+  public void setFrameSize(Dimension panelSize)
   {
-    setSize(mainframe.getWidth() + getInsets().left + getInsets().right, mainframe.getHeight() + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
+    setSize(panelSize.width + getInsets().left + getInsets().right, panelSize.height + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
     // add 5 and 28 to FrameSize for tabbedPane
-    //setSize(mainframe.getWidth() + 5 + getInsets().left + getInsets().right, mainframe.getHeight() + 28 + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
+    //setSize(panelSize.width + 5 + getInsets().left + getInsets().right, panelSize.height + 28 + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
   }
 
   public void setFrameSize(Boolean showMenuBar)
