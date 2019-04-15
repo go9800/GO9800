@@ -418,6 +418,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
   {
     int i;
     
+    debug = ioInterface.mainframe.console.getDebugMode();
     if(debug)
       ioInterface.ioUnit.console.append("HP9861A out: " + Integer.toHexString(value) + "\n");
 

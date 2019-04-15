@@ -150,12 +150,15 @@ public class HP9810AMainframe extends HP9800Mainframe
     romSelector.addRomButton("media/HP9810A/HP11XXXX_Slot.png", "HP11XXXX");
     romSelector.addRomButton("media/HP9810A/HP11210A_Module.png", "HP11210A");
     romSelector.addRomButton("media/HP9810A/HP11211A_Module.png", "HP11211A");
+    romSelector.addRomButton("media/HP9810A/HP11212A_Module.png", "HP11212A");
     romSelector.addRomButton("media/HP9810A/HP11213A_Module.png", "HP11213A");
     romSelector.addRomButton("media/HP9810A/HP11214A_Module.png", "HP11214A");
     romSelector.addRomButton("media/HP9810A/HP11215A_Module.png", "HP11215A");
     romSelector.addRomButton("media/HP9810A/HP11252A_Module.png", "HP11252A");
     romSelector.addRomButton("media/HP9810A/HP11261A_Module.png", "HP11261A");
     romSelector.addRomButton("media/HP9810A/HP11262A_Module.png", "HP11262A");
+    romSelector.addRomButton("media/HP9810A/HP11264A_Module.png", "HP11264A");
+    romSelector.addRomButton("media/HP9810A/HP11265A_Module.png", "HP11265A");
     romSelector.addRomButton("media/HP9810A/HP11266A_Module.png", "HP11266A");
     romSelector.addRomButton("media/HP9810A/HP11267A_Module.png", "HP11267A");
 

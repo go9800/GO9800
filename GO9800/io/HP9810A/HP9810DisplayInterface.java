@@ -115,6 +115,8 @@ public class HP9810DisplayInterface extends IOinterface implements DisplayInterf
       if(ioUnit.DEN) {
         // digit position
         pos = ioUnit.getValue() & 0x000f;
+        if(pos == 15) return(false);  // under certain circumstances an illegal digit position 15 may occur
+        
         // register number
         reg = ((ioUnit.getValue() & 0x0030) >> 4);
         if(reg == 3) reg = 0;
