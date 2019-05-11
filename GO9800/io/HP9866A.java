@@ -256,31 +256,31 @@ public class HP9866A extends IOdevice implements Printable, ActionListener
     int windowDotRows = unscaledHeight - 8;  // # dot rows in output area
     int numPages = numDotRows * printDotHeight / windowDotRows;  // # of pages to display
 
-    if(cmd.equals("High Speed")) {
+    if(cmd.startsWith("High Speed")) {
       hp9866Interface.highSpeed = !hp9866Interface.highSpeed;
       deviceWindow.setTitle(hpName + (hp9866Interface.highSpeed? " High Speed" : ""));
-    } else if(cmd.equals("Exit")) {
+    } else if(cmd.startsWith("Exit")) {
       close();
-    } else if(cmd.equals("Normal Size")) {
+    } else if(cmd.startsWith("Normal Size")) {
       setNormalSize();
-    } else if(cmd.equals("Real Size")) {
+    } else if(cmd.startsWith("Real Size")) {
       setRealSize(REAL_W, REAL_H);
-    } else if(cmd.equals("First Page")) {
+    } else if(cmd.startsWith("First Page")) {
       page = numPages;
-    } else if(cmd.equals("Previous Page")) {
+    } else if(cmd.startsWith("Previous Page")) {
       if(++page > numPages) page = numPages;
-    } else if(cmd.equals("Next Page")) {
+    } else if(cmd.startsWith("Next Page")) {
       if(--page < 0) page = 0;
-    } else if(cmd.equals("Last Page")) {
+    } else if(cmd.startsWith("Last Page")) {
       page = 0;
-    } else if(cmd.equals("Clear")) {
+    } else if(cmd.startsWith("Clear")) {
       initializeBuffer();
-    } else if(cmd.equals("Hide Menu")) {
+    } else if(cmd.startsWith("Hide Menu")) {
       if(extDeviceWindow != null)
         extDeviceWindow.setFrameSize(!menuBar.isVisible());
-    } else if(cmd.equals("Page Format")) {
+    } else if(cmd.startsWith("Page Format")) {
       pageFormat = printJob.pageDialog(pageFormat);
-    } else if(cmd.equals("Hardcopy")) {
+    } else if(cmd.startsWith("Hardcopy")) {
       printJob.printDialog();
       try {
         printJob.print();

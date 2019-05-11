@@ -166,23 +166,23 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
   {
     String cmd = event.getActionCommand();
 
-    if(cmd.equals("High Speed")) {
+    if(cmd.startsWith("High Speed")) {
       hp9862Interface.highSpeed = !hp9862Interface.highSpeed;
       deviceWindow.setTitle(hpName + (hp9862Interface.highSpeed? " High Speed" : ""));
-    } else if(cmd.equals("Exit")) {
+    } else if(cmd.startsWith("Exit")) {
       close();
-    } else if(cmd.equals("Normal Size")) {
+    } else if(cmd.startsWith("Normal Size")) {
       setNormalSize();
-    } else if(cmd.equals("Real Size")) {
+    } else if(cmd.startsWith("Real Size")) {
       setRealSize(REAL_W, REAL_H);
-    } else if(cmd.equals("Clear")) {
+    } else if(cmd.startsWith("Clear")) {
       initializeBuffer();
-    } else if(cmd.equals("Hide Menu")) {
+    } else if(cmd.startsWith("Hide Menu")) {
       if(extDeviceWindow != null)
         extDeviceWindow.setFrameSize(!menuBar.isVisible());
-    } else if(cmd.equals("Page Format")) {
+    } else if(cmd.startsWith("Page Format")) {
       pageFormat = printJob.pageDialog(pageFormat);
-    } else if(cmd.equals("Hardcopy")) {
+    } else if(cmd.startsWith("Hardcopy")) {
       printJob.printDialog();
       try {
         printJob.print();

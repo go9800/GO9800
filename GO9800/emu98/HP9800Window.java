@@ -163,31 +163,31 @@ public class HP9800Window extends JFrame implements ActionListener
   {
     String cmd = event.getActionCommand();
 
-    if(cmd.equals("Restart")) {
+    if(cmd.startsWith("Restart")) {
       mainframe.ioUnit.reset = true;
-    } else if(cmd.equals("Exit")) {
+    } else if(cmd.startsWith("Exit")) {
       exit();
-    } else if(cmd.equals("Debug")) {
+    } else if(cmd.startsWith("Debug")) {
       console.setDebugMode(!console.getDebugMode());
       debugItem.setSelected(console.getDebugMode());
-    } else if(cmd.equals("Hide Menu")) {
+    } else if(cmd.startsWith("Hide Menu")) {
       menuBar.setVisible(false);
-    } else if(cmd.equals("Normal Size")) {
+    } else if(cmd.startsWith("Normal Size")) {
       mainframe.setNormalSize();
-    } else if(cmd.equals("Real Size")) {
+    } else if(cmd.startsWith("Real Size")) {
       mainframe.setRealSize();
-    } else if(cmd.equals("Key Map")) {
+    } else if(cmd.startsWith("Key Map")) {
       keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
       mainframe.repaint();
-    } else if(cmd.equals("Console")) {
+    } else if(cmd.startsWith("Console")) {
       console.setVisible(!console.isVisible());
       consoleItem.setSelected(console.isVisible());
-    } else if(cmd.equals("HP2116 Panel")) {
+    } else if(cmd.startsWith("HP2116 Panel")) {
       hp2116panel.setVisible(!hp2116panel.isVisible());
       hp2116PanelItem.setSelected(hp2116panel.isVisible());
-    } else if(cmd.equals("Fan Sound")) {
+    } else if(cmd.startsWith("Fan Sound")) {
       fanSoundItem.setSelected(mainframe.fanSound.toggle());
-    } else if(cmd.equals("All Sounds")) {
+    } else if(cmd.startsWith("All Sounds")) {
       if(mainframe.soundController.isEnabled()) {
         mainframe.fanSound.stop();
         mainframe.soundController.setEnabled(false);
@@ -197,14 +197,14 @@ public class HP9800Window extends JFrame implements ActionListener
       }
       allSoundItem.setSelected(mainframe.soundController.isEnabled());
       fanSoundItem.setSelected(mainframe.soundController.isEnabled());
-    } else if(cmd.equals("Page Format")) {
+    } else if(cmd.startsWith("Page Format")) {
       mainframe.pageFormat = mainframe.printJob.pageDialog(mainframe.pageFormat);
-    } else if(cmd.equals("Hardcopy")) {
+    } else if(cmd.startsWith("Hardcopy")) {
       mainframe.printJob.printDialog();
       try {
         mainframe.printJob.print();
       } catch (PrinterException e) { }
-    } else if(cmd.equals("Clear")) {
+    } else if(cmd.startsWith("Clear")) {
       mainframe.initializeBuffer();
       mainframe.page = 0;
       mainframe.repaint();
