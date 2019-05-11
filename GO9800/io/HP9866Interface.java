@@ -77,7 +77,12 @@ public class HP9866Interface extends IOinterface
   
   public boolean input()
   {
+    debug = mainframe.console.getDebugMode();
+
     synchronized(ioUnit) {
+      if(debug)
+        ioUnit.console.append("HP9866 status input: " + Integer.toHexString(status) + "\n");
+      
       // put status on IO bus (1=ready)
       ioUnit.bus.setStatus(status);
       return(ioUnit.CEO); // hold CEO
@@ -86,7 +91,12 @@ public class HP9866Interface extends IOinterface
   
   public boolean output()
   {
+    debug = mainframe.console.getDebugMode();
+
     synchronized(ioUnit) {
+      if(debug)
+        ioUnit.console.append("HP9866 output: " + Integer.toHexString(ioUnit.getValue()) + "\n");
+      
       status = hp9866.output(ioUnit.getStatus(), ioUnit.getData());
       // restart timer for printer status
       timerValue = highSpeed? 0 : timerValue;

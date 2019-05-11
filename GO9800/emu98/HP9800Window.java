@@ -1,6 +1,6 @@
 /*
  * HP9800 Emulator
- * Copyright (C) 2006-2018 Achim Buerger
+ * Copyright (C) 2006-2019 Achim Buerger
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -92,35 +92,35 @@ public class HP9800Window extends JFrame implements ActionListener
     menuBar.setMinimumSize(new Dimension(0, MENU_H));
 
     JMenu runMenu = new JMenu("Run");
-    runMenu.add(new JMenuItem("Restart")).addActionListener(this);
+    runMenu.add(new JMenuItem("Restart     Alt+Ctrl+R")).addActionListener(this);
     runMenu.addSeparator();
     runMenu.add(new JMenuItem("Exit")).addActionListener(this);
     menuBar.add(runMenu);
 
     JMenu viewMenu = new JMenu("View");
-    viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
-    viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
-    viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
+    viewMenu.add(new JMenuItem("Normal Size      Ctrl+N")).addActionListener(this);
+    viewMenu.add(new JMenuItem("Real Size           Ctrl+R")).addActionListener(this);
+    viewMenu.add(new JMenuItem("Hide Menu         Ctrl+M")).addActionListener(this);
     viewMenu.addSeparator();
-    viewMenu.add(keyMapItem = new JCheckBoxMenuItem("Key Map")).addActionListener(this);
-    viewMenu.add(consoleItem = new JCheckBoxMenuItem("Console")).addActionListener(this);
-    viewMenu.add(hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel")).addActionListener(this);
+    viewMenu.add(keyMapItem = new JCheckBoxMenuItem("Key Map            Ctrl+K")).addActionListener(this);
+    viewMenu.add(consoleItem = new JCheckBoxMenuItem("Console             Ctrl+D")).addActionListener(this);
+    viewMenu.add(hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel  Ctrl+C")).addActionListener(this);
     menuBar.add(viewMenu);
 
     // add print menu only for models with internal printer
     if(!machine.startsWith("HP9830")) {
       JMenu printMenu = new JMenu("Print");
-      printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
-      printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+      printMenu.add(new JMenuItem("Page Format    Shift+Ctrl+P")).addActionListener(this);
+      printMenu.add(new JMenuItem("Hardcopy       	              Ctrl+P")).addActionListener(this);
       printMenu.addSeparator();
-      printMenu.add(new JMenuItem("Clear")).addActionListener(this);
+      printMenu.add(new JMenuItem("Clear                          Ctrl+Del")).addActionListener(this);
       menuBar.add(printMenu);
     }
 
     JMenu optionsMenu = new JMenu("Options");
     optionsMenu.add(debugItem = new JCheckBoxMenuItem("Debug")).addActionListener(this);
-    optionsMenu.add(fanSoundItem = new JCheckBoxMenuItem("Fan Sound")).addActionListener(this);
-    optionsMenu.add(allSoundItem = new JCheckBoxMenuItem("All Sounds")).addActionListener(this);
+    optionsMenu.add(fanSoundItem = new JCheckBoxMenuItem("Fan Sound      Ctrl+F")).addActionListener(this);
+    optionsMenu.add(allSoundItem = new JCheckBoxMenuItem("All Sounds     Ctrl+S")).addActionListener(this);
     fanSoundItem.setSelected(true);
     allSoundItem.setSelected(true);
     menuBar.add(optionsMenu);

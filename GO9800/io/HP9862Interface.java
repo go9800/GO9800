@@ -76,6 +76,8 @@ public class HP9862Interface extends IOinterface
   
   public boolean input()
   {
+    debug = mainframe.console.getDebugMode();
+
     synchronized(ioUnit) {
       if(debug)
         ioUnit.console.append("HP9862A status input: " + Integer.toHexString(status) + "\n");
@@ -93,6 +95,8 @@ public class HP9862Interface extends IOinterface
   
   public boolean output()
   {
+    debug = mainframe.console.getDebugMode();
+
     synchronized(ioUnit) {
       if(debug)
         ioUnit.console.append("HP9862A output: " + Integer.toHexString(ioUnit.getValue()) + "\n");

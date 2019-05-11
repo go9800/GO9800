@@ -219,28 +219,28 @@ public class HP9866A extends IOdevice implements Printable, ActionListener
       deviceWindow.setLocation(0, 0);
 
       JMenu runMenu = new JMenu("Run");
-      runMenu.add(new JMenuItem("High Speed")).addActionListener(this);
+      runMenu.add(new JMenuItem("High Speed    Ctrl+S")).addActionListener(this);
       runMenu.addSeparator();
       runMenu.add(new JMenuItem("Exit")).addActionListener(this);
       menuBar.add(runMenu);
 
       JMenu viewMenu = new JMenu("View");
-      viewMenu.add(new JMenuItem("Normal Size")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Real Size")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Normal Size            Ctrl+N")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Real Size                 Ctrl+R")).addActionListener(this);
       viewMenu.addSeparator();
-      viewMenu.add(new JMenuItem("First Page")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Previous Page")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Next Page")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Last Page")).addActionListener(this);
+      viewMenu.add(new JMenuItem("First Page               Home")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Previous Page      Page↓")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Next Page              Page↑")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Last Page                   End")).addActionListener(this);
       viewMenu.addSeparator();
-      viewMenu.add(new JMenuItem("Hide Menu")).addActionListener(this);
+      viewMenu.add(new JMenuItem("Hide Menu             Ctrl+M")).addActionListener(this);
       menuBar.add(viewMenu);
 
       JMenu printMenu = new JMenu("Print");
-      printMenu.add(new JMenuItem("Page Format")).addActionListener(this);
-      printMenu.add(new JMenuItem("Hardcopy")).addActionListener(this);
+      printMenu.add(new JMenuItem("Page Format    Shift+Ctrl+P")).addActionListener(this);
+      printMenu.add(new JMenuItem("Hardcopy       	              Ctrl+P")).addActionListener(this);
       printMenu.addSeparator();
-      printMenu.add(new JMenuItem("Clear")).addActionListener(this);
+      printMenu.add(new JMenuItem("Clear                                 Del")).addActionListener(this);
       menuBar.add(printMenu);
 
       menuBar.setVisible(true);
