@@ -67,6 +67,9 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
   JScrollPane scrollPane;
 	JTextArea textArea = new JTextArea(20, 80); // TextArea for stdout
 
+	JMenuBar menuBar;
+	JCheckBoxMenuItem debugItem;
+
 	class JTextAreaOutputStream extends OutputStream
 	{
 		private final JTextArea stdout;
@@ -91,15 +94,16 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 	public void actionPerformed(ActionEvent event)
 	{
 		String cmd = event.getActionCommand();
-		if(cmd.equals("Exit")) {
+		if(cmd.startsWith("Exit")) {
 			dispose();
 			System.exit(0);
-		} else if(cmd.equals("Clear")) {
+		} else if(cmd.startsWith("Clear")) {
 			textArea.setText(null);
+    } else if(cmd.startsWith("Debug")) {
+    	debug = !debug;
+      debugItem.setSelected(debug);
 		} else {
-			//start(cmd, false);
 			machine = cmd;
-			debug = false;
     	new Thread(this, machine).start();
 		}
 	}
@@ -120,7 +124,7 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		contentPane.setBackground(brown);
 
 		// Menu bar
-		JMenuBar menuBar = new JMenuBar();
+		menuBar = new JMenuBar();
 		menuBar.setBackground(gray);
 		menuBar.setMinimumSize(new Dimension(0, 23));
 		
@@ -139,6 +143,10 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		viewMenu.add(new JMenuItem("Clear")).addActionListener(this);
 		menuBar.add(viewMenu);
 		
+    JMenu optionsMenu = new JMenu("Options");
+    optionsMenu.add(debugItem = new JCheckBoxMenuItem("Debug")).addActionListener(this);
+    menuBar.add(optionsMenu);
+
 		c.gridx = 0;
 		c.gridy = 0;
     c.gridheight = 1;
@@ -178,7 +186,6 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		System.setErr(new PrintStream(out));
 	}
 	
-	//public void start(String machine, boolean debug)
 	public void run()
 	{
 		// Reflection API for loading of calculator classes:
@@ -252,9 +259,6 @@ public class GO9800
   
   public static void main(String[] args)
   {
-    //boolean debug = false;
-    //String machine = "";
-
     if(args.length < 0 || args.length > 3){
       usage();
       System.exit(1);
@@ -283,7 +287,6 @@ public class GO9800
     
     if(go9800.machine != "") {
     	new Thread(go9800, go9800.machine).start();
-    	//go9800.start(machine, debug);
     }
   }
 }

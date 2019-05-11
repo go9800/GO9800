@@ -121,6 +121,7 @@ public class HP9800Window extends JFrame implements ActionListener
     optionsMenu.add(debugItem = new JCheckBoxMenuItem("Debug")).addActionListener(this);
     optionsMenu.add(fanSoundItem = new JCheckBoxMenuItem("Fan Sound      Ctrl+F")).addActionListener(this);
     optionsMenu.add(allSoundItem = new JCheckBoxMenuItem("All Sounds     Ctrl+S")).addActionListener(this);
+    debugItem.setSelected(console.getDebugMode());
     fanSoundItem.setSelected(true);
     allSoundItem.setSelected(true);
     menuBar.add(optionsMenu);
