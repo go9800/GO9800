@@ -253,9 +253,13 @@ public class HP9868A extends IOdevice implements ActionListener
   			
   			// HP9868A interface is not selectable
   			if(x >= INTERFACE_X[slot] && x <= INTERFACE_X[slot] + INTERFACE_W  && ioInterface != this.ioInterface) {
+  				
   				// show device if interface is newly selected, otherwise hide device
-  				if(ioInterface != null && ioInterface.ioDevice.deviceWindow != null)
+  				if(ioInterface != null && ioInterface.ioDevice.deviceWindow != null) {
 						ioInterface.ioDevice.deviceWindow.setVisible(selectedSlot != slot);
+						// put HP9868A on top again
+						this.deviceWindow.setVisible(true);
+  				}
 
   				if(selectedSlot != slot) {
   					selectColor = Color.YELLOW;
@@ -363,8 +367,9 @@ public class HP9868A extends IOdevice implements ActionListener
     			g2d.setTransform(g2dSaveTransform);  // restore original transformation
     		}
     	} else {
-    		// draw cover if slot is empty
-  			g2d.drawImage(coverImage, INTERFACE_X[slot], COVER_Y, COVER_W, COVER_H, this);
+    		// draw cover if slot is empty and not selected
+    		if(slot != selectedSlot)
+    			g2d.drawImage(coverImage, INTERFACE_X[slot], COVER_Y, COVER_W, COVER_H, this);
     	}
     	
     	if(slot == selectedSlot) {

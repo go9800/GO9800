@@ -341,7 +341,7 @@ public class HP9867B extends IOdevice implements ActionListener
                 return(HP11305A.POWER_ON | HP11305A.ADDRESS_ERROR);
             } else {
               if(driveProtectL)
-                return(HP11305A.POWER_ON);
+                return(HP11305A.POWER_ON | HP11305A.ADDRESS_ERROR);
             }
 
             diskFile.writeShort(mainframe.memory[077000 + address].getValue());

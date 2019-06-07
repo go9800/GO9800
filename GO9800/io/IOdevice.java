@@ -135,7 +135,14 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   {
   	// actual size of device without insets
   	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
-  	
+
+  	// limit minimum size to 20% of normal size to avoid scaling problems (small overlay images may have size 0)
+  	if(actualSize.width < NORMAL_W / 5)
+  		actualSize.width = NORMAL_W / 5;
+
+  	if(actualSize.height < NORMAL_H / 5)
+  		actualSize.height = NORMAL_H / 5;
+
   	if(fixedAspect) {
     	double aspectMismatch = (double)actualSize.getWidth() / (double)actualSize.getHeight() / aspectRatio;
 
@@ -148,6 +155,7 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   	
   	// scale factors for drawing
   	widthScale = actualSize.getWidth() / NORMAL_W;
+  	
   	if(xScaleOnly)
   		heightScale = widthScale;  // scale is only determined by window width (for printers and plotters)
   	else

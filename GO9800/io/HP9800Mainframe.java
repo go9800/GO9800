@@ -275,6 +275,14 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   {
   	// actual size of keyboard area (Insets of JPanel are normally 0)
   	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
+
+  	// limit minimum size to 20% of normal size to avoid scaling problems
+  	if(actualSize.width < NORMAL_W / 5)
+  		actualSize.width = NORMAL_W / 5;
+
+  	if(actualSize.height < NORMAL_H / 5)
+  		actualSize.height = NORMAL_H / 5;
+  	
   	double aspectMismatch = actualSize.getWidth() / actualSize.getHeight() / aspectRatio;
   	
   	if(aspectMismatch > 1.02) {  // is actual aspect ratio more than 2% bigger than normal?
