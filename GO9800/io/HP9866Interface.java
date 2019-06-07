@@ -43,7 +43,7 @@ public class HP9866Interface extends IOinterface
   public HP9866Interface(Integer selectCode, HP9800Mainframe hp9800Mainframe)
   {
     // create named thread
-    super(selectCode, "HP9866AB", hp9800Mainframe);
+    super(selectCode, "HP9866Interface", hp9800Mainframe);
   }
   
   public void setDevice(IOdevice ioDev)

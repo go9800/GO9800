@@ -45,6 +45,7 @@ public class HP9820DisplayInterface extends IOinterface implements DisplayInterf
   public HP9820DisplayInterface(HP9800Mainframe hp9800Mainframe)
   {
     super(0, hp9800Mainframe);
+    internalInterface = true;
     
     displayBuffer = new int[5][16];
     

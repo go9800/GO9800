@@ -70,8 +70,8 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public int[] keyOffsetX; // offset of leftmost key in row
   public int[][] keyCodes;
 
-  public int KEYB_W = 1000;
-  public int KEYB_H = 578;
+  public int NORMAL_W = 1000;
+  public int NORMAL_H = 578;
   public double REAL_W = 17.5;
   
   public int DRIVE_X;
@@ -250,15 +250,11 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
   	
     // fixed aspect ratio of keyboard
-    aspectRatio = (double)KEYB_W / (double)KEYB_H;
+    aspectRatio = (double)NORMAL_W / (double)NORMAL_H;
 
     // set panel to standard size
-    normalSize = new Dimension(KEYB_W + getInsets().left + getInsets().right, KEYB_H + getInsets().top + getInsets().bottom);
+    normalSize = new Dimension(NORMAL_W + getInsets().left + getInsets().right, NORMAL_H + getInsets().top + getInsets().bottom);
     setPreferredSize(normalSize);
-    
-    double pixels = 17.52 / Toolkit.getDefaultToolkit().getScreenResolution() / 1000.;
-  	Dimension naturalSize = new Dimension();
-  	naturalSize.setSize(pixels / normalSize.getWidth(), pixels / normalSize.getHeight());
     
     // check if normalSize fits in screenSize
     if(normalSize.getHeight() > screenSize.getHeight())
@@ -277,7 +273,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   // set size of HP9800Mainframe panel with fixed aspect ratio
   public void normalizeSize()
   {
-  	// actual size of keyboard area
+  	// actual size of keyboard area (Insets of JPanel are normally 0)
   	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
   	double aspectMismatch = actualSize.getWidth() / actualSize.getHeight() / aspectRatio;
   	
@@ -288,14 +284,28 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   	}
   	
   	// scale factors for drawing
-  	widthScale = actualSize.getWidth() / KEYB_W;
-  	heightScale = actualSize.getHeight() / KEYB_H;
+  	widthScale = actualSize.getWidth() / NORMAL_W;
+  	heightScale = actualSize.getHeight() / NORMAL_H;
 
   	actualSize.width += getInsets().left + getInsets().right;
   	actualSize.height += getInsets().top + getInsets().bottom;
   	
   	if(hp9800Window != null)
   		hp9800Window.setFrameSize(actualSize);
+  }
+  
+  public IOdevice findDevice(String hpName)
+  {
+    IOdevice device;
+    
+    for(Enumeration<IOdevice> devices = ioDevices.elements(); devices.hasMoreElements(); ) {
+      device = devices.nextElement();
+      if(device.hpName.equals(hpName)) {
+      	return(device);
+      }
+    }
+    
+    return(null);
   }
   
   public void closeAllDevices()

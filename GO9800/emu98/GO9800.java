@@ -180,7 +180,7 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		frame.pack();
 		frame.setVisible(true);
 
-		// redirect System.out
+		// redirect System.out and System.err
 		JTextAreaOutputStream out = new JTextAreaOutputStream(textArea);
 		System.setOut(new PrintStream(out));
 		System.setErr(new PrintStream(out));
@@ -213,7 +213,8 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
     } catch(Exception e) {
       e.printStackTrace();
       System.err.println(machine + " not implemented.");
-      System.exit(1);      
+      //System.exit(1);
+      return;
     }
     
     emu.setMainframe(mainframe);
@@ -221,9 +222,11 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		mainframe.setConfiguration(config);
 
 		// load configuration files, memory blocks, interfaces, and devices
-    config.loadConfig(machine);
+    if(!config.loadConfig(machine))
+    	return;
     // load host keyboard configuration
-    config.loadKeyConfig(machine);
+    if(!config.loadKeyConfig(machine))
+    	return;
 
     mainframe.console.setDebugMode(debug);
     if(debug)
@@ -277,7 +280,7 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.2 Mai 11 2019, Copyright (C) 2006-2019 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.3 Jun 06 2019, Copyright (C) 2006-2019 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to redistribute it under certain conditions.\n");
     System.out.println("GO9800 is in no way associated with the Hewlett Packard Company or its subsidiaries.");

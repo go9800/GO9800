@@ -47,6 +47,8 @@ public class HP9830KeyboardInterface extends IOinterface implements KeyboardInte
   public HP9830KeyboardInterface(int selectCode, HP9800Mainframe hp9800Mainframe)
   {
     super(selectCode, hp9800Mainframe);
+    internalInterface = true;
+
     System.out.println("HP9800 Keyboard, select code " + selectCode + " loaded.");
   }
 

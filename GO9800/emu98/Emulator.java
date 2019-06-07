@@ -626,7 +626,6 @@ public class Emulator implements Runnable
 
   public void decode(int opcode, int address)
   {
-    String instr = null;
     String fpReg = null;
     StringBuffer line = null; 
 
@@ -638,7 +637,7 @@ public class Emulator implements Runnable
     }
 
     if(dumpRegisters | disassemble | dumpFPregisters) {
-      instr = "???"; // default string: undefined instruction
+      instr = "UNDEFINED"; // default string: undefined instruction
       line = new StringBuffer(" ");
     }
 

@@ -53,6 +53,7 @@ public class HP9830DisplayInterface extends IOinterface implements DisplayInterf
   public HP9830DisplayInterface(HP9800Mainframe hp9800Mainframe)
   {
     super(0, hp9800Mainframe);
+    internalInterface = true;
     
     // one display line with 32 positions
     displayBuffer = new int[1][32];

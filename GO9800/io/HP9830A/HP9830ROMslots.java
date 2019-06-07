@@ -34,8 +34,9 @@ import emu98.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.JFrame;
 
-public class HP9830ROMslots extends Frame
+public class HP9830ROMslots extends JFrame
 {
   private static final long serialVersionUID = 1L;
 
@@ -79,6 +80,7 @@ public class HP9830ROMslots extends Frame
     romSelector.addRomButton("media/HP9830A/HP11289B_Module.png", "HP11289B");
     romSelector.addRomButton("media/HP9830A/HP11296B_Module.png", "HP11296B");
     romSelector.addRomButton("media/HP9830A/INFOTEK_FB1_Module.png", "INFOTEK_FB1");
+    //romSelector.addRomButton("media/HP9830A/INFOTEK_FB2_Module.png", "INFOTEK_FB2"); // FB2 is only allowed/functional in internal slot 0
     romSelector.addRomButton("media/HP9830A/INFOTEK_FB3_Module.png", "INFOTEK_FB3");
     romSelector.addRomButton("media/HP9830A/INFOTEK_FB4_Module.png", "INFOTEK_FB4");
   }

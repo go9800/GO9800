@@ -49,6 +49,8 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   public JFrame deviceWindow;
   public DeviceWindow extDeviceWindow;
   public Boolean createWindow = true; // set to false if no separate DeviceWindow is needed
+  public ImageMedia deviceImageMedia, interfaceImageMedia;
+  public int interfaceSlot = 0;
   JPanel devicePanel;
   JMenuBar menuBar;
   Graphics2D g2d;
@@ -59,7 +61,7 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   double widthScale = 1., heightScale = 1.;
   int unscaledHeight;
   int MENU_H = 23;
-  public int NORMAL_W = 500, NORMAL_H = 500;
+  public int NORMAL_W, NORMAL_H;
 
 
   public IOdevice()
@@ -69,19 +71,31 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
 
   public IOdevice(String hpName, IOinterface ioInterface)
   {
-    // extend device name with #selectCode
-    this.hpName = hpName + " @" + ioInterface.selectCode; // device name comes from child class
+		this.hpName = hpName; // device name comes from child class
+    
+		// device without own interface (HP9867B)?
+		if(ioInterface != null) {
+			// extend device name with #selectCode
+			if(ioInterface.selectCode != 0)
+				this.hpName += " @" + ioInterface.selectCode;
 
-    // connection to ioInterface
-    this.ioInterface = ioInterface;
+			// connection to ioInterface
+			this.ioInterface = ioInterface;
 
-    // add device to list for later cleanup
-    ioInterface.mainframe.ioDevices.add(this);
-
+			// add device to list for later cleanup
+			ioInterface.mainframe.ioDevices.add(this);
+		}
+    
     addMouseListener(this);
 
     setBackground(Color.WHITE);
     setForeground(Color.BLACK);
+  }
+
+  public IOdevice(String hpName, IOinterface ioInterface, int slot)
+  {
+  	this(hpName, ioInterface);
+		interfaceSlot = slot;
   }
 
   public boolean needsWindow()
@@ -97,7 +111,7 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
     if(createWindow) {
       // do only for a separate window
       deviceWindow.addKeyListener(this);
-      deviceWindow.setState(Frame.ICONIFIED);
+      deviceWindow.setState(Frame.NORMAL);
       deviceWindow.setVisible(false);
     }
   }
@@ -105,6 +119,8 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   // register extended JFrame for use of extended methods
   public void setDeviceWindow(DeviceWindow window)
   {
+    menuBar.setVisible(createWindow); // hide menu bar for internal devices
+
     extDeviceWindow = window;
     setDeviceWindow((JFrame)window);
   }
@@ -114,14 +130,35 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
     this.menuBar = menuBar;
   }
 
-  public void normalizeSize(int width, int height)
+  // set graphics scale with fixed aspect ratio
+  public void setScale(boolean fixedAspect, boolean xScaleOnly)
   {
-    // actual size of keyboard area
-    Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
+  	// actual size of device without insets
+  	Dimension actualSize = new Dimension(getWidth() - getInsets().left - getInsets().right, getHeight() - getInsets().top - getInsets().bottom);
+  	
+  	if(fixedAspect) {
+    	double aspectMismatch = (double)actualSize.getWidth() / (double)actualSize.getHeight() / aspectRatio;
 
-    // scale factors for drawing
-    widthScale = actualSize.getWidth() / width;
-    heightScale = actualSize.getHeight() / height;
+    	if(aspectMismatch > 1.02) {  // is actual aspect ratio more than 2% bigger than normal?
+  			actualSize.width = (int)(actualSize.getHeight() * aspectRatio);  // then make width smaller
+  		} else if(aspectMismatch < 0.98) {  // is actual aspect ratio more than 2% smaller than normal?
+  			actualSize.height = (int)(actualSize.getWidth() / aspectRatio);  // then make height smaller
+  		}
+  	}
+  	
+  	// scale factors for drawing
+  	widthScale = actualSize.getWidth() / NORMAL_W;
+  	if(xScaleOnly)
+  		heightScale = widthScale;  // scale is only determined by window width (for printers and plotters)
+  	else
+  		heightScale = actualSize.getHeight() / NORMAL_H;
+
+  	// add insets again
+  	actualSize.width += getInsets().left + getInsets().right;
+  	actualSize.height += getInsets().top + getInsets().bottom;
+  	
+  	if(extDeviceWindow != null)
+  		extDeviceWindow.setFrameSize(actualSize);
   }
 
   // set standard size of device panel
@@ -129,6 +166,8 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   {
     Dimension normalSize;
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    
+    aspectRatio = (double)NORMAL_W / (double)NORMAL_H;
 
     // set panel to standard size
     normalSize = new Dimension(NORMAL_W + getInsets().left + getInsets().right, NORMAL_H + getInsets().top + getInsets().bottom);
@@ -139,21 +178,19 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
       setSize(screenSize); // resize to screen on smaller devices
     else
       setSize(normalSize);
-
-    setWindowSize();
   }
 
   public void setRealSize(double width, double height)
   {
     setSize((int)(width * Toolkit.getDefaultToolkit().getScreenResolution()), (int)(height * Toolkit.getDefaultToolkit().getScreenResolution()));
-    setWindowSize();
   }
-
+/*
   public void setWindowSize()
   {
-    deviceWindow.setSize(getWidth() + deviceWindow.getInsets().left + deviceWindow.getInsets().right, getHeight() + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
+  	if(extDeviceWindow != null)
+  		extDeviceWindow.setFrameSize(new Dimension(getWidth(), getHeight()));
   }
-
+*/
   // MouseListener methods
 
   public void mousePressed(MouseEvent event)
@@ -227,8 +264,24 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
   {
   }
 
+  public Graphics2D getG2D(Graphics g)
+  {
+    Graphics2D g2d = (Graphics2D)g;
+
+    if(g2d != null) {
+      g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
+      g2d.scale(widthScale, heightScale);  // scale graphics to required size
+
+      // enable bicubic interpolation for higher quality of scaled bitmaps
+      g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC));
+    }
+
+    return(g2d);
+  }
+  
   public void paint(Graphics g)
   {
+  	g2d = getG2D(g);
   }
 
   public int output(int status, int value)
@@ -242,13 +295,19 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
 
   public void close()
   {
-    // stop all threads including sounds and images and free all ressources
-    ioInterface.stop();  // stop interface thread
-    ioInterface.mainframe.ioDevices.removeElement(this);  // remove device object from devices list
+    // stop all threads including sounds and images and free all resources
+  	if(ioInterface != null) {
+  		ioInterface.stop();  // stop interface thread
+  		ioInterface.mainframe.ioDevices.removeElement(this);  // remove device object from devices list
+  	}
+  	
     setVisible(false);  // close panel
 
     if(createWindow)
       deviceWindow.dispose();  // close window
+    
+    if(deviceImageMedia != null)
+    	deviceImageMedia.close();
 
     System.out.println(hpName + " unloaded.");
   }

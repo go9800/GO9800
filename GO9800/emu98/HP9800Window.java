@@ -37,6 +37,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -56,6 +57,7 @@ public class HP9800Window extends JFrame implements ActionListener
   int MENU_H = 23;
 
   JMenuBar menuBar;
+  JMenu devicesMenu;
   JCheckBoxMenuItem keyMapItem, consoleItem, hp2116PanelItem;
   JCheckBoxMenuItem debugItem, fanSoundItem, allSoundItem;
 
@@ -82,60 +84,58 @@ public class HP9800Window extends JFrame implements ActionListener
     //setUndecorated(true);
     //setOpacity(0.8f);
 
+    // set menu background color
     UIManager.put("MenuBar.background", hpBeige);
     UIManager.put("Menu.background", hpBeige);
     UIManager.put("MenuItem.background", hpBeige);
     UIManager.put("CheckBoxMenuItem.background", hpBeige);
+    UIManager.put("PopupMenu.background", hpBeige); // also for submenus
 
     // Menu bar
     menuBar = new JMenuBar();
     menuBar.setMinimumSize(new Dimension(0, MENU_H));
 
     JMenu runMenu = new JMenu("Run");
-    runMenu.add(new JMenuItem("Restart     Alt+Ctrl+R")).addActionListener(this);
+    runMenu.add(makeMenuItem("Restart", KeyEvent.VK_R, KeyEvent.ALT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK));
     runMenu.addSeparator();
-    runMenu.add(new JMenuItem("Exit")).addActionListener(this);
+    runMenu.add(makeMenuItem("Exit", 0, 0));
     menuBar.add(runMenu);
 
     JMenu viewMenu = new JMenu("View");
-    viewMenu.add(new JMenuItem("Normal Size      Ctrl+N")).addActionListener(this);
-    viewMenu.add(new JMenuItem("Real Size           Ctrl+R")).addActionListener(this);
-    viewMenu.add(new JMenuItem("Hide Menu         Ctrl+M")).addActionListener(this);
+    viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+    viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
+    viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
     viewMenu.addSeparator();
-    viewMenu.add(keyMapItem = new JCheckBoxMenuItem("Key Map            Ctrl+K")).addActionListener(this);
-    viewMenu.add(consoleItem = new JCheckBoxMenuItem("Console             Ctrl+D")).addActionListener(this);
-    viewMenu.add(hp2116PanelItem = new JCheckBoxMenuItem("HP2116 Panel  Ctrl+C")).addActionListener(this);
+    viewMenu.add(keyMapItem = makeCheckBoxMenuItem("Key Map", KeyEvent.VK_K, KeyEvent.CTRL_DOWN_MASK));
+    viewMenu.add(consoleItem = makeCheckBoxMenuItem("Console", KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
+    viewMenu.add(hp2116PanelItem = makeCheckBoxMenuItem("HP2116 Panel", KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
     menuBar.add(viewMenu);
 
     // add print menu only for models with internal printer
     if(!machine.startsWith("HP9830")) {
       JMenu printMenu = new JMenu("Print");
-      printMenu.add(new JMenuItem("Page Format    Shift+Ctrl+P")).addActionListener(this);
-      printMenu.add(new JMenuItem("Hardcopy       	              Ctrl+P")).addActionListener(this);
+      printMenu.add(makeMenuItem("Page Format", KeyEvent.VK_P, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK));
+      printMenu.add(makeMenuItem("Hardcopy", KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK));
       printMenu.addSeparator();
-      printMenu.add(new JMenuItem("Clear                          Ctrl+Del")).addActionListener(this);
+      printMenu.add(makeMenuItem("First Page"));
+      printMenu.add(makeMenuItem("Previous Page", KeyEvent.VK_PAGE_UP, KeyEvent.CTRL_DOWN_MASK));
+      printMenu.add(makeMenuItem("Next Page", KeyEvent.VK_PAGE_DOWN, KeyEvent.CTRL_DOWN_MASK));
+      printMenu.add(makeMenuItem("Last Page", KeyEvent.VK_END, KeyEvent.CTRL_DOWN_MASK));
+      printMenu.addSeparator();
+      printMenu.add(makeMenuItem("Clear", KeyEvent.VK_DELETE, KeyEvent.CTRL_DOWN_MASK));
       menuBar.add(printMenu);
     }
 
     JMenu optionsMenu = new JMenu("Options");
     optionsMenu.add(debugItem = new JCheckBoxMenuItem("Debug")).addActionListener(this);
-    optionsMenu.add(fanSoundItem = new JCheckBoxMenuItem("Fan Sound      Ctrl+F")).addActionListener(this);
-    optionsMenu.add(allSoundItem = new JCheckBoxMenuItem("All Sounds     Ctrl+S")).addActionListener(this);
+    optionsMenu.add(fanSoundItem = makeCheckBoxMenuItem("Fan Sound", KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
+    optionsMenu.add(allSoundItem = makeCheckBoxMenuItem("All Sounds", KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
     debugItem.setSelected(console.getDebugMode());
     fanSoundItem.setSelected(true);
     allSoundItem.setSelected(true);
     menuBar.add(optionsMenu);
-
-    IOdevice device;
-    JMenu devicesMenu = new JMenu("Devices");
-    for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
-      device = devices.nextElement();
-      if(device.needsWindow()) {
-        devicesMenu.add(new JMenuItem(device.hpName)).addActionListener(this);
-        //tabbedPane.addTab(device.hpName, device);
-      }
-    }
-    menuBar.add(devicesMenu);
+    
+    makeDevicesMenu();
 
     c.gridx = 0;
     c.gridy = 0;
@@ -159,10 +159,66 @@ public class HP9800Window extends JFrame implements ActionListener
 
     setResizable(true); // this changes size of insets
   }
+  
+  public JMenu makeDevicesMenu()
+  {
+    IOdevice device;
+    
+    menuBar.setVisible(false);
+    if(devicesMenu != null)
+    	menuBar.remove(devicesMenu);
+    
+    devicesMenu = new JMenu("Devices");
+    
+    for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
+      device = devices.nextElement();
+      if(device.needsWindow()) {
+        devicesMenu.add(new JMenuItem(device.hpName)).addActionListener(this);
+      }
+    }
+    
+    menuBar.add(devicesMenu);
+    menuBar.setVisible(true);
+
+    return(devicesMenu);
+  }
+  
+  public JMenuItem makeMenuItem(String menuText)
+  {
+  	return(makeMenuItem(menuText, 0, 0));
+  }
+  
+  public JMenuItem makeMenuItem(String menuText, int key, int accelerator)
+  {
+  	JMenuItem menuItem = new JMenuItem(menuText);
+    menuItem.addActionListener(this);
+
+    if(key != 0) {
+    	KeyStroke ks = KeyStroke.getKeyStroke(key, accelerator);
+    	menuItem.setAccelerator(ks);
+    }
+    
+    return(menuItem);
+  }
+
+  public JCheckBoxMenuItem makeCheckBoxMenuItem(String menuText, int key, int accelerator)
+  {
+  	JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem(menuText);
+    menuItem.addActionListener(this);
+
+    if(key != 0) {
+    	KeyStroke ks = KeyStroke.getKeyStroke(key, accelerator);
+    	menuItem.setAccelerator(ks);
+    }
+    
+    return(menuItem);
+  }
 
   public void actionPerformed(ActionEvent event)
   {
+  	IOdevice device;
     String cmd = event.getActionCommand();
+    int numPages = mainframe.numLines / mainframe.PAPER_HEIGHT;
 
     if(cmd.startsWith("Restart")) {
       mainframe.ioUnit.reset = true;
@@ -205,25 +261,40 @@ public class HP9800Window extends JFrame implements ActionListener
       try {
         mainframe.printJob.print();
       } catch (PrinterException e) { }
+    } else if(cmd.startsWith("First Page")) {
+      mainframe.page = numPages;
+      mainframe.repaint();
+    } else if(cmd.startsWith("Previous Page")) {
+      // paper page down
+      mainframe.page++;
+      if(mainframe.page >= numPages) {
+        mainframe.page = numPages;
+        mainframe.repaint();
+      }
+      else
+        mainframe.displayPrintOutput(null);
+    } else if(cmd.startsWith("Next Page")) {
+      // paper page up
+      if(--mainframe.page < 0) mainframe.page = 0;
+      mainframe.displayPrintOutput(null);
+    } else if(cmd.startsWith("Last Page")) {
+    	mainframe.page = 0;
+      mainframe.repaint();
     } else if(cmd.startsWith("Clear")) {
       mainframe.initializeBuffer();
       mainframe.page = 0;
       mainframe.repaint();
     }
 
-    IOdevice device;
-    for(Enumeration<IOdevice> devices = mainframe.ioDevices.elements(); devices.hasMoreElements(); ) {
-      device = devices.nextElement();
-      if(device.hpName.equals(cmd)) {
-        if(!device.deviceWindow.isVisible()) {
-          device.deviceWindow.setVisible(true);
-          device.deviceWindow.setState(NORMAL);
-        }
-        else
-          device.deviceWindow.setState(1 - device.deviceWindow.getState()); // toggle ICONIFIED / NORMAL
-      }
+    device = mainframe.findDevice(cmd);
+    if(device != null) {
+    	if(!device.deviceWindow.isVisible()) {
+    		device.deviceWindow.setVisible(true);
+    		device.deviceWindow.setState(NORMAL);
+    	}
+    	else
+    		device.deviceWindow.setState(1 - device.deviceWindow.getState()); // toggle ICONIFIED / NORMAL
     }
-
   }
 
   class WindowListener extends WindowAdapter
@@ -265,6 +336,8 @@ public class HP9800Window extends JFrame implements ActionListener
       int keyCode = event.getKeyCode();
       String strCode = "";
       String modifier = "";
+
+      event.consume(); // do not pass key event to other levels (e.g. menuBar)
 
       switch(keyCode) {
       case KeyEvent.VK_UNDEFINED:
@@ -387,6 +460,11 @@ public class HP9800Window extends JFrame implements ActionListener
             mainframe.page = 0;
             mainframe.repaint();
             break;
+            
+          case KeyEvent.VK_END:
+          	mainframe.page = 0;
+            mainframe.repaint();
+            break;
 
           case KeyEvent.VK_HOME:
             // PAPER
@@ -437,7 +515,6 @@ public class HP9800Window extends JFrame implements ActionListener
         mainframe.ioUnit.STP = true;
       }
 
-      event.consume(); // do not pass key event to host system 
       mainframe.ioUnit.bus.keyboard.setKeyCode(keyCode);
       mainframe.ioUnit.bus.keyboard.requestInterrupt();
     }

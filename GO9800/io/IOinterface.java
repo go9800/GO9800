@@ -43,6 +43,8 @@ public class IOinterface implements Runnable
 {
 	public HP9800Mainframe mainframe; // connection to HP9800 mainframe
   protected IOunit ioUnit; // connection to IOunit
+  public ImageMedia labelImageMedia;
+  public boolean internalInterface;
   public int selectCode;
   public int srqBits; // bit pattern for service request
   public boolean serviceRequested;
@@ -65,7 +67,7 @@ public class IOinterface implements Runnable
   	mainframe = hp9800Mainframe; // connect to HP9800Mainframe
   	ioUnit = mainframe.ioUnit; // connect to IOunit
     mainframe.ioInterfaces.add(this); // connect to ioBus
-  	
+    
     devThread = (name == null) ? new Thread(this) : new Thread(this, name);
 
     this.selectCode = selectCode;
@@ -88,11 +90,17 @@ public class IOinterface implements Runnable
   	mainframe = hp9800Mainframe; // connect to HP9800Mainframe
   	ioUnit = mainframe.ioUnit; // connect to IOunit
     mainframe.ioInterfaces.add(this); // connect to ioBus
+    labelImageMedia = new ImageMedia("media/HP9800/" + name + "_Label.png", mainframe.imageController); // load interface label
+  	
 
     devThread = (name == null) ? new Thread(this) : new Thread(this, name);
 
     this.selectCode = selectCode.intValue();
-    srqBits = 1 << (this.selectCode - 1);
+    if(selectCode == 0) { // device without select code (HP9868A)
+    	srqBits = 0;
+    }
+    else
+    	srqBits = 1 << (this.selectCode - 1);
     serviceRequested = false;
   }
 
@@ -113,8 +121,7 @@ public class IOinterface implements Runnable
       devThread.start();
   }
   
-  public void run()
-  {
+  public void run()  {
     while(true) {
       // sleep until interrupted by IO-instruction
       try {
@@ -150,6 +157,9 @@ public class IOinterface implements Runnable
   	}
   	
     mainframe.ioInterfaces.removeElement(this);  // remove device interface object from IObus
+    
+    if(labelImageMedia != null) // dispose interface label
+    	labelImageMedia.close();
   }
   
   protected void requestInterrupt()

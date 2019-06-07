@@ -31,7 +31,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -43,9 +45,9 @@ public class DeviceWindow extends JFrame
 
   IOdevice ioDevice;
 
-  Color gray = new Color(230, 230, 230);
-  Color beige = new Color(215, 213, 178);
-  Color brown = new Color(87, 87, 75);
+  Color hpGray = new Color(170, 180, 180);
+  Color hpBeige = new Color(215, 213, 178);
+  Color hpBrown = new Color(87, 87, 75);
 
   int MENU_H = 23;
 
@@ -64,23 +66,29 @@ public class DeviceWindow extends JFrame
     contentPane.setLayout(gridbag);
     setContentPane(contentPane);
 
-    UIManager.put("MenuBar.background", beige);
-    UIManager.put("Menu.background", beige);
-    UIManager.put("MenuItem.background", beige);
-    UIManager.put("CheckBoxMenuItem.background", beige);
+    // set menu background color
+    UIManager.put("MenuBar.background", hpBeige);
+    UIManager.put("Menu.background", hpBeige);
+    UIManager.put("MenuItem.background", hpBeige);
+    UIManager.put("CheckBoxMenuItem.background", hpBeige);
+    UIManager.put("PopupMenu.background", hpBeige); // also for submenus
 
     // Menu bar
     menuBar = new JMenuBar();
     menuBar.setMinimumSize(new Dimension(0, MENU_H));
+
+    JMenu runMenu = new JMenu("Run");
+    runMenu.add(new JMenuItem("Exit")); // at least one dummy menu has to be added in order to calculate correct JFrame height
+    menuBar.add(runMenu);
 
     c.gridx = 0;
     c.gridy = 0;
     c.fill = GridBagConstraints.HORIZONTAL;
     c.anchor = GridBagConstraints.WEST;
     contentPane.add(menuBar, c);
-    menuBar.setVisible(false); // hide menuBar until needed
+    menuBar.setVisible(true); // menuBar has to be visible in order to calculate correct JFrame height
 
-    device.setMenuBar(menuBar); // menuBar is filled by device if needed
+    device.setMenuBar(menuBar); // menuBar is filled by device if needed, after removing dummy menu!
 
     // ScrollPane for device panel
     //JScrollPane deviceScrollPane = new JScrollPane (ioDevice, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -96,9 +104,9 @@ public class DeviceWindow extends JFrame
     addWindowListener(new windowListener());
   }
 
-  public void setFrameSize()
+  public void setFrameSize(Dimension panelSize)
   {
-    setSize(ioDevice.getWidth() + getInsets().left + getInsets().right, ioDevice.getHeight() + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
+    setSize(panelSize.width + getInsets().left + getInsets().right, panelSize.height + (menuBar.isVisible() ? menuBar.getHeight() : 0) + getInsets().top + getInsets().bottom);
   }
 
   public void setFrameSize(Boolean showMenuBar)
@@ -112,8 +120,6 @@ public class DeviceWindow extends JFrame
     public void windowClosing(WindowEvent event)
     {
       setVisible(false);
-      //ioDevice.close();
-      //dispose();
     }
   }
 }

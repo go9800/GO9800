@@ -98,7 +98,6 @@ public class HP9867A extends IOdevice
     if(primaryDevice == null) {
       this.primaryDevice = this;
       addKeyListener(this);
-      addMouseListener(new mouseListener());
 
       //hp9867Image = new ImageMedia("media/HP9880A/HP9867" + (numDiscs == 1? "A" : "B") + ".jpg").getImage();
       hp9867Image = new ImageMedia("media/HP9880A/HP9867B.jpg", ioInterface.mainframe.imageController).getImage();
@@ -108,6 +107,9 @@ public class HP9867A extends IOdevice
       protectLdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_LD.jpg", ioInterface.mainframe.imageController).getImage();
       protectUdImage = new ImageMedia("media/HP9880A/HP9867B_PROTECT_UD.jpg", ioInterface.mainframe.imageController).getImage();
       loadSwitchImage = new ImageMedia("media/HP9880A/HP9867B_LOAD_SWITCH.jpg", ioInterface.mainframe.imageController).getImage();
+      
+      NORMAL_W = 800;
+      NORMAL_H = 436;
     } else {
       this.primaryDevice = primaryDevice;
       primaryDevice.windowTitle = "HP9867B Unit " + (unit-1) + "+" + unit;
@@ -131,6 +133,8 @@ public class HP9867A extends IOdevice
       deviceWindow.setResizable(false);
       deviceWindow.setLocation(220 + unit * 20, unit * 20);
       deviceWindow.setSize(hp9867Image.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9867Image.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
+      menuBar.setVisible(false); // not yet needed
+      setNormalSize(); // necessary for non-resizable window
     }
   }
 
@@ -191,45 +195,41 @@ public class HP9867A extends IOdevice
     return(false);
   }
 
-  class mouseListener extends MouseAdapter
+  public void mousePressed(MouseEvent event)
   {
-    public void mousePressed(MouseEvent event)
-    {
-      int l = getInsets().left;
-      int t = getInsets().top;
-      int x = event.getX() - l;
-      int y = event.getY() - t;
+  	int l = getInsets().left;
+  	int t = getInsets().top;
+  	int x = event.getX() - l;
+  	int y = event.getY() - t;
 
-      if(x > LOADSW_X - 10 && x < LOADSW_X + 10)
-        if(y > LOADSW_Y - 10 && y < LOADSW_Y + 10) {
-          primaryDevice.driveReady = false;
-          doorUnlocked = true;
-          repaint(DOOR_UNLOCKED_X + l, DOOR_UNLOCKED_Y + t, DOOR_UNLOCKED_W + DRIVE_READY_W + 20, DOOR_UNLOCKED_H);
-          openDiskFile();
-          return;
-        }
+  	if(x > LOADSW_X - 10 && x < LOADSW_X + 10)
+  		if(y > LOADSW_Y - 10 && y < LOADSW_Y + 10) {
+  			primaryDevice.driveReady = false;
+  			doorUnlocked = true;
+  			repaint(DOOR_UNLOCKED_X + l, DOOR_UNLOCKED_Y + t, DOOR_UNLOCKED_W + DRIVE_READY_W + 20, DOOR_UNLOCKED_H);
+  			openDiskFile();
+  			return;
+  		}
 
-      if(x > PROTECT_UD_X && x < PROTECT_UD_X + PROTECT_UD_W)
-        if(y > PROTECT_UD_Y - 10 && y < PROTECT_UD_Y + PROTECT_UD_H) {
-          driveProtectU = !driveProtectU;
-          repaint(PROTECT_UD_X + l, PROTECT_UD_Y + t, PROTECT_UD_W, PROTECT_UD_H);
-          return;
-        }
+  	if(x > PROTECT_UD_X && x < PROTECT_UD_X + PROTECT_UD_W)
+  		if(y > PROTECT_UD_Y - 10 && y < PROTECT_UD_Y + PROTECT_UD_H) {
+  			driveProtectU = !driveProtectU;
+  			repaint(PROTECT_UD_X + l, PROTECT_UD_Y + t, PROTECT_UD_W, PROTECT_UD_H);
+  			return;
+  		}
 
-      if(numDiscs > 1) {
-        if(x > PROTECT_LD_X && x < PROTECT_LD_X + PROTECT_LD_W)
-          if(y > PROTECT_LD_Y - 10 && y < PROTECT_LD_Y + PROTECT_LD_H) {
-            driveProtectL = !driveProtectL;
-            repaint(PROTECT_LD_X + l, PROTECT_LD_Y + t, PROTECT_LD_W, PROTECT_LD_H);
-            return;
-          }
-      }
+  	if(numDiscs > 1) {
+  		if(x > PROTECT_LD_X && x < PROTECT_LD_X + PROTECT_LD_W)
+  			if(y > PROTECT_LD_Y - 10 && y < PROTECT_LD_Y + PROTECT_LD_H) {
+  				driveProtectL = !driveProtectL;
+  				repaint(PROTECT_LD_X + l, PROTECT_LD_Y + t, PROTECT_LD_W, PROTECT_LD_H);
+  				return;
+  			}
+  	}
+  }
 
-    }
-
-    public void mouseReleased(MouseEvent event)
-    {
-    }
+  public void mouseReleased(MouseEvent event)
+  {
   }
 
   public void keyPressed(KeyEvent event)

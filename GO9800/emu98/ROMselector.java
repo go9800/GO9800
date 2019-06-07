@@ -155,13 +155,16 @@ public class ROMselector extends JDialog implements ActionListener
   */
   public void addRomButton(String imageName, String actionCommand)
   {
+  	Dimension buttonSize = new Dimension((int)(1.3 * moduleWidth), (int)(1.3 * moduleHeight));
+  	
     romButton = new JButton();
-    romButton.setIcon(new ImageIcon(new ImageMedia(imageName, mainframe.imageController).getScaledImage((int)(1.2 * moduleWidth), (int)(1.2 * moduleHeight))));
-    romButton.setPreferredSize(new Dimension(moduleWidth + 10, moduleHeight + 10));
+    romButton.setIcon(new ImageIcon(new ImageMedia(imageName, mainframe.imageController).getScaledImage(buttonSize.width, buttonSize.height)));
+    romButton.setPreferredSize(buttonSize);
     romButton.setBackground(Color.black);
     romPanel.add(romButton, null);
     romButton.setActionCommand(actionCommand);
     romButton.addActionListener(this);
+    this.setSize(buttonSize.width + 40, 370);
   }
   
   public void setRomSlot(String romSlot)
@@ -173,7 +176,7 @@ public class ROMselector extends JDialog implements ActionListener
   {
     String cmd = event.getActionCommand();
     mainframe.config.setROM(romSlot, cmd);
-    mainframe.repaint();
+    mainframe.repaint();  // repaint exchanged ROMS. This has also to repaint the ROM slots window of the HP9830.
     setVisible(false);
   }
 

@@ -31,25 +31,38 @@
  * 09.02.2010 Rel. 1.42 Added stopping of HP11200 thread before unloading
  * 03.04.2010 Rel. 1.50 Class now inherited from IOdevice and completely reworked
  * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
+ * 25.05.2019 Rel. 2.30 Changed to bigger, resizable images. Card image overlay.
  */
 
 package io;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
 import java.io.*;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 
 
-public class HP9860A extends IOdevice
+public class HP9860A extends IOdevice implements ActionListener
 {
   private static final long serialVersionUID = 1L;
 
+  // HP9860A reals size in inches
+  double REAL_W = 5.31, REAL_H = 11.19;
+  int CARD_W = 174, CARD_H = 336, CARD_X = 44, CARD_Y = 0;
+  
   HP11200A hp11200a;
-  Image hp9860aImage;
+  ImageMedia cardImageMedia;
+  Image hp9860Image, cardImage;
   SoundMedia cardReaderSound;
   DataInputStream inFile;
   String cardType;
+  public boolean backgroundImage = false;
+  Boolean loading = false;
 
   static final int WAIT_CARD = 300;  // wait for 1st character on card
   static final int WAIT_IDLE = 5000; // nothing to do
@@ -59,9 +72,13 @@ public class HP9860A extends IOdevice
     super("HP9860A", ioInterface);
     hp11200a = (HP11200A)ioInterface;
 
+    NORMAL_W = 266;
+    NORMAL_H = 560;
+
     // create motor sound
-    cardReaderSound = new SoundMedia("media/HP9860A/HP9860_CARD.wav", ioInterface.mainframe.soundController, false);
-    hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg", ioInterface.mainframe.imageController).getImage();
+    cardReaderSound = new SoundMedia("media/HP9860A/HP9860_Card.wav", ioInterface.mainframe.soundController, false);
+    deviceImageMedia = new ImageMedia("media/HP9860A/HP9860A.png", ioInterface.mainframe.imageController);
+    cardImageMedia = new ImageMedia("media/HP9860A/HP9860A_Card.png", ioInterface.mainframe.imageController);
   }
   
   public void setDeviceWindow(JFrame window)
@@ -69,10 +86,133 @@ public class HP9860A extends IOdevice
   	super.setDeviceWindow(window);
   	
   	if(createWindow) {
-  		deviceWindow.setResizable(false);
+  		deviceWindow.setResizable(true);
   		deviceWindow.setLocation(740, 0);
-  		deviceWindow.setSize(hp9860aImage.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9860aImage.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
+  		
+      menuBar.removeAll();  // remove dummy menu
+      
+      JMenu runMenu = new JMenu("Run");
+      runMenu.add(makeMenuItem("Exit"));
+      menuBar.add(runMenu);
+
+      JMenu viewMenu = new JMenu("View");
+      viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
+      menuBar.add(viewMenu);
+
+      JMenu mediaMenu = new JMenu("Media");
+      mediaMenu.add(makeMenuItem("Load Card", KeyEvent.VK_ENTER, 0));
+      mediaMenu.add(makeMenuItem("Stop Loading", KeyEvent.VK_DELETE, 0));
+      menuBar.add(mediaMenu);
   	}
+
+		// set size of surrounding JFrame only after loading all window components 
+		addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				setScale(true, false);
+			}
+		});
+
+		setNormalSize();
+  }
+
+  public JMenuItem makeMenuItem(String menuText)
+  {
+  	return(makeMenuItem(menuText, 0, 0, null));
+  }
+  
+  public JMenuItem makeMenuItem(String menuText, int key, int accelerator)
+  {
+  	return(makeMenuItem(menuText, key, accelerator, null));
+  }
+  
+  public JMenuItem makeMenuItem(String menuText, int key, int accelerator, String cmd)
+  {
+  	JMenuItem menuItem = new JMenuItem(menuText);
+    menuItem.addActionListener(this);
+    if(cmd != null)
+    	menuItem.setActionCommand(cmd);
+
+    if(key != 0) {
+    	KeyStroke ks = KeyStroke.getKeyStroke(key, accelerator);
+    	menuItem.setAccelerator(ks);
+    }
+    
+    return(menuItem);
+  }
+
+  public void actionPerformed(ActionEvent event)
+  {
+    String cmd = event.getActionCommand();
+
+    if(cmd.startsWith("Exit")) {
+      close();
+    } else if(cmd.startsWith("Normal Size")) {
+      setNormalSize();
+    } else if(cmd.startsWith("Real Size")) {
+      setRealSize(REAL_W, REAL_H);
+    } else if(cmd.startsWith("Hide Menu")) {
+      if(extDeviceWindow != null)
+        extDeviceWindow.setFrameSize(!menuBar.isVisible());
+    } else if(cmd.startsWith("Load Card")) {
+      hp11200a.reading = openInputFile();
+    } else if(cmd.startsWith("Stop Loading")) {
+      closeInputFile();
+    }
+
+    repaint();
+  }
+
+  public void mousePressed(MouseEvent event)
+  {
+  	// get unscaled coordinates of mouse position
+    int x = (int)((event.getX() - getInsets().left) / widthScale); 
+    int y = (int)((event.getY() - getInsets().top) / heightScale);
+
+    if(x >= 55 && x <= 210) {
+      if(y >= 500)
+        hp11200a.reading = openInputFile();
+
+      if(y <= 330)
+        closeInputFile();
+    }
+  }
+
+  public void mouseReleased(MouseEvent event)
+  {
+  }
+
+  public void keyPressed(KeyEvent event)
+  {
+    int keyCode = event.getKeyCode();
+
+    event.consume(); // do not pass key event to other levels (e.g. menuBar)
+
+    switch(keyCode) {
+      case 'M':
+        if(event.isControlDown())
+          if(extDeviceWindow != null)
+            extDeviceWindow.setFrameSize(!menuBar.isVisible());
+        break;
+
+      case 'N':
+        if(event.isControlDown())
+          setNormalSize();
+        break;
+
+      case 'R':
+        if(event.isControlDown())
+          setRealSize(REAL_W, REAL_H);
+        break;
+        
+      case KeyEvent.VK_ENTER:
+      hp11200a.reading = openInputFile();
+      break;
+
+    case KeyEvent.VK_DELETE:
+      closeInputFile();
+    }
   }
 
   boolean openInputFile()
@@ -105,7 +245,7 @@ public class HP9860A extends IOdevice
       }
 
    		cardReaderSound.loop();
-      hp9860aImage = new ImageMedia("media/HP9860A/HP9860A+Card.jpg", ioInterface.mainframe.imageController).getImage();
+   		loading = true;
       repaint();
       // restart timer
       hp11200a.timerValue = WAIT_CARD;
@@ -128,7 +268,7 @@ public class HP9860A extends IOdevice
       }
 
       // set timer value for next character
-      hp11200a.timerValue = ioInterface.ioUnit.time_30ms;
+      hp11200a.timerValue = 60; //ioInterface.ioUnit.time_30ms;
 
       if(cardType.equals("BAS")) {
         inByte = inFile.readUnsignedByte();
@@ -195,7 +335,7 @@ public class HP9860A extends IOdevice
       } catch (IOException e) { }
     }
 
-    hp9860aImage = new ImageMedia("media/HP9860A/HP9860A.jpg", ioInterface.mainframe.imageController).getImage();
+    loading = false;
     repaint();
  		cardReaderSound.loop(0);
   	hp11200a.timerValue = WAIT_IDLE;
@@ -203,51 +343,34 @@ public class HP9860A extends IOdevice
     return(false);
   }
 
-  public void mousePressed(MouseEvent event)
-  {
-    int x = event.getX() - getInsets().left;
-    int y = event.getY() - getInsets().top;
-
-    if(x >= 55 && x <= 210) {
-      if(y >= 500)
-        hp11200a.reading = openInputFile();
-
-      if(y <= 330)
-        closeInputFile();
-    }
-  }
-
-  public void mouseReleased(MouseEvent event)
-  {
-  }
-
-  public void keyPressed(KeyEvent event)
-  {
-    int keyCode = event.getKeyCode();
-
-    switch(keyCode) {
-    case KeyEvent.VK_ENTER:
-      hp11200a.reading = openInputFile();
-      break;
-
-    case KeyEvent.VK_PAUSE:
-      closeInputFile();
-    }
-  }
-
   public void paint(Graphics g)
   {
-    int x = getInsets().left;
-    int y = getInsets().top;
+  	int x = 0, y = 0; // positioning is done by g2d.translate()
+  	
+    super.paint(g);
+    setScale(true, false);
 
-    g.drawImage(hp9860aImage, x, y, hp9860aImage.getWidth(this), hp9860aImage.getHeight(this), this);
+  	// scale device image to normal size
+  	hp9860Image = deviceImageMedia.getScaledImage((int)(NORMAL_W * widthScale), (int)(NORMAL_H * heightScale));
+  	backgroundImage = g2d.drawImage(hp9860Image, x, y, NORMAL_W, NORMAL_H, this);
+  	
+  	if(!backgroundImage)  // don't draw modules and templates before keyboard is ready
+  		return;
+
+    if(loading) {
+    	// draw card
+    	cardImage = cardImageMedia.getScaledImage((int)(CARD_W * widthScale), (int)(CARD_H * heightScale));
+    	g2d.drawImage(cardImage, x + CARD_X, y + CARD_Y, CARD_W, CARD_H, this);
+    }
   }
   
   public void close()
   {
   	// stop all sound and image threads
  		cardReaderSound.close();
-  	hp9860aImage.flush();
+
+ 		if(cardImageMedia != null)
+ 			cardImageMedia.close();
 
   	super.close();
   }

@@ -273,8 +273,8 @@ public class HP9820AMainframe extends HP9800Mainframe
   	super.paint(g);
   	
   	// scale keyboard image to normal size
-  	keyboardImage = keyboardImageMedia.getScaledImage((int)(KEYB_W * widthScale), (int)(KEYB_H * heightScale));
-  	backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
+  	keyboardImage = keyboardImageMedia.getScaledImage((int)(NORMAL_W * widthScale), (int)(NORMAL_H * heightScale));
+  	backgroundImage = g2d.drawImage(keyboardImage, x, y, NORMAL_W, NORMAL_H, this);
   	
     if(!backgroundImage)  // dont draw modules and templates before keyboard is ready
     	return;

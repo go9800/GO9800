@@ -47,6 +47,8 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+
 import emu98.IOunit;
 
 public class HP9862A extends IOdevice implements ActionListener, Printable
@@ -100,10 +102,10 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     moveSound = new SoundMedia("media/HP9862A/HP9862_MOVE.wav", ioInterface.mainframe.soundController, true);
     penDownSound = new SoundMedia("media/HP9862A/HP9862_PEN_DOWN.wav", ioInterface.mainframe.soundController, true);
     penUpSound = new SoundMedia("media/HP9862A/HP9862_PEN_UP.wav", ioInterface.mainframe.soundController, true);
+    //hp9862aImage = getToolkit().getImage("media/HP9862A/HP9862A.jpg");
 
     NORMAL_W = 750;
     NORMAL_H = 500;
-    //hp9862aImage = getToolkit().getImage("media/HP9862A/HP9862A.jpg");
 
     refPoint = new PlotterPoint(0, 0, 0);
 
@@ -119,48 +121,72 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     printJob = PrinterJob.getPrinterJob();
     printJob.setPrintable(this);
     pageFormat = printJob.defaultPage();
-    /*
-    // get window scaling factors
-    addComponentListener(new ComponentAdapter() {
-      public void componentResized(ComponentEvent e) {
-       	normalizeSize();
-      }
-    });
-     */
   }
 
   public void setDeviceWindow(JFrame window)
   {
-    super.setDeviceWindow(window);
+  	super.setDeviceWindow(window);
 
-    if(createWindow) {
-      deviceWindow.setResizable(true);
-      deviceWindow.setLocation(0, 0);
+  	if(createWindow) {
+  		deviceWindow.setResizable(true);
+  		deviceWindow.setLocation(0, 0);
 
-      JMenu runMenu = new JMenu("Run");
-      runMenu.add(new JMenuItem("High Speed    Ctrl+S")).addActionListener(this);
+  		menuBar.removeAll();  // remove dummy menu
+
+  		JMenu runMenu = new JMenu("Run");
+      runMenu.add(makeMenuItem("High Speed", KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
       runMenu.addSeparator();
-      runMenu.add(new JMenuItem("Exit")).addActionListener(this);
-      menuBar.add(runMenu);
+      runMenu.add(makeMenuItem("Exit"));
+  		menuBar.add(runMenu);
 
-      JMenu viewMenu = new JMenu("View");
-      viewMenu.add(new JMenuItem("Normal Size      Ctrl+N")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Real Size           Ctrl+R")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Hide Menu         Ctrl+M")).addActionListener(this);
-      menuBar.add(viewMenu);
+  		JMenu viewMenu = new JMenu("View");
+      viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
+  		menuBar.add(viewMenu);
 
-      JMenu printMenu = new JMenu("Print");
-      printMenu.add(new JMenuItem("Page Format    Shift+Ctrl+P")).addActionListener(this);
-      printMenu.add(new JMenuItem("Hardcopy       	              Ctrl+P")).addActionListener(this);
-      printMenu.addSeparator();
-      printMenu.add(new JMenuItem("Clear                                 Del")).addActionListener(this);
-      menuBar.add(printMenu);
+  		JMenu printMenu = new JMenu("Print");
+      printMenu.add(makeMenuItem("Page Format", KeyEvent.VK_P, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK));
+      printMenu.add(makeMenuItem("Hardcopy", KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK));
+  		printMenu.addSeparator();
+      printMenu.add(makeMenuItem("Clear", KeyEvent.VK_DELETE, 0));
+  		menuBar.add(printMenu);
+  	}
 
-      menuBar.setVisible(true);
-    }
+		// set size of surrounding JFrame only after loading all window components 
+		addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				setScale(false, false);
+			}
+		});
 
-    setNormalSize();
+		setNormalSize();
   }
+
+	public JMenuItem makeMenuItem(String menuText)
+	{
+		return(makeMenuItem(menuText, 0, 0, null));
+	}
+
+	public JMenuItem makeMenuItem(String menuText, int key, int accelerator)
+	{
+		return(makeMenuItem(menuText, key, accelerator, null));
+	}
+
+	public JMenuItem makeMenuItem(String menuText, int key, int accelerator, String cmd)
+	{
+		JMenuItem menuItem = new JMenuItem(menuText);
+		menuItem.addActionListener(this);
+		if(cmd != null)
+			menuItem.setActionCommand(cmd);
+
+		if(key != 0) {
+			KeyStroke ks = KeyStroke.getKeyStroke(key, accelerator);
+			menuItem.setAccelerator(ks);
+		}
+
+		return(menuItem);
+	}
 
   public void actionPerformed(ActionEvent event)
   {
@@ -198,7 +224,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
 
     if(g2d != null) {
       g2d.translate(getInsets().left, getInsets().top); // translate graphics to painting area
-      g2d.scale(widthScale, heightScale);  // scale graphics to required size
+      g2d.scale(widthScale * NORMAL_W / PLOT_W, heightScale * NORMAL_H / PLOT_H);  // scale graphics to required size
 
       // enable antialiasing for higher quality of plotter output
       g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
@@ -211,6 +237,8 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
   {
     int keyCode = event.getKeyCode();
 
+    event.consume(); // do not pass key event to other levels (e.g. menuBar)
+
     switch(keyCode) {
     case KeyEvent.VK_END:
       break;
@@ -219,10 +247,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
       break;
 
     case KeyEvent.VK_DELETE:
-      if(event.isShiftDown()) {
-        initializeBuffer();
-        setNormalSize();
-      }
+      initializeBuffer();
       break;
 
     case KeyEvent.VK_UP:
@@ -315,12 +340,11 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     PlotterPoint point, tempRef;
 
     super.paint(g);
-    g2d = getG2D(g);
-    normalizeSize(PLOT_W, PLOT_H);
+    setScale(false, false);
 
     tempRef = new PlotterPoint(0, 0, 0);
 
-    //boolean backgroundImage = g.drawImage(hp9862aImage, x, y, getWidth(), getHeight(), this);
+    //boolean backgroundImage = g2d.drawImage(hp9862aImage, x, y, getWidth(), getHeight(), this);
 
     //if(backgroundImage) {
     g2d.setColor(Color.WHITE);

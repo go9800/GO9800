@@ -60,8 +60,8 @@ public class HP9821AMainframe extends HP9820AMainframe
       {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0777, -1, -1, -1, -1, -1, -1},
   };
 
-  int xTapeStatus = 875;
-  int yTapeStatus = 165;
+  int xTapeStatus = 865;
+  int yTapeStatus = 154;
 
   HP9865Interface hp9865Interface; 
   boolean tapeLoaded = false;
@@ -76,8 +76,8 @@ public class HP9821AMainframe extends HP9820AMainframe
     keyOffsetX = HP9821keyOffsetX;
     keyCodes = HP9821keyCodes;
 
-    KEYB_W = 1065;
-    KEYB_H = 650;
+    NORMAL_W = 1065;
+    NORMAL_H = 650;
     
     DRIVE_X = 745;
     DRIVE_Y = 125;

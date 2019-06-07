@@ -154,8 +154,8 @@ public class HP9830AMainframe extends HP9800Mainframe
   int ROM_W = 30;
   int ROM_H = 100;
   
-  int xTapeStatus = 825;
-  int yTapeStatus = 50;
+  int xTapeStatus = 815;
+  int yTapeStatus = 39;
 
   HP9830ROMslots romSlots;
   HP9865Interface hp9865Interface;
@@ -177,8 +177,8 @@ public class HP9830AMainframe extends HP9800Mainframe
     keyOffsetX = HP9830keyOffsetX;
     keyCodes = HP9830keyCodes;
 
-    KEYB_W = 1000;
-    KEYB_H = 558;
+    NORMAL_W = 1000;
+    NORMAL_H = 558;
     
     DRIVE_X = 690;
     DRIVE_Y = 17;
@@ -331,8 +331,8 @@ public class HP9830AMainframe extends HP9800Mainframe
   	super.paint(g);
 
   	// scale keyboard image to normal size
-  	keyboardImage = keyboardImageMedia.getScaledImage((int)(KEYB_W * widthScale), (int)(KEYB_H * heightScale));
-  	backgroundImage = g2d.drawImage(keyboardImage, x, y, KEYB_W, KEYB_H, this);
+  	keyboardImage = keyboardImageMedia.getScaledImage((int)(NORMAL_W * widthScale), (int)(NORMAL_H * heightScale));
+  	backgroundImage = g2d.drawImage(keyboardImage, x, y, NORMAL_W, NORMAL_H, this);
 
   	if(!backgroundImage)
   		return;
@@ -353,6 +353,10 @@ public class HP9830AMainframe extends HP9800Mainframe
   	// draw internal tape status
   	if(this.tapeDevice != null)
   		tapeDevice.drawStatus(g2d);
+  	
+  	// repaint ROM slots in case of a ROM exchange
+  	if(romSlots.isVisible())
+  		romSlots.repaint();
   }
 
   public void displayClickAreas(Graphics2D g2d)

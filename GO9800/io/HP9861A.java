@@ -40,6 +40,7 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 
 import emu98.IOunit;
 
@@ -121,37 +122,71 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
       deviceWindow.setResizable(true);
       deviceWindow.setLocation(0, 0);
 
+      menuBar.removeAll();  // remove dummy menu
+      
       JMenu runMenu = new JMenu("Run");
-      runMenu.add(new JMenuItem("High Speed    Ctrl+S")).addActionListener(this);
+      runMenu.add(makeMenuItem("High Speed", KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
       runMenu.addSeparator();
-      runMenu.add(new JMenuItem("Exit")).addActionListener(this);
+      runMenu.add(makeMenuItem("Exit"));
       menuBar.add(runMenu);
 
       JMenu viewMenu = new JMenu("View");
-      viewMenu.add(new JMenuItem("Normal Size            Ctrl+N")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Real Size                 Ctrl+R")).addActionListener(this);
+      viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
       viewMenu.addSeparator();
-      viewMenu.add(new JMenuItem("First Page               Home")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Previous Page      Page↓")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Next Page              Page↑")).addActionListener(this);
-      viewMenu.add(new JMenuItem("Last Page                   End")).addActionListener(this);
-      viewMenu.addSeparator();
-      viewMenu.add(new JMenuItem("Hide Menu             Ctrl+M")).addActionListener(this);
+      viewMenu.add(makeMenuItem("Inc Char Size", KeyEvent.VK_PLUS, 0));
+      viewMenu.add(makeMenuItem("Dec Char Size", KeyEvent.VK_MINUS, 0));
       menuBar.add(viewMenu);
 
       JMenu printMenu = new JMenu("Print");
-      printMenu.add(new JMenuItem("Page Format    Shift+Ctrl+P")).addActionListener(this);
-      printMenu.add(new JMenuItem("Hardcopy       	              Ctrl+P")).addActionListener(this);
+      printMenu.add(makeMenuItem("Page Format", KeyEvent.VK_P, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK));
+      printMenu.add(makeMenuItem("Hardcopy", KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK));
       printMenu.addSeparator();
-      printMenu.add(new JMenuItem("Clear                                 Del")).addActionListener(this);
+      printMenu.add(makeMenuItem("First Page", KeyEvent.VK_HOME, 0));
+      printMenu.add(makeMenuItem("Previous Page", KeyEvent.VK_PAGE_DOWN, 0));
+      printMenu.add(makeMenuItem("Next Page", KeyEvent.VK_PAGE_UP, 0));
+      printMenu.add(makeMenuItem("Last Page", KeyEvent.VK_END, 0));
+      printMenu.addSeparator();
+      printMenu.add(makeMenuItem("Clear", KeyEvent.VK_DELETE, 0));
       menuBar.add(printMenu);
-
-      menuBar.setVisible(true);
     }
-
+    
+    // set size of surrounding JFrame only after loading all window components 
+    addComponentListener(new ComponentAdapter() {
+      public void componentResized(ComponentEvent e) {
+        setScale(false, true);
+      }
+    });
+    
     setNormalSize();
   }
 
+  public JMenuItem makeMenuItem(String menuText)
+  {
+  	return(makeMenuItem(menuText, 0, 0, null));
+  }
+  
+  public JMenuItem makeMenuItem(String menuText, int key, int accelerator)
+  {
+  	return(makeMenuItem(menuText, key, accelerator, null));
+  }
+  
+  public JMenuItem makeMenuItem(String menuText, int key, int accelerator, String cmd)
+  {
+  	JMenuItem menuItem = new JMenuItem(menuText);
+    menuItem.addActionListener(this);
+    if(cmd != null)
+    	menuItem.setActionCommand(cmd);
+
+    if(key != 0) {
+    	KeyStroke ks = KeyStroke.getKeyStroke(key, accelerator);
+    	menuItem.setAccelerator(ks);
+    }
+    
+    return(menuItem);
+  }
+  
   public void actionPerformed(ActionEvent event)
   {
     String cmd = event.getActionCommand();
@@ -167,6 +202,18 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
       setNormalSize();
     } else if(cmd.startsWith("Real Size")) {
       setRealSize(REAL_W, REAL_H);
+    } else if(cmd.startsWith("Increase")) {
+    	if(fontSize < 40) {
+    		fontSize += 1;
+    		font = new Font("Monospaced", Font.PLAIN, fontSize);
+    		setFont(font);
+    	}
+    } else if(cmd.startsWith("Decrease")) {
+    	if(fontSize > 8) {
+    		fontSize -= 1;
+    		font = new Font("Monospaced", Font.PLAIN, fontSize);
+    		setFont(font);
+    	}
     } else if(cmd.startsWith("First Page")) {
       page = numPages;
     } else if(cmd.startsWith("Previous Page")) {
@@ -192,12 +239,6 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
     repaint();
   }
 
-  public void normalizeSize(int width, int height)
-  {
-    super.normalizeSize(width, height);
-    heightScale = widthScale; //scale is determined only by window width
-  }
-
   public Graphics2D getG2D(Graphics g)
   {
     Graphics2D g2d = (Graphics2D)g;
@@ -219,6 +260,8 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
 
     int windowDotRows = getHeight() - 8 -  getInsets().top;  // # dot rows in output area
     int numPages = numLines * fontSize / windowDotRows;  // # of pages to display
+
+    event.consume(); // do not pass key event to other levels (e.g. menuBar)
 
     switch(keyCode) {
     case KeyEvent.VK_PAGE_DOWN:
@@ -382,8 +425,7 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
   public void paint(Graphics g)
   {
     super.paint(g);
-    g2d = getG2D(g);
-    normalizeSize(NORMAL_W, NORMAL_H);
+    setScale(false, true);
     unscaledHeight = (int)((getHeight() - getInsets().top - getInsets().bottom) / heightScale);
 
     int x = 4;  // leftmost print positon

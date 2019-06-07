@@ -166,4 +166,22 @@ public class ImageMedia extends JComponent
   	
   	return(processedImage);
   }
+
+  public void close()
+  {
+  	if(image != null) {
+  		controller.remove(image);
+  		image.flush();
+  	}
+  	
+  	if(scaledImage != null) {
+    	controller.remove(scaledImage);
+    	scaledImage.flush();
+  	}
+  		
+  	if(processedImage != null) {
+    	controller.remove(processedImage);
+    	processedImage.flush();
+  	}
+  }
 }

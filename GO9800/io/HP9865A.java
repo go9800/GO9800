@@ -45,6 +45,7 @@
  * 19.11.2017 Rel. 2.10 Changed drawStatus() for Graphics2D with scaling from mainframe 
  * 01.01.2018 Rel. 2.10 Changed handling of statusFrame, now using repaint()
  * 02.01.2018 Rel. 2.10 Added use of class DeviceWindow
+ * 26.05.2019 Rel. 2.30 Changed drive status indicator to graphic progress bar
  */
 
 package io;
@@ -55,12 +56,20 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.StringTokenizer;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 
 
-public class HP9865A extends IOdevice
+public class HP9865A extends IOdevice implements ActionListener
 {
   private static final long serialVersionUID = 1L;
+
+  // HP9865A reals size in inches
+  double REAL_W = 7.80, REAL_H = 6.03;
+  int DOOR_W = 286, DOOR_H = 239, DOOR_X = 80, DOOR_Y = 58;
+  int CASS_W = 185, CASS_H = 66, CASS_X = 131, CASS_Y = 93;
 
   // calculator output status bits 
   static final int CONTROL = 0x0800;
@@ -80,7 +89,8 @@ public class HP9865A extends IOdevice
   static final int POWER_ON = 0x0100;
 
   HP9865Interface hp9865Interface;
-  private Image hp9865aImage;
+  private ImageMedia hp9865ImageMedia, doorImageMedia, cassImageMedia;
+  private Image hp9865Image, doorImage, cassImage;
   private SoundMedia doorOpenSound, doorCloseSound;
   private SoundMedia motorStartSound, motorStopSound, motorSound;
   private SoundMedia motorSlowSound, motorFastSound, motorRewindSound;
@@ -88,6 +98,8 @@ public class HP9865A extends IOdevice
   private int tapeCommand = STOP;  // last tape command from calculator
   private int prevCommand = STOP;
   private int driveStatus = POWER_ON | CASSETTE_OUT | WRITE_PROTECT;
+  private boolean doorOpen = false, cassLoaded = false;
+  private boolean backgroundImage = false;
   private boolean runFlag = false;
   private boolean rewindFlag = false;
   protected boolean inByteReady = false;  // true if new read byte present 
@@ -95,9 +107,8 @@ public class HP9865A extends IOdevice
   protected boolean debug;
 
   private JPanel tapeStatusPanel;
-  private String tapeStatusString = "";
-  private int xTapeStatus = 210;
-  private int yTapeStatus = 135;
+  private int xTapeStatus = 205;
+  private int yTapeStatus = 123;
 
   public HP9865A(IOinterface ioInterface)
   {
@@ -106,18 +117,23 @@ public class HP9865A extends IOdevice
     loadSound();
     tapeStatusPanel = this;
 
-    addKeyListener(this);
-    addMouseListener(new mouseListener());
+    NORMAL_W = 450;
+    NORMAL_H = 349;
 
-    hp9865aImage = new ImageMedia("media/HP9865A/HP9865A.jpg", ioInterface.mainframe.imageController).getImage();
+    addKeyListener(this);
+
+    hp9865ImageMedia = new ImageMedia("media/HP9865A/HP9865A.png", ioInterface.mainframe.imageController);
+    doorImageMedia = new ImageMedia("media/HP9865A/HP9865A_Drive_Open.png", ioInterface.mainframe.imageController);
+    cassImageMedia = new ImageMedia("media/HP9865A/HP9865A_Cassette.png", ioInterface.mainframe.imageController);
   }
 
   public HP9865A(int selectCode, IOinterface ioInterface)
   {
     super("HP9865A internal", ioInterface); // set window title
     hp9865Interface = (HP9865Interface)ioInterface;
+    hp9865Interface.internalInterface = true; // for exclusion in HP9868A
     loadSound();
-
+    
     System.out.println("HP9865 Internal Tape Drive, select code " + selectCode + " loaded.");
   }
 
@@ -126,10 +142,62 @@ public class HP9865A extends IOdevice
     super.setDeviceWindow(window);
 
     if(createWindow) {
-      deviceWindow.setResizable(false);
+      deviceWindow.setResizable(true);
       deviceWindow.setLocation(280, 0);
-      deviceWindow.setSize(hp9865aImage.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9865aImage.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
+      
+      menuBar.removeAll();  // remove dummy menu
+      
+      JMenu runMenu = new JMenu("Run");
+      runMenu.add(makeMenuItem("High Speed", KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
+      runMenu.addSeparator();
+      runMenu.add(makeMenuItem("Exit"));
+      menuBar.add(runMenu);
+
+      JMenu viewMenu = new JMenu("View");
+      viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
+      menuBar.add(viewMenu);
+
+      JMenu mediaMenu = new JMenu("Media");
+      mediaMenu.add(makeMenuItem("Load Cassette", KeyEvent.VK_ENTER, 0));
+      mediaMenu.add(makeMenuItem("Eject Cassette", KeyEvent.VK_DELETE, 0));
+      menuBar.add(mediaMenu);
     }
+    
+		// set size of surrounding JFrame only after loading all window components 
+		addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				setScale(true, false);
+			}
+		});
+
+		setNormalSize();
+  }
+  
+  public JMenuItem makeMenuItem(String menuText)
+  {
+  	return(makeMenuItem(menuText, 0, 0, null));
+  }
+  
+  public JMenuItem makeMenuItem(String menuText, int key, int accelerator)
+  {
+  	return(makeMenuItem(menuText, key, accelerator, null));
+  }
+  
+  public JMenuItem makeMenuItem(String menuText, int key, int accelerator, String cmd)
+  {
+  	JMenuItem menuItem = new JMenuItem(menuText);
+    menuItem.addActionListener(this);
+    if(cmd != null)
+    	menuItem.setActionCommand(cmd);
+
+    if(key != 0) {
+    	KeyStroke ks = KeyStroke.getKeyStroke(key, accelerator);
+    	menuItem.setAccelerator(ks);
+    }
+    
+    return(menuItem);
   }
 
   private void loadSound()
@@ -145,12 +213,34 @@ public class HP9865A extends IOdevice
     motorFastSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_FAST.wav", ioInterface.mainframe.soundController, true);
     motorRewindSound = new SoundMedia("media/HP9865A/HP9865_MOTOR_REWIND.wav", ioInterface.mainframe.soundController, true);
   }
+  
+  public void actionPerformed(ActionEvent event)
+  {
+    String cmd = event.getActionCommand();
+
+    if(cmd.startsWith("Exit")) {
+      close();
+    } else if(cmd.startsWith("Normal Size")) {
+      setNormalSize();
+    } else if(cmd.startsWith("Real Size")) {
+      setRealSize(REAL_W, REAL_H);
+    } else if(cmd.startsWith("Hide Menu")) {
+      if(extDeviceWindow != null)
+        extDeviceWindow.setFrameSize(!menuBar.isVisible());
+    } else if(cmd.startsWith("Load Cassette")) {
+      openTapeFile();
+    } else if(cmd.startsWith("Eject Cassette")) {
+      closeTapeFile();
+    }
+
+    repaint();
+  }
 
   public boolean openTapeFile()
   {
     closeTapeFile();
     doorOpenSound.start();
-    hp9865aImage = new ImageMedia("media/HP9865A/HP9865A_Open.jpg", ioInterface.mainframe.imageController).getImage();
+    doorOpen = true;
     repaint();
 
     FileDialog fileDialog = new FileDialog(deviceWindow, "Load Cassette");
@@ -306,13 +396,16 @@ public class HP9865A extends IOdevice
       }
 
       doorCloseSound.start();
-      hp9865aImage = new ImageMedia("media/HP9865A/HP9865A+Cassette.jpg", ioInterface.mainframe.imageController).getImage();
+      doorOpen = false;
+      cassLoaded = true;
       repaint();
 
       hp9865Interface.status = driveStatus;
       return(true);
     } else {
       doorCloseSound.start();
+      doorOpen = false;
+      cassLoaded = false;
     }
 
     closeTapeFile();
@@ -331,54 +424,70 @@ public class HP9865A extends IOdevice
 
     stopTape();
     hp9865Interface.status = driveStatus = POWER_ON | CASSETTE_OUT | WRITE_PROTECT;
-    hp9865aImage = new ImageMedia("media/HP9865A/HP9865A.jpg", ioInterface.mainframe.imageController).getImage();
+    cassLoaded = false;
     repaint();
 
     return(false);
   }
 
-  class mouseListener extends MouseAdapter
+  public void mousePressed(MouseEvent event)
   {
-    public void mousePressed(MouseEvent event)
-    {
-      int x = event.getX() - getInsets().left;
-      int y = event.getY() - getInsets().top;
+  	// get unscaled coordinates of mouse position
+  	int x = (int)((event.getX() - getInsets().left) / widthScale); 
+  	int y = (int)((event.getY() - getInsets().top) / heightScale);
 
-      if(x >= 380 && x <= 410) {
-        if(y >= 250 && y <= 300)
-          openTapeFile();
-      }
+  	if(x >= 380 && x <= 410) {
+  		if(y >= 250 && y <= 300)
+  			openTapeFile();
+  	}
 
-      if(x >= 100 && x <= 350) {
-        if(y >= 70 && y <= 280)
-          closeTapeFile();
-      }
+  	if(x >= 100 && x <= 350) {
+  		if(y >= 70 && y <= 280)
+  			closeTapeFile();
+  	}
 
-      if(x >= 390 && x <= 405) {
-        if(y >= 80 && y <= 95)
-          output(READ|REVERSE|FAST);
-      }
-    }
+  	if(x >= 390 && x <= 405) {
+  		if(y >= 80 && y <= 95)
+  			output(READ|REVERSE|FAST);
+  	}
+  }
 
-    public void mouseReleased(MouseEvent event)
-    {
-    }
+  public void mouseReleased(MouseEvent event)
+  {
   }
 
   public void keyPressed(KeyEvent event)
   {
     int keyCode = event.getKeyCode();
 
+    event.consume(); // do not pass key event to other levels (e.g. menuBar)
+
     switch(keyCode) {
-    case KeyEvent.VK_ENTER:
-      openTapeFile();
-      break;
+    	case 'M':
+    		if(event.isControlDown())
+    			if(extDeviceWindow != null)
+    				extDeviceWindow.setFrameSize(!menuBar.isVisible());
+    		break;
 
-    case KeyEvent.VK_PAUSE:
-      closeTapeFile();
+    	case 'N':
+    		if(event.isControlDown())
+    			setNormalSize();
+    		break;
 
-    default:
-      return;
+    	case 'R':
+    		if(event.isControlDown())
+    			setRealSize(REAL_W, REAL_H);
+    		break;
+
+    	case KeyEvent.VK_ENTER:
+    		openTapeFile();
+    		break;
+
+    	case KeyEvent.VK_DELETE:
+    		closeTapeFile();
+
+    	default:
+    		return;
     }
 
     repaint();
@@ -394,18 +503,38 @@ public class HP9865A extends IOdevice
 
   public void paint(Graphics g)
   {
-    int x = getInsets().left;
-    int y = getInsets().top;
+  	int x = 0, y = 0; // positioning is done by g2d.translate()
+  	
+    super.paint(g);
+    setScale(true, false);
 
-    g.drawImage(hp9865aImage, x, y, hp9865aImage.getWidth(this), hp9865aImage.getHeight(this), this);
-    drawStatus((Graphics2D)g);
+  	// scale device image to normal size
+  	hp9865Image = hp9865ImageMedia.getScaledImage((int)(NORMAL_W * widthScale), (int)(NORMAL_H * heightScale));
+  	backgroundImage = g2d.drawImage(hp9865Image, x, y, NORMAL_W, NORMAL_H, this);
+  	
+  	if(!backgroundImage)  // don't draw modules and templates before keyboard is ready
+  		return;
+
+    if(doorOpen) {
+    	// draw open door
+    	doorImage = doorImageMedia.getScaledImage((int)(DOOR_W * widthScale), (int)(DOOR_H * heightScale));
+    	g2d.drawImage(doorImage, x + DOOR_X, y + DOOR_Y, DOOR_W, DOOR_H, this);
+    }
+
+    if(cassLoaded) {
+    	// draw cassette
+    	cassImage = cassImageMedia.getScaledImage((int)(CASS_W * widthScale), (int)(CASS_H * heightScale));
+    	g2d.drawImage(cassImage, x + CASS_X, y + CASS_Y, CASS_W, CASS_H, this);
+    	
+      drawStatus(g2d);
+    }
   }
 
   public void drawStatus(Graphics2D g2d)
   {
-    Font font = new Font("Monospaced", Font.BOLD, 20);
-    g2d.setFont(font);
-
+  	int maxPosition = 40;
+  	int tapePosition = 0;
+  	
     if(tapeCommand == STOP)
       return;
 
@@ -419,19 +548,35 @@ public class HP9865A extends IOdevice
         g2d.setColor(Color.GREEN);
     }
 
+    try {
+			tapePosition = (int)(maxPosition * tapeFile.getFilePointer() / tapeFile.length());
+		} catch (IOException e) {
+		}
+    
+    g2d.drawRect(xTapeStatus, yTapeStatus, maxPosition, 10);
+    g2d.fillRect(xTapeStatus, yTapeStatus, tapePosition, 10);
+    
     if((tapeCommand & FAST) != 0) {
-      if((tapeCommand & REVERSE) != 0)
-        tapeStatusString = "<<";
-      else
-        tapeStatusString = ">>";
-    } else {
-      if((tapeCommand & REVERSE) != 0)
-        tapeStatusString = "<";
-      else 
-        tapeStatusString = ">";
-    }
-
-    g2d.drawString(tapeStatusString, xTapeStatus, yTapeStatus);
+      if((tapeCommand & REVERSE) != 0) {
+        // draw "<<"
+    		g2d.drawLine(xTapeStatus - 4, yTapeStatus, xTapeStatus - 9, yTapeStatus + 5);
+    		g2d.drawLine(xTapeStatus - 4, yTapeStatus + 10, xTapeStatus - 9, yTapeStatus + 5);
+      } else {
+        // draw ">>"
+    		g2d.drawLine(xTapeStatus + maxPosition + 4, yTapeStatus, xTapeStatus + maxPosition + 9, yTapeStatus + 5);
+    		g2d.drawLine(xTapeStatus + maxPosition + 4, yTapeStatus + 10, xTapeStatus + maxPosition + 9, yTapeStatus + 5);
+      }
+    } //else {
+    	if((tapeCommand & REVERSE) != 0) {
+    		// draw "<"
+    		g2d.drawLine(xTapeStatus, yTapeStatus, xTapeStatus - 5, yTapeStatus + 5);
+    		g2d.drawLine(xTapeStatus, yTapeStatus + 10, xTapeStatus - 5, yTapeStatus + 5);
+    	} else {
+    		// draw ">"
+    		g2d.drawLine(xTapeStatus + maxPosition, yTapeStatus, xTapeStatus + maxPosition + 5, yTapeStatus + 5);
+    		g2d.drawLine(xTapeStatus + maxPosition, yTapeStatus + 10, xTapeStatus + maxPosition + 5, yTapeStatus + 5);
+    	}
+    //}
   }
 
   public void setStatusPanel(JPanel panel, int x, int y)
@@ -670,7 +815,15 @@ public class HP9865A extends IOdevice
     motorSlowSound.close();
     motorFastSound.close();
     motorRewindSound.close();
-    if(hp9865aImage != null) hp9865aImage.flush();
+    
+ 		if(hp9865ImageMedia != null)
+ 			hp9865ImageMedia.close();
+
+ 		if(cassImageMedia != null)
+ 			cassImageMedia.close();
+ 		
+ 		if(doorImageMedia != null)
+ 			doorImageMedia.close();
 
     super.close();
   }

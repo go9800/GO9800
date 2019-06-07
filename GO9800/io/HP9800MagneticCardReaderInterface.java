@@ -81,6 +81,7 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   public HP9800MagneticCardReaderInterface(HP9800Mainframe mainframe)
   {
     super(0, "MCR", mainframe);
+    internalInterface = true;
 
     // store references and start thread
     WAIT_BYTE = ioUnit.time_3ms;
@@ -349,7 +350,7 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
             startSound.start();
 
             // card inserted and first sensor blocked
-            sensors = CARD_END_RECORD;
+            sensors = CARD_END_RECORD; // this may cause strange status output response of other interface with select code 8
             ioUnit.bus.din = sensors;
             timerValue = WAIT_INSERT;
             devThread.interrupt();

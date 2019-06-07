@@ -87,9 +87,10 @@ public class Configuration
         // open default config file from JAR-file
         filePath = "/config/" + fileName;
         if(getClass().getResourceAsStream(filePath) == null) {
-          System.out.println("Configuration file " + fileName + " not found.");
-          System.out.println("HP9800 Emulator terminated.");
-          System.exit(1);
+          System.err.println("Configuration file " + fileName + " not found.");
+          //System.out.println("HP9800 Emulator terminated.");
+          //System.exit(1);
+          return(null);
         }
 
         cfgFile = new DataInputStream(new BufferedInputStream(getClass().getResourceAsStream(filePath)));
@@ -103,7 +104,7 @@ public class Configuration
   }
 
   @SuppressWarnings({ "deprecation" })
-  private void loadDevice(String deviceName, int selectCode)
+  public IOdevice loadDevice(String deviceName, int selectCode)
   {
     DataInputStream cfgFile = null;
     Class<?>[] formpara;
@@ -146,8 +147,8 @@ public class Configuration
                   if(keyValue.equals(model))
                     continue lineLoop; // read next line
                 }
-                System.out.println("Illegal peripheral device for this model!");
-                return;
+                System.err.println("Illegal peripheral device for this model!");
+              	return(null);
               }
 
               // HP-number of physical device
@@ -188,8 +189,8 @@ public class Configuration
                     continue lineLoop; // read next line
                   }
                 }
-                System.out.println("- Illegal select code " + sc + "!");
-                return;
+                System.err.println("- Illegal select code " + sc + "!");
+              	return(null);
               }
 
               // connection of main memory to extended memory (used by HP11273A)
@@ -199,7 +200,8 @@ public class Configuration
                 MemoryBlock memoryBlock = new MemoryBlock(mainframe, model, "RWM", address, length, "BUFFER", hpInterface);
                 memoryBlocks.put(hpInterface, memoryBlock);
                 if(memoryBlock.initialize(mainframe.memory) != 0)
-                  System.exit(1);
+                  //System.exit(1);
+                	return(null);
                 continue; // read next line
               }
 
@@ -223,8 +225,9 @@ public class Configuration
       cfgFile.close();
     } catch (IOException e) {
       // read error
-      System.out.println(e.toString());
-      System.exit(1);
+      System.err.println(e.toString());
+      //System.exit(1);
+    	return(null);
     }
 
     // create object for device interface dynamically
@@ -242,7 +245,8 @@ public class Configuration
       
     } catch(Exception e) {
       System.err.println("\nClass for interface " + hpInterface + " not found.");
-      System.exit(1);      
+      //System.exit(1);
+    	return(null);
     }
 
     // is a peripheral device configured? 
@@ -269,7 +273,8 @@ public class Configuration
       } catch(Exception e) {
       	e.printStackTrace();
         System.err.println("\nClass for device " + hpDevice + " not loaded.");
-        System.exit(1);      
+        //System.exit(1);
+      	return(null);
       }
     }
     
@@ -287,10 +292,12 @@ public class Configuration
 
     if(length == 0)
       System.out.println("loaded.");
+    
+  	return(ioDevice);
   }
 
   @SuppressWarnings("deprecation")
-  public void loadConfig(String machineName)
+  public boolean loadConfig(String machineName)
   {
     DataInputStream cfgFile = null;
     String line;
@@ -303,6 +310,8 @@ public class Configuration
     // Read config file line by line
     try {
       cfgFile = openConfigFile(machineName + ".cfg", true);
+      if(cfgFile == null)
+      	return(false);
 
       while ((line = cfgFile.readLine()) != null && line.length() != 0) {
 
@@ -382,7 +391,8 @@ public class Configuration
             MemoryBlock memoryBlock = new MemoryBlock(mainframe, model, blockType, address, length, blockName, slot);
             memoryBlocks.put(slot, memoryBlock);
             if(memoryBlock.initialize(mainframe.memory) != 0)
-              System.exit(1);
+              //System.exit(1);
+            	return(false);
 
           } catch (Exception e) {
             // format error
@@ -400,8 +410,11 @@ public class Configuration
     } catch (IOException e) {
       // read error
       System.err.println(e.toString());
-      System.exit(1);
+      //System.exit(1);
+    	return(false);
     }
+    
+  	return(true);
   }
 
 	// HP9821A only: generate Maximum Address of RWM (hardwired in original HP9821A)
@@ -435,7 +448,7 @@ public class Configuration
   }
 
   @SuppressWarnings("deprecation")
-  public void loadKeyConfig(String machineName)
+  public boolean loadKeyConfig(String machineName)
   {
     Hashtable<String, String> keyNames;
     DataInputStream cfgFile = null;
@@ -482,7 +495,8 @@ public class Configuration
     } catch (IOException e) {
       // read error
       System.err.println(e.toString());
-      System.exit(1);
+      //System.exit(1);
+    	return(false);
     }
 
     // Read config file line by line
@@ -537,8 +551,11 @@ public class Configuration
     } catch (IOException e) {
       // read error
       System.err.println(e.toString());
-      System.exit(1);
+      //System.exit(1);
+    	return(false);
     }
+    
+    return(true);
   }
   
   public void dispose()
