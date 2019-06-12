@@ -59,7 +59,7 @@ public class HP9800Window extends JFrame implements ActionListener
   JMenuBar menuBar;
   JMenu devicesMenu;
   JCheckBoxMenuItem keyMapItem, consoleItem, hp2116PanelItem;
-  JCheckBoxMenuItem debugItem, fanSoundItem, allSoundItem;
+  JCheckBoxMenuItem debugItem, fanSoundItem, allSoundItem, speedItem;
 
 
   public HP9800Window(HP9800Mainframe mainframe, String machine) 
@@ -97,8 +97,10 @@ public class HP9800Window extends JFrame implements ActionListener
 
     JMenu runMenu = new JMenu("Run");
     runMenu.add(makeMenuItem("Restart", KeyEvent.VK_R, KeyEvent.ALT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK));
+    runMenu.add(speedItem = makeCheckBoxMenuItem("Real Speed", KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK));
     runMenu.addSeparator();
     runMenu.add(makeMenuItem("Exit", 0, 0));
+    speedItem.setSelected(mainframe.realSpeed);
     menuBar.add(runMenu);
 
     JMenu viewMenu = new JMenu("View");
@@ -222,6 +224,9 @@ public class HP9800Window extends JFrame implements ActionListener
 
     if(cmd.startsWith("Restart")) {
       mainframe.ioUnit.reset = true;
+    } else if(cmd.startsWith("Real Speed")) {
+    	mainframe.realSpeed = !mainframe.realSpeed;
+    	speedItem.setSelected(mainframe.realSpeed);
     } else if(cmd.startsWith("Exit")) {
       exit();
     } else if(cmd.startsWith("Debug")) {
@@ -425,18 +430,10 @@ public class HP9800Window extends JFrame implements ActionListener
             break;
 
           case 'T':
-            if(emu.measure) {
-              emu.stopMeasure();
-              console.append("NumOps=" + emu.numOps);
-              console.append(" Min=" + emu.minExecTime);
-              console.append(" Max=" + emu.maxExecTime);
-              console.append(" Mean=" + emu.sumExecTime / emu.numOps + "[ns]\n");
-              if(!console.isVisible())
-                console.setVisible(true);
-            } else
-              emu.startMeasure();
-            break;
-
+          	mainframe.realSpeed = !mainframe.realSpeed;
+          	speedItem.setSelected(mainframe.realSpeed);
+          	break;
+          	
           case KeyEvent.VK_PAGE_UP:
             // paper page up
             if(--mainframe.page < 0) mainframe.page = 0;

@@ -215,10 +215,18 @@ public class HP9867B extends IOdevice implements ActionListener
   			}
   			
   			if(cmd.startsWith("Load")) {
+    			driveReady = false;
+    			doorUnlocked = true;
+    			repaint();
+    			disks[0].openDiskFile();
   				break;
   			}
   			
   			if(cmd.startsWith("Unload")) {
+    			driveReady = false;
+    			doorUnlocked = true;
+    			repaint();
+    			disks[0].closeDiskFile();
   				break;
   			}
   	}

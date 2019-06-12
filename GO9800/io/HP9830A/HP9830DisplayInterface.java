@@ -35,7 +35,7 @@
  * 05.09.2007 Rel. 1.20 Display-off logic reworked
  * 24.09.2007 Rel. 1.20 Changed display blanking control from fixed timer to instruction counter
  * 09.01.2009 Rel. 1.33 Changed Thread.sleep() to ioUnit.wait() for SRQ notification 
- * 22.04.2009 Rel. 1.41 Changed display timing to use ioUnitister.time_xx() and use only one wait() per complete scan
+ * 22.04.2009 Rel. 1.41 Changed display timing to use ioUnit.time_xx() and use only one wait() per complete scan
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 
@@ -132,10 +132,11 @@ public class HP9830DisplayInterface extends IOinterface implements DisplayInterf
          * This is used by WAIT statement and also reduces host CPU load.
          * Do this only if no SRQ occured during the display phase,
          * otherwise timing critical SRQs may be lost (esp. from HP9860A).
+         * And do this only if real CPU speed is diabled.
          */
 
         try {
-          if(pos == 15 && !ioUnit.dispSRQ) {
+          if(!mainframe.realSpeed && pos == 15 && !ioUnit.dispSRQ) {
             ioUnit.wait(13);
           } else
             Thread.yield();

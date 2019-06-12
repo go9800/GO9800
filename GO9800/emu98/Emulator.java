@@ -85,9 +85,6 @@ public class Emulator implements Runnable
   DataInputStream asmFile;
   Register register;
 
-  public long minExecTime, maxExecTime, sumExecTime, numOps, t;
-  public boolean measure = false;
-
   int timerValue = 0;
   boolean disassemble;
   boolean dumpRegisters, dumpFPregisters;
@@ -142,18 +139,6 @@ public class Emulator implements Runnable
   public void setConsole(Console console)
   {
     this.console = console;
-  }
-
-  public void startMeasure()
-  {
-    minExecTime = 100000000000L; 
-    maxExecTime = sumExecTime = numOps = t = 0;
-    measure = true;
-  }
-
-  public void stopMeasure()
-  {
-    measure = false;
   }
 
   public char asciiChar(char c)
@@ -717,6 +702,7 @@ public class Emulator implements Runnable
   public void run()
   {
     int address;
+    long runTime;  // instruction run time in nanoseconds
 
     // wait for all peripheral devices to be initialized asynchronously
     try {
@@ -726,6 +712,10 @@ public class Emulator implements Runnable
 
     System.out.println("HP9800 Emulator started.");
     console.append("HP9800 CPU Initialization\n");
+    
+    // initialize instruction timing
+    cpu.cycles = 0;
+    runTime = System.nanoTime();
 
     while(running) {
       // reset machine
@@ -743,24 +733,6 @@ public class Emulator implements Runnable
       // micro-address counter at position 0616 (next instruction)? 
       if(cpu.PC != 0x6e)
         continue; // no, execute next micro-instruction
-
-      if(measure && t != 0) {
-        // opcode execution time
-        t = System.nanoTime() - t;
-
-        if(t < 1000000) {
-          if(t < minExecTime)
-            minExecTime = t;
-
-          if(t > maxExecTime)
-            maxExecTime = t;
-
-          sumExecTime += t;
-          numOps++;
-        }
-      }
-
-      // yes, execute ASM-level disassembly etc.
 
       // dump FP registers from previous FP operation
       if(Memory.trace && FPop) {
@@ -815,11 +787,17 @@ public class Emulator implements Runnable
       // decrement instruction counter for display blanking and key release
       mainframe.ioUnit.instructionCounter();
 
-      // measure opcode execution time
-      if(measure)
-        t = System.nanoTime();
-
       cpu.setDecode((disassemble || Memory.trace) && dumpMicroCode);
+      
+      if(mainframe.realSpeed) {
+      	// delay for (positive) difference between original hardware time (1 cycle time = 125ns) and actual run time
+      	while(cpu.cycles * 125 - (System.nanoTime() - runTime) > 0)
+      		Thread.yield();
+      }
+      
+      // reset instruction timing
+      cpu.cycles = 0;
+      runTime = System.nanoTime();
     }
   }
 }

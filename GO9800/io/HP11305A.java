@@ -182,10 +182,10 @@ public class HP11305A extends IOdevice implements ActionListener
 			viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
 			menuBar.add(viewMenu);
 
-			JMenu deviceMenu = new JMenu("Drives");
+			JMenu deviceMenu = new JMenu("Drive");
 			deviceMenu.add(makeMenuItem("HP9867B"));
 			deviceMenu.addSeparator();
-			deviceMenu.add(makeMenuItem("Unload Device", KeyEvent.VK_DELETE, 0));
+			deviceMenu.add(makeMenuItem("Unload", KeyEvent.VK_DELETE, 0));
 			menuBar.add(deviceMenu);
 		}
 

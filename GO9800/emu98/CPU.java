@@ -47,6 +47,7 @@ public class CPU
 
   Console console;
   Vector<StringBuffer> printBuffer;
+  public long instructions, cycles; // sum of all executed micro instructions and clock cycles 
   boolean decode = false;
   
   // Connection to Mainframe
@@ -121,6 +122,9 @@ public class CPU
     int ac;
     int code, i;
     StringBuffer line;
+    
+    // initialize timing counters
+    instructions = cycles = 0;
 
     // connect CPU to mainframe and memory
     mainframe = hp9800Mainframe;
@@ -465,6 +469,8 @@ public class CPU
     
     // number of shift cycles is CYCLE+1
     clock = instr.CYCLE;
+    cycles += clock + 1;  // sum cycles for real timing (IQN doesn't reduce cycle count!)
+    instructions++;  // count executed micro instructions
 
     // inhibit shifting if I/O operation (don't inhibit in SRA)
     if(instr.RC == IOS)

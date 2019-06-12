@@ -137,11 +137,12 @@ public class HP9820DisplayInterface extends IOinterface implements DisplayInterf
          * This also reduces host CPU load.
          * Do this only if no SRQ occured during the display phase,
          * otherwise timing critical SRQs may be lost (esp. from HP9860A).
+         * And do this only if real CPU speed is diabled.
          */
 
         if(col == 4) {
           try {
-            if(chr == 15 && !ioUnit.dispSRQ) {
+            if(!mainframe.realSpeed && chr == 15 && !ioUnit.dispSRQ) {
               ioUnit.wait(14);
             } else
               Thread.yield();

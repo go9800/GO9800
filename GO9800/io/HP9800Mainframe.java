@@ -155,6 +155,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public boolean showKeycode = false;
   public PrinterJob printJob;
   public PageFormat pageFormat;
+  public boolean realSpeed = false;
 
   public HP9800Mainframe(Emulator emu, String machine) 
   {
@@ -410,12 +411,15 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
 
       // wait 4*8ms for exact printer timing
       // considering run-rime for painting the output
-      time = ioUnit.time_32ms - (System.nanoTime() - time) / 1000000;
-      if(time < 0) time = 0;
-      
-      try {
-        Thread.sleep(soundController.isEnabled()? time : 0);
-      } catch(InterruptedException e) { }
+      // Do this only if real CPU speed is disabled
+      if(!realSpeed) {
+      	time = ioUnit.time_32ms - (System.nanoTime() - time) / 1000000;
+      	if(time < 0) time = 0;
+
+      	try {
+      		Thread.sleep(soundController.isEnabled()? time : 0);
+      	} catch(InterruptedException e) { }
+      }
     }
   }
   
