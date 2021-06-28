@@ -264,6 +264,26 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
     	setSize(normalSize);
   }
   
+  // set double standard size of HP9800Mainframe panel
+  public void setDoubleSize()
+  {
+  	Dimension doubleSize;
+  	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+  	
+    // fixed aspect ratio of keyboard
+    aspectRatio = (double)NORMAL_W / (double)NORMAL_H;
+
+    // set panel to standard size
+    doubleSize = new Dimension(2 * NORMAL_W + getInsets().left + getInsets().right, 2 * NORMAL_H + getInsets().top + getInsets().bottom);
+    setPreferredSize(doubleSize);
+    
+    // check if doubleSize fits in screenSize
+    if(doubleSize.getHeight() > screenSize.getHeight())
+    	setSize(screenSize); // resize to screen on smaller devices
+    else
+    	setSize(doubleSize);
+  }
+  
   public void setRealSize()
   {
     double pixels = REAL_W * Toolkit.getDefaultToolkit().getScreenResolution();
@@ -367,6 +387,15 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   
   public void display(Graphics2D g2d, int reg, int i)
   {}
+
+  public void showInstructions()
+  {
+    MemoryBlock romBlock = (MemoryBlock)config.memoryBlocks.get("Block0");
+    if(romBlock != null) {
+      instructionsWindow.setROMblock(romBlock);
+      instructionsWindow.showInstructions();
+    }
+  }
 
   public void initializeBuffer()
   {

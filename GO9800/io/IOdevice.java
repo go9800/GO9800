@@ -188,6 +188,25 @@ public class IOdevice extends JPanel implements KeyListener, MouseListener
       setSize(normalSize);
   }
 
+  public void setDoubleSize()
+  {
+  	Dimension doubleSize;
+  	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+  	
+    // fixed aspect ratio of keyboard
+    aspectRatio = (double)NORMAL_W / (double)NORMAL_H;
+
+    // set panel to standard size
+    doubleSize = new Dimension(2 * NORMAL_W + getInsets().left + getInsets().right, 2 * NORMAL_H + getInsets().top + getInsets().bottom);
+    setPreferredSize(doubleSize);
+    
+    // check if doubleSize fits in screenSize
+    if(doubleSize.getHeight() > screenSize.getHeight())
+    	setSize(screenSize); // resize to screen on smaller devices
+    else
+    	setSize(doubleSize);
+  }
+  
   public void setRealSize(double width, double height)
   {
     setSize((int)(width * Toolkit.getDefaultToolkit().getScreenResolution()), (int)(height * Toolkit.getDefaultToolkit().getScreenResolution()));

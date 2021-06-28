@@ -229,6 +229,7 @@ public class HP9866B extends IOdevice implements Printable, ActionListener
 
 			JMenu viewMenu = new JMenu("View");
       viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Double Size", KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
       viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
       viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
       viewMenu.addSeparator();
@@ -298,6 +299,8 @@ public class HP9866B extends IOdevice implements Printable, ActionListener
 			close();
 		} else if(cmd.startsWith("Normal Size")) {
 			setNormalSize();
+    } else if(cmd.startsWith("Double Size")) {
+      setDoubleSize();
 		} else if(cmd.startsWith("Real Size")) {
 			setRealSize(REAL_W, REAL_H);
 		} else if(cmd.startsWith("Hide Menu")) {
@@ -384,6 +387,11 @@ public class HP9866B extends IOdevice implements Printable, ActionListener
 				if(event.isControlDown())
 					setNormalSize();
 				break;
+
+      case 'O':
+        if(event.isControlDown())
+          setDoubleSize();
+        break;
 
 			case 'P':
 			case KeyEvent.VK_INSERT:

@@ -162,7 +162,7 @@ public class HP9810AMainframe extends HP9800Mainframe
     romSelector.addRomButton("media/HP9810A/HP11266A_Module.png", "HP11266A");
     romSelector.addRomButton("media/HP9810A/HP11267A_Module.png", "HP11267A");
 
-    keyboardImageMedia = new ImageMedia("media/HP9810A/HP9810A_Keyboard.png", imageController);
+    keyboardImageMedia = new ImageMedia("media/HP9810A/HP9810A_Keyboard_50yr.png", imageController);
     displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display.png", imageController);
     blockImageMedia = new ImageMedia("media/HP9810A/HP9810A_Module.png", imageController);
 
@@ -520,12 +520,15 @@ public class HP9810AMainframe extends HP9800Mainframe
   		// enable antialiasing for higher quality of line graphics
   		g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
 
-      /* Stroking to simulate single LED dots is not really useful
-      float[] dashArray = {0.9f, 0.1f};
-      BasicStroke stroke = new BasicStroke(1, 0, 0, 1, dashArray, 0);
-      g2d.setStroke(stroke);
-      */
-      
+      // Stroking to simulate single LED dots only if size is sufficiently big to make a meaningful effect
+      Stroke prevStroke = g2d.getStroke();
+      if(widthScale > 1.75) {
+        g2d.setColor(new Color(255, 150, 80));
+      	float[] dashArray = {0.8f, 0.2f};
+      	BasicStroke stroke = new BasicStroke(1, 0, 0, 1, dashArray, 0);
+      	g2d.setStroke(stroke);
+      }
+
       // segment a
       if((segments & 0x40) != 0) {
         g2d.drawLine(x+3, y, x1+1, y);
@@ -561,6 +564,9 @@ public class HP9810AMainframe extends HP9800Mainframe
         g2d.drawLine(x+2, y1, x1, y1);
       }
 
+      if(widthScale > 1.75)
+      	g2d.setStroke(prevStroke);
+      
       // segment p
       if((segments & 0x01) != 0) {
         g2d.drawLine(x1+2, y2, x1+2, y2);

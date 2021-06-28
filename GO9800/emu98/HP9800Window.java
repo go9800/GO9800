@@ -105,9 +105,11 @@ public class HP9800Window extends JFrame implements ActionListener
 
     JMenu viewMenu = new JMenu("View");
     viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+    viewMenu.add(makeMenuItem("Double Size", KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
     viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
     viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
     viewMenu.addSeparator();
+    viewMenu.add(makeMenuItem("Instructions", KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK));
     viewMenu.add(keyMapItem = makeCheckBoxMenuItem("Key Map", KeyEvent.VK_K, KeyEvent.CTRL_DOWN_MASK));
     viewMenu.add(consoleItem = makeCheckBoxMenuItem("Console", KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
     viewMenu.add(hp2116PanelItem = makeCheckBoxMenuItem("HP2116 Panel", KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
@@ -236,11 +238,15 @@ public class HP9800Window extends JFrame implements ActionListener
       menuBar.setVisible(false);
     } else if(cmd.startsWith("Normal Size")) {
       mainframe.setNormalSize();
+    } else if(cmd.startsWith("Double Size")) {
+      mainframe.setDoubleSize();
     } else if(cmd.startsWith("Real Size")) {
       mainframe.setRealSize();
     } else if(cmd.startsWith("Key Map")) {
       keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
       mainframe.repaint();
+    } else if(cmd.startsWith("Instructions")) {
+      mainframe.showInstructions();
     } else if(cmd.startsWith("Console")) {
       console.setVisible(!console.isVisible());
       consoleItem.setSelected(console.isVisible());
@@ -383,7 +389,11 @@ public class HP9800Window extends JFrame implements ActionListener
           case 'F':
             fanSoundItem.setSelected(mainframe.fanSound.toggle());
             break;
-
+            
+          case 'I':
+            mainframe.showInstructions();
+            break;
+            
           case 'K':
             keyMapItem.setSelected(mainframe.showKeycode = !mainframe.showKeycode);
             mainframe.repaint();
@@ -395,6 +405,10 @@ public class HP9800Window extends JFrame implements ActionListener
 
           case 'N':
             mainframe.setNormalSize();
+            break;
+
+          case 'O':
+            mainframe.setDoubleSize();
             break;
 
           case 'P':

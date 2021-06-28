@@ -45,6 +45,8 @@
 package emu98;
 
 import java.lang.reflect.Constructor;
+import java.util.Locale;
+
 import io.*;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -243,12 +245,12 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 			} catch (InterruptedException e) {}
     	
     	// set scrollbar to lowest position
-    	
+    	/* causes an issue with painting of the calculator window on startup
     	if(update) {
     		scrollPane.getVerticalScrollBar().setValue(100000000);
     		update = false;
     	}
-    	
+    	*/
     }
 	}
 }
@@ -267,6 +269,8 @@ public class GO9800
       System.exit(1);
     }
     
+    // Locale.setDefault(Locale.ENGLISH); // for documentation screenshots only
+    
     GO9800Window go9800 = new GO9800Window();
     
     for(int i = 0; i < args.length; i++) {
@@ -280,7 +284,10 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.3 Jun 12 2019, Copyright (C) 2006-2019 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.50 May 27 2021, Copyright (C) 2006-2021 Achim Buerger\n");
+    System.out.println("  **************************************");
+    System.out.println("  ** HP9810A 50th Anniversary Edition **");
+    System.out.println("  **************************************\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to redistribute it under certain conditions.\n");
     System.out.println("GO9800 is in no way associated with the Hewlett Packard Company or its subsidiaries.");

@@ -178,6 +178,7 @@ public class HP11305A extends IOdevice implements ActionListener
 
 			JMenu viewMenu = new JMenu("View");
 			viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+			viewMenu.add(makeMenuItem("Double Size", KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
 			viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
 			viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
 			menuBar.add(viewMenu);
@@ -263,6 +264,11 @@ public class HP11305A extends IOdevice implements ActionListener
 					setNormalSize();
 					break;
 				}
+
+  			if(cmd.startsWith("Double Size")) {
+  				setDoubleSize();
+  				break;
+  			}
 
 				if(cmd.startsWith("Real Size")) {
 					setRealSize(REAL_W, REAL_H);
@@ -360,6 +366,11 @@ public class HP11305A extends IOdevice implements ActionListener
 				if(event.isControlDown())
 					setNormalSize();
 				break;
+
+      case 'O':
+        if(event.isControlDown())
+          setDoubleSize();
+        break;
 
 			case 'R':
 				if(event.isControlDown())

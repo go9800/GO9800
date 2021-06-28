@@ -98,6 +98,7 @@ public class HP9868A extends IOdevice implements ActionListener
 
       JMenu viewMenu = new JMenu("View");
       viewMenu.add(makeMenuItem("Normal Size", KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+      viewMenu.add(makeMenuItem("Double Size", KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
       viewMenu.add(makeMenuItem("Real Size", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK));
       viewMenu.add(makeMenuItem("Hide Menu", KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
       menuBar.add(viewMenu);
@@ -110,6 +111,7 @@ public class HP9868A extends IOdevice implements ActionListener
       deviceMenu.add(selectCodeMenu("HP9866A", 0, 9));
       deviceMenu.add(selectCodeMenu("HP9866B", 0, 9));
       deviceMenu.add(selectCodeMenu("HP9880B", 11, 11));
+      deviceMenu.add(selectCodeMenu("HP11202A", 1, 9));
       deviceMenu.addSeparator();
       deviceMenu.add(makeMenuItem("Unload Device", KeyEvent.VK_DELETE, 0));
       menuBar.add(deviceMenu);
@@ -187,6 +189,11 @@ public class HP9868A extends IOdevice implements ActionListener
   				break;
   			}
   			
+  			if(cmd.startsWith("Double Size")) {
+  				setDoubleSize();
+  				break;
+  			}
+
   			if(cmd.startsWith("Real Size")) {
   				setRealSize(REAL_W, REAL_H);
   				break;
@@ -219,9 +226,11 @@ public class HP9868A extends IOdevice implements ActionListener
 
   						device = ioInterface.mainframe.config.loadDevice(dev, selectCode);
   						if(device != null) {
-  							device.deviceWindow.setVisible(true);
-  							device.deviceWindow.setState(JFrame.NORMAL);
-  							device.setNormalSize();
+  							if(device.deviceWindow != null) {
+  								device.deviceWindow.setVisible(true);
+  								device.deviceWindow.setState(JFrame.NORMAL);
+  								device.setNormalSize();
+  							}
 
   							interfaceSlots[selectedSlot] = device.ioInterface;
   							selectedSlot = 0;
@@ -295,6 +304,11 @@ public class HP9868A extends IOdevice implements ActionListener
       case 'N':
         if(event.isControlDown())
           setNormalSize();
+        break;
+
+      case 'O':
+        if(event.isControlDown())
+          setDoubleSize();
         break;
 
       case 'R':

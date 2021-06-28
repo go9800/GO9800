@@ -28,6 +28,7 @@
  * 10.01.2009 Rel. 1.33 Added speed toggle
  * 03.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 25.05.2021 Rel. 2.31: Add zero (0) data to input() method as the device has no output data
 */
 
 package io;
@@ -85,6 +86,7 @@ public class HP9866Interface extends IOinterface
       
       // put status on IO bus (1=ready)
       ioUnit.bus.setStatus(status);
+      ioUnit.bus.setData(0); // there are no input data
       return(ioUnit.CEO); // hold CEO
     }
   }
@@ -100,7 +102,7 @@ public class HP9866Interface extends IOinterface
       status = hp9866.output(ioUnit.getStatus(), ioUnit.getData());
       // restart timer for printer status
       timerValue = highSpeed? 0 : timerValue;
-      devThread.interrupt();
+      devThread.interrupt(); // trigger run() method
 
       if(status == 0) {
         delay = true;

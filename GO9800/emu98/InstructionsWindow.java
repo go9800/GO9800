@@ -26,6 +26,7 @@ package emu98;
 
 import javax.swing.JPanel;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -37,7 +38,6 @@ import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import java.awt.Dimension;
 import java.awt.Color;
-import java.awt.event.KeyEvent;
 import java.awt.SystemColor;
 
 public class InstructionsWindow extends JDialog implements ActionListener
@@ -102,6 +102,16 @@ public class InstructionsWindow extends JDialog implements ActionListener
       instructionsScrollPane.setViewportView(instructionsButton);
     }
     return instructionsScrollPane;
+  }
+
+  public void update(Graphics g)
+  {
+    paint(g);
+  }
+  
+  public void paint(Graphics g)
+  {
+  	showInstructions();
   }
 
   public void showInstructions()
