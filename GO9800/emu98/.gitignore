@@ -72,3 +72,9 @@
 /DeviceWindow.class
 /DeviceWindow$windowListener.class
 /DeviceWindow$componentListener.class
+/Register$IRegister.class
+/Register$QRegister.class
+/JNAtest.class
+/Csqrt.class
+/Cmath.class
+/CMath.class

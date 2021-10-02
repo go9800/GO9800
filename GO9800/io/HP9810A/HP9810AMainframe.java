@@ -162,7 +162,7 @@ public class HP9810AMainframe extends HP9800Mainframe
     romSelector.addRomButton("media/HP9810A/HP11266A_Module.png", "HP11266A");
     romSelector.addRomButton("media/HP9810A/HP11267A_Module.png", "HP11267A");
 
-    keyboardImageMedia = new ImageMedia("media/HP9810A/HP9810A_Keyboard_50yr.png", imageController);
+    keyboardImageMedia = new ImageMedia("media/HP9810A/HP9810A_Keyboard.png", imageController);
     displayImageMedia = new ImageMedia("media/HP9810A/HP9810A_Display.png", imageController);
     blockImageMedia = new ImageMedia("media/HP9810A/HP9810A_Module.png", imageController);
 

@@ -23,6 +23,7 @@
  * 03.04.2010 Rel. 1.50 Inheritance from IOinterface and initialization completely reworked
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  * 25.05.2021 Rel. 2.31: Add zero (0) data to input() method as the device has no output data
+ * 10.07.2021 Rel. 2.51: Remove zero (0) data from input() method again, as it leads to complete malfunction of the card reader
  */
 
 package io;
@@ -77,7 +78,7 @@ public class HP11201A extends IOinterface
     synchronized(ioUnit) {
       // put status on IO bus (8=EOL)
       ioUnit.bus.setStatus(status);
-      ioUnit.bus.setData(0); // there are no input data
+      //ioUnit.bus.setData(0); // must not be set, otherwise MCR malfunctions
       return(ioUnit.CEO); // hold CEO
     }
   }

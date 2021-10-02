@@ -4,7 +4,7 @@
 
 Changes in Release 2.50
 =======================
-Bugfixs and UI improvements
+Bugfixes and UI improvements
 New: HP9810A 50th anniversary celebration logo and historical block diagram of 5/27/1971 as part of HP9810A instructions
 New: All devices have a menu item for display in double size
 Change: Automatic scrolling of emulator main window disabled due to side effects

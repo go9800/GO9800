@@ -32,9 +32,10 @@ package emu98;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Vector;
+import java.util.*;
 
 import io.HP9800Mainframe;
+
 
 public class CPU
 {
@@ -115,6 +116,7 @@ public class CPU
 
   // micro code storage, each instruction has 28 bits
   int[] microCode_ROM;
+
 
   public CPU(HP9800Mainframe hp9800Mainframe)
   {
@@ -741,9 +743,9 @@ public class CPU
   // Power On Preset
   public void POP()
   {
-    PC = 0b1111_1111;
-    cleanSources();
-    ioUnit.POP();
+    PC = 0b1111_1111;  // set microcode start address
+    cleanSources();  // initialize shift registers and buses
+    ioUnit.POP();  // initialize IO unit
   }
 
   // set binary carry (used by /O-Instructions SFS and SFC to increment P-register by 2)

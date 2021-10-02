@@ -23,7 +23,6 @@
  * 25.10.2016 Rel. 2.03: fixed ALU operation in shift cycle
  * 24.10.2017 Rel. 2.10: Added method closeAllDevices() for forced closing of IOdevices
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
- * 25.05.2021 Rel. 2.30: fixed issue with input from not existing select codes
 */
 
 package emu98;
@@ -151,8 +150,8 @@ public class IOunit
   // Power On Preset
   public void POP()
   {
-  	QRD = SIH = PEN = CEO = false;
-  	SSI = 0;
+  	QRD = SIH = PEN = CEO = false;  // clear flags
+  	SSI = 0;  // clear Service Strobe Input
   }
 
   // hardware emulation of the HP9800 I/O-unit
@@ -322,9 +321,8 @@ public class IOunit
           if(device != null)
             device.input();
           else {
-            //if(line10_20)  // there should be no difference between 9810 and 9820/30, both have pull-up resistors
-            	// Open input lines are negative true and pulled up to Vcc, so effectively logical zero
-              bus.din &= 0xf000;  // this was previously incorrect "bus.din |= 0x0f00" and lead to wrong behaviour, e.g. with RBYTE(2).
+            if(line10_20)
+              bus.din |= 0x0f00;
           }
         }
 
