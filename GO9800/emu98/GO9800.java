@@ -284,7 +284,7 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.50.1 July 10 2021, Copyright (C) 2006-2021 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.50.2 Oct 05, 2021. Copyright (C) 2006-2021 Achim Buerger\n");
     System.out.println("  **************************************");
     System.out.println("  ** HP9810A 50th Anniversary Edition **");
     System.out.println("  **************************************\n");
