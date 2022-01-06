@@ -33,6 +33,7 @@ import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.awt.image.RescaleOp;
 import java.io.IOException;
 import java.io.InputStream;
@@ -161,6 +162,10 @@ public class ImageMedia extends JComponent
         
         if(controller != null)
         	controller.add(processedImage);
+        
+        // dispose buffer
+  			bufferedImage.flush();
+  			bufferedGraphics.dispose();
   		}
   	}
   	

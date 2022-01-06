@@ -204,6 +204,9 @@ public class MemoryBlock
     if(instructionsVector.size() == 0)
       return(null);
     
+    // close previous image media and release resources
+    closeInstructions();
+    
     String fileName = "media/" + machineName + "/" + (String)instructionsVector.elementAt(instrIndex);
     instructionsImageMedia = new ImageMedia(fileName, imageController);
     
@@ -216,6 +219,13 @@ public class MemoryBlock
     width = (instructionsImageMedia.getImage().getWidth(null) * height) / instructionsImageMedia.getImage().getHeight(null);
 
     return(instructionsImageMedia.getScaledImage(width, height));
+  }
+  
+  public void closeInstructions()
+  {
+    if(instructionsImageMedia != null) {
+    	instructionsImageMedia.close();
+    }
   }
   
   public int getAddress()

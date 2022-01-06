@@ -56,6 +56,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.*;
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.Platform;
 
 
 class GO9800Window extends JDialog implements ActionListener, Runnable
@@ -284,17 +288,40 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.50.2 Oct 05, 2021. Copyright (C) 2006-2021 Achim Buerger\n");
-    System.out.println("  **************************************");
-    System.out.println("  ** HP9810A 50th Anniversary Edition **");
-    System.out.println("  **************************************\n");
+    System.out.println("HP Series 9800 Emulator Release 2.50.3 Jan 05, 2022. Copyright (C) 2006-2022 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to redistribute it under certain conditions.\n");
     System.out.println("GO9800 is in no way associated with the Hewlett Packard Company or its subsidiaries.");
     System.out.println("Hewlett-Packard, HP, and the HP logos are all trademarks of the Hewlett Packard Company.");
     System.out.println("Original software and firmware is used with permission of the Hewlett Packard Company.");
     System.out.println("This software is intended solely for research and education purposes.\n\n");
+    /*
+    JNAtest lib = Native.loadLibrary("libJNAtest", JNAtest.class);
+
+    Pointer array = new Pointer(lib.test_init());
+    lib.test_set();
     
+    int val;
+    
+    for(int i = 0; i < 10; i++)
+    {
+    	val = array.getInt(4L * i);
+    	System.out.println(val);
+    }
+    
+    for(int i = 0; i < 10; i++)
+    {
+    	array.setInt(4L * i, 2*i);
+    }
+    
+    for(int i = 0; i < 10; i++)
+    {
+    	val = array.getInt(4L * i);
+    	System.out.println(val);
+    }
+    */
+    
+
     if(go9800.machine != "") {
     	new Thread(go9800, go9800.machine).start();
     }

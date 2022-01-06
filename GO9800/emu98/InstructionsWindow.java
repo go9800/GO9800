@@ -47,11 +47,13 @@ public class InstructionsWindow extends JDialog implements ActionListener
   private JScrollPane instructionsScrollPane = null;
   private JButton instructionsButton = null;
   private MemoryBlock romBlock;  //  @jve:decl-index=0:
-  
+
+
   public InstructionsWindow(Frame owner)
   {
     super(owner);
     initialize();
+    addWindowListener(new windowListener());
   }
 
   /**
@@ -149,4 +151,12 @@ public class InstructionsWindow extends JDialog implements ActionListener
       }
     }
   }
+
+	class windowListener extends WindowAdapter
+	{
+	  public void windowClosing(WindowEvent event)
+	  {
+	    romBlock.closeInstructions();
+	  }
+	}
 }
