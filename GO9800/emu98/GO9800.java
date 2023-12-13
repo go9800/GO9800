@@ -61,7 +61,6 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Platform;
 
-
 class GO9800Window extends JDialog implements ActionListener, Runnable
 {
 	private static final long serialVersionUID = 1L;
@@ -288,7 +287,7 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.50.3 Jan 05, 2022. Copyright (C) 2006-2022 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.50.4 Jan 21, 2023. Copyright (C) 2006-2023 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to redistribute it under certain conditions.\n");
     System.out.println("GO9800 is in no way associated with the Hewlett Packard Company or its subsidiaries.");

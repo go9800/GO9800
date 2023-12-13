@@ -158,11 +158,11 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
     int x, y;
     int i, actual = value;
 
-    y = 62 * pos + 71;
+    y = 62 * pos + 76;
 
     for(i = 0; i < 16; i++) {
       //if((value & 1) != (previous & 1)) {
-      x = 833 - 39 * i - 17 * (i / 3);
+      x = 837 - 39 * i - 17 * (i / 3);
       if((value & 1) == 0)
         g.setColor(lampOff);
       else

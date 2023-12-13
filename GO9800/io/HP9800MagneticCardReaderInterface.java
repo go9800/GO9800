@@ -256,7 +256,7 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
       }
     }
     
-    // copy hex coded input file to binary output file
+    // copy hex coded input file to binary output file from card dump from real machine via 11202 to PC
     // input values are 6bit words 
     if(fileName.endsWith(".hex")) {
       RandomAccessFile outFile;
@@ -293,6 +293,49 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
         
         try{
           cardFile = new RandomAccessFile(outFileName, mode);
+        } catch (FileNotFoundException e) {
+          if(mode.equals("r")) {
+            System.err.println(e.toString());
+            return(false);
+          }
+
+          mode = "r";
+        }
+      } catch (IOException e) {
+        // nothing  
+      }
+    }
+
+    // copy binary input file to hex coded output file for card restore from PC via 11202 to real machine
+    // output values are 6bit words 
+    if(fileName.endsWith(".bin")) {
+      RandomAccessFile outFile;
+      int value;
+
+      String outFileName = fileName + ".hex";
+      try {
+        outFile = new RandomAccessFile(outFileName, "rw");
+      } catch (FileNotFoundException e) {
+        System.err.println(e.toString());
+        return(false);
+      }
+
+      try {
+      	try {
+      		// write file body
+      		while(true) {
+      			value = (cardFile.readByte()) | (cardFile.readByte() << 3);
+      			outFile.writeBytes(Integer.toHexString(value) + "\n");
+      		}
+      	} catch (EOFException e) {
+          // nothing  
+        }
+
+        cardFile.close();
+        outFile.close();
+        
+        try{
+          cardFile = new RandomAccessFile(fileName, mode);
         } catch (FileNotFoundException e) {
           if(mode.equals("r")) {
             System.err.println(e.toString());

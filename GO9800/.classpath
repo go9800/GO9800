@@ -5,7 +5,11 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="9800 Emulator"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Program Files/eclipse 2018/plugins/com.sun.jna_4.5.1.v20190425-1842.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/achim/eclipse/java-2023-12/eclipse/plugins/com.sun.jna_5.8.0.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>

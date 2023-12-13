@@ -61,6 +61,7 @@ package io.HP9810A;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+//import javax.media.jai.PerspectiveTransform;
 
 import io.*;
 import emu98.*;
@@ -81,6 +82,12 @@ public class HP9810AMainframe extends HP9800Mainframe
       {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0777, -1, -1, -1, -1},
   };
 
+  static final double[][] HP11265transMatrix = {
+  		{0.993, -0.007,  3.772},
+  		{0.002,  0.993, -0.012},
+  		{0.000,  0.000,  1.000}
+  };
+  
   // the following constants are used in HP9810A only
   
   // ROM template size
@@ -276,6 +283,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   public void paint(Graphics g)
   {
   	AffineTransform g2dSaveTransform;
+//  	PerspectiveTransform trapezoidTransform = new PerspectiveTransform(HP11265transMatrix);
   	Image moduleImage;
   	int i, j;
   	int x = 0, y = 0; // positioning is done by g2d.translate()
@@ -327,7 +335,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   	if(block != null) {
   		// draw universal ROM module
   		moduleImage = block.getUniModule((int)(MODULE_W * widthScale), (int)(MODULE_H * heightScale));  // get scaled image
-
+  		
   		if(moduleImage != null) {
   			g2d.shear(BLOCK2_S, 0.);  // negative horizontal shear for correct perspective
   			g2d.drawImage(blockImage, x + BLOCK2_X, y + BLOCK2_Y, BLOCK_W, BLOCK_H, this);  // draw dummy module
@@ -337,8 +345,10 @@ public class HP9810AMainframe extends HP9800Mainframe
   			g2d.drawImage(moduleImage, x + BLOCK2_X + 1, y + BLOCK2_Y + 1, MODULE_W, MODULE_H, this);
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
   			
+  			// load Cassette Memory keyboard template for matching ROM block
   			if(block.getTitle().indexOf("CASSETTE_MEMORY") >= 0) {
     			// draw ROM template with transparence
+//  				trapezoidTransform.transform...):
     			templateImage = block.getUniTemplate((int)(TEMPLATE2_W * widthScale), (int)(TEMPLATE2_H * heightScale));  // first get scaled image
     			templateImage = block.getUniTemplate(1f, 50f);  // then get processed image, based on scaled image
     			g2d.drawImage(templateImage, x + TEMPLATE2_X, y + TEMPLATE2_Y, TEMPLATE2_W, TEMPLATE2_H, this);

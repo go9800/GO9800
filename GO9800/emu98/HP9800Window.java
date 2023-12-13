@@ -310,6 +310,12 @@ public class HP9800Window extends JFrame implements ActionListener
 
   class WindowListener extends WindowAdapter
   {
+  	public void windowActivated(WindowEvent event) {
+  		// check if utility windows have been closed
+      hp2116PanelItem.setSelected(hp2116panel.isVisible());
+      consoleItem.setSelected(console.isVisible());
+  	}
+  	
     public void windowClosing(WindowEvent event)
     {
       exit();

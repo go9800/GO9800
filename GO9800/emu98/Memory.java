@@ -93,7 +93,7 @@ public class Memory
   public int getValue()
   {
     doWatchPoint();
-    return(value);
+  	return(value);
   }
   
   public int fetchOpcode()
