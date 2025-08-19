@@ -23,8 +23,9 @@
  * 03.11.2008 Rel. 1.31 Bugfix: avoid null-pointer exception in paint for empty ROM slot 
  * 18.03.2009 Rel. 1.40 Added display of InstructionsWindow with right mouse click on ROM block
  * 22.03.2009 Rel. 1.40 Bugfix: call blockImage.getHeight(this) not blockImage.getHeight(null) to avoid incomplete drawing
- * 31.10.2011 Rel. 1.50 Added ROM block HP11296B (DATA COMM I), Infotek FAST BASIC IV
+ * 31.10.2011 Rel. 1.50 Added ROM block HP11296B (DATA COMM. 1), Infotek FAST BASIC IV
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 30.07.2024 Rel. 2.51: Added ROM blocks HP11297B (DATA COMM. 2), HP11298B (DATA COMM. 3)
  */
 
 package io.HP9830A;
@@ -79,6 +80,8 @@ public class HP9830ROMslots extends JFrame
     romSelector.addRomButton("media/HP9830A/HP11283B_Module.png", "HP11283B");
     romSelector.addRomButton("media/HP9830A/HP11289B_Module.png", "HP11289B");
     romSelector.addRomButton("media/HP9830A/HP11296B_Module.png", "HP11296B");
+    romSelector.addRomButton("media/HP9830A/HP11297B_Module.png", "HP11297B");
+    romSelector.addRomButton("media/HP9830A/HP11298B_Module.png", "HP11298B");
     romSelector.addRomButton("media/HP9830A/INFOTEK_FB1_Module.png", "INFOTEK_FB1");
     //romSelector.addRomButton("media/HP9830A/INFOTEK_FB2_Module.png", "INFOTEK_FB2"); // FB2 is only allowed/functional in internal slot 0
     romSelector.addRomButton("media/HP9830A/INFOTEK_FB3_Module.png", "INFOTEK_FB3");
