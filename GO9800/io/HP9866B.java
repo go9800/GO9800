@@ -208,6 +208,7 @@ public class HP9866B extends IOdevice implements Printable, ActionListener
     // set Printable
     printJob = PrinterJob.getPrinterJob();
     printJob.setPrintable(this);
+    printJob.setJobName("HP9866B Hardcopy");
     pageFormat = printJob.defaultPage();
   }
 

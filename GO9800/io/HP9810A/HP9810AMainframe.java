@@ -395,7 +395,7 @@ public class HP9810AMainframe extends HP9800Mainframe
   		}
   	}
 
-  	displayPrintOutput(g2d);
+  	displayPrintOutput(g2d, true);
   	displayKeyMatrix(g2d);
   }
   

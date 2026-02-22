@@ -45,11 +45,11 @@ public class MemoryBlock
   private int blockStart, blockEnd, blockSize = 0;
   private boolean isRW;
   private ImageMedia moduleImageMedia = null;
-  private ImageMedia templateImageMedia = null;
+  private ImageMedia templateImageMedia[] = {null, null, null};
   private ImageMedia instructionsImageMedia = null;
   private ImageController imageController;
   private Vector<String> instructionsVector = null;
-  private int instrIndex = 0;
+  private int instrIndex = 0, imageIndex = 0;
   
   public MemoryBlock(HP9800Mainframe mainframe, String machine, String type, int address, int length, String name, String slot)
   {
@@ -121,44 +121,50 @@ public class MemoryBlock
 
     return(moduleImageMedia.getProcessedImage(factor, offset));
   }
+  
+  public void setImageIndex(int index)
+  {
+  	imageIndex = index;
+  }
 
   // get universal template graphics
   public Image getUniTemplate()
   {
-    if(templateImageMedia == null) {
-      templateImageMedia = new ImageMedia(makeFileName("_Template.png"), imageController);
+    if(templateImageMedia[imageIndex] == null) {
+      templateImageMedia[imageIndex] = new ImageMedia(makeFileName("_Template.png"), imageController);
     }
     
-    return(templateImageMedia.getImage());
+    return(templateImageMedia[imageIndex].getImage());
   }
   
   // get universal template graphics, scaled
   public Image getUniTemplate(int width, int height)
   {
-    if(templateImageMedia == null) {
-      templateImageMedia = new ImageMedia(makeFileName("_Template.png"), imageController);
+    if(templateImageMedia[imageIndex] == null) {
+      templateImageMedia[imageIndex] = new ImageMedia(makeFileName("_Template.png"), imageController);
     }
     
-    return(templateImageMedia.getScaledImage(width, height));
+    return(templateImageMedia[imageIndex].getScaledImage(width, height));
+  }
+  
+  // get universal template graphics, for alternative slot (HP11222A multiple templates) 
+  public Image getUniTemplate(int width, int height, int slot)
+  {
+    if(templateImageMedia[imageIndex] == null) {
+      templateImageMedia[imageIndex] = new ImageMedia(makeFileName("_Template_" + Integer.toString(slot) + ".png"), imageController);
+    }
+    
+    return(templateImageMedia[imageIndex].getScaledImage(width, height));
   }
   
   // get universal template graphics, processed
   public Image getUniTemplate(float factor, float offset)
   {
-    if(templateImageMedia == null) {
-      templateImageMedia = new ImageMedia(makeFileName("_Template.png"), imageController);
+    if(templateImageMedia[imageIndex] == null) {
+      templateImageMedia[imageIndex] = new ImageMedia(makeFileName("_Template.png"), imageController);
     }
     
-    return(templateImageMedia.getProcessedImage(factor, offset));
-  }
-  
-  public Image getTemplate()
-  {
-    if(templateImageMedia == null) {
-      templateImageMedia = new ImageMedia(makeFileName("_Template_" + blockSlot + ".jpg"), imageController);
-    }
-    
-    return(templateImageMedia.getImage());
+    return(templateImageMedia[imageIndex].getProcessedImage(factor, offset));
   }
   
   // get instructions page
@@ -238,9 +244,14 @@ public class MemoryBlock
     if(blockName != null) {
       // dismiss previous images, stop image threads and free all resources
     	if(moduleImageMedia != null && moduleImageMedia.getImage() != null) moduleImageMedia.getImage().flush();
-    	if(templateImageMedia != null && templateImageMedia.getImage() != null) templateImageMedia.getImage().flush();
+    	
+    	for(int i = 0; i < 3; i++) {
+    	  if(templateImageMedia[i] != null && templateImageMedia[i].getImage() != null) templateImageMedia[i].getImage().flush();
+    	  templateImageMedia[i] = null;
+    	}
+    	
     	if(instructionsImageMedia != null && instructionsImageMedia.getImage() != null) instructionsImageMedia.getImage().flush();
-      moduleImageMedia = templateImageMedia = instructionsImageMedia = null;
+      moduleImageMedia = instructionsImageMedia = null;
       instructionsVector = null;
 
       System.out.println(blockName + " unloaded.");

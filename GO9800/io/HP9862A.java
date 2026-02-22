@@ -120,6 +120,7 @@ public class HP9862A extends IOdevice implements ActionListener, Printable
     // set Printable
     printJob = PrinterJob.getPrinterJob();
     printJob.setPrintable(this);
+    printJob.setJobName("HP9862A Hardcopy");
     pageFormat = printJob.defaultPage();
   }
 

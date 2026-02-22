@@ -283,11 +283,11 @@ public class HP9800Window extends JFrame implements ActionListener
         mainframe.repaint();
       }
       else
-        mainframe.displayPrintOutput(null);
+        mainframe.displayPrintOutput(null, true);
     } else if(cmd.startsWith("Next Page")) {
       // paper page up
       if(--mainframe.page < 0) mainframe.page = 0;
-      mainframe.displayPrintOutput(null);
+      mainframe.displayPrintOutput(null, true);
     } else if(cmd.startsWith("Last Page")) {
     	mainframe.page = 0;
       mainframe.repaint();
@@ -457,7 +457,7 @@ public class HP9800Window extends JFrame implements ActionListener
           case KeyEvent.VK_PAGE_UP:
             // paper page up
             if(--mainframe.page < 0) mainframe.page = 0;
-            mainframe.displayPrintOutput(null);
+            mainframe.displayPrintOutput(null, true);
             break;
 
           case KeyEvent.VK_PAGE_DOWN:
@@ -468,7 +468,7 @@ public class HP9800Window extends JFrame implements ActionListener
               mainframe.repaint();
             }
             else
-              mainframe.displayPrintOutput(null);
+              mainframe.displayPrintOutput(null, true);
             break;
 
           case KeyEvent.VK_DELETE:

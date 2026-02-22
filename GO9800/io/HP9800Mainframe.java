@@ -136,7 +136,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   protected ImageMedia keyboardImageMedia, displayImageMedia, blockImageMedia;
   protected ImageMedia driveopenImageMedia, driveloadedImageMedia;
   protected ImageMedia ledOnImageMedia, ledOffImageMedia, ledSmallOnImageMedia, ledSmallOffImageMedia;
-	protected Image keyboardImage, displayImage, blockImage, moduleImage, templateImage, tapedriveImage;
+	protected Image keyboardImage, displayImage, blockImage, moduleImage, templateImage, templateImage2, templateImage3, tapedriveImage;
 	protected Image ledOn, ledOff;
 
   protected Color ledRed, ledBack, paperWhite, paperGray;
@@ -156,6 +156,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   public PrinterJob printJob;
   public PageFormat pageFormat;
   public boolean realSpeed = false;
+  protected long skipLines = 0;
 
   public HP9800Mainframe(Emulator emu, String machine) 
   {
@@ -228,6 +229,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
       // set Printable
       printJob = PrinterJob.getPrinterJob();
       printJob.setPrintable(this);
+      printJob.setJobName(machine + " Hardcopy");
       pageFormat = printJob.defaultPage();
 
       System.out.println("HP9800 Printer loaded.");
@@ -431,24 +433,29 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
       printBuffer.addElement(lineBuffer);
       lineBuffer = new byte[16];
 
-      displayPrintOutput(null);
-
       if(++dotLine == 10) {
         dotLine = 0;
         printing = false;
       }
 
+      // skip output in case of time delay
+      if(skipLines > 0 && printing) {
+      	skipLines--;
+      	return;
+      }
+      else
+     		displayPrintOutput(null, !printing);  // draw cover only after complete line
+
       // wait 4*8ms for exact printer timing
-      // considering run-rime for painting the output
-      // Do this only if real CPU speed is disabled
-      if(!realSpeed) {
-      	time = ioUnit.time_32ms - (System.nanoTime() - time) / 1000000;
-      	if(time < 0) time = 0;
+      // considering run-time for painting the output
+    	time = (System.nanoTime() - time) / 1000000;
+    	// if output time is greater than 32ms, skip output of next dot line(s) to catch up on delay
+    	skipLines = time / ioUnit.time_32ms;
+    	time = ioUnit.time_32ms * (1 + skipLines) - time;
 
       	try {
       		Thread.sleep(soundController.isEnabled()? time : 0);
       	} catch(InterruptedException e) { }
-      }
     }
   }
   
@@ -483,7 +490,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
       printBuffer.addElement(lineBuffer);
 
       // wait 4*8ms for exact printer timing
-      // considering run-rime for painting the output
+      // considering run-time for painting the output
       time = ioUnit.time_32ms - (System.nanoTime() - time) / 1000000;
       if(time < 0) time = 0;
       
@@ -492,7 +499,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
       } catch(InterruptedException e) { }
       
       lineBuffer = new byte[16];
-      displayPrintOutput(null);
+      displayPrintOutput(null, true);
     }
   }
   
@@ -557,7 +564,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   }
 
   
-  public void displayPrintOutput(Graphics2D g2d)
+  public void displayPrintOutput(Graphics2D g2d, boolean drawCover)
   {
     byte[] lineBuffer;
     int dotRow;
@@ -601,11 +608,12 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
       y--;
     } // for i
 
-    // draw transparent paper cover
-    x = PAPER_LEFT;
-    y = PAPER_EDGE;
-    g2d.setColor(paperGray);
-    g2d.fillRect(x, y, PAPER_WIDTH, 6);
+    if(drawCover) {  // draw transparent paper cover if required
+	    x = PAPER_LEFT;
+	    y = PAPER_EDGE;
+	    g2d.setColor(paperGray);
+	    g2d.fillRect(x, y, PAPER_WIDTH, 6);
+    }
   }
   
   public void displayKeyMatrix(Graphics2D g2d)

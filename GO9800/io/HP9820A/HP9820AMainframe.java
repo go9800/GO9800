@@ -42,9 +42,10 @@
  * 25.02.2012 Rel. 1.60 Added display of keyboard overlay in InstructionsWindow
  * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
  * 24.10.2017 Rel. 2.10 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
- * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 28.10.2017 Rel. 2.10 Added new linking between Mainframe and other components
  * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
  * 18.11.2017 Rel. 2.10 Bugfix: display(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
+ * 08.02.2026 Rel. 2.52 New: Additional templates for HP11223A User Definable ROM
  */
 
 package io.HP9820A;
@@ -275,6 +276,7 @@ public class HP9820AMainframe extends HP9800Mainframe
   	// scale keyboard image to normal size
   	keyboardImage = keyboardImageMedia.getScaledImage((int)(NORMAL_W * widthScale), (int)(NORMAL_H * heightScale));
   	backgroundImage = g2d.drawImage(keyboardImage, x, y, NORMAL_W, NORMAL_H, this);
+		templateImage2 = templateImage3 = null;
   	
     if(!backgroundImage)  // dont draw modules and templates before keyboard is ready
     	return;
@@ -309,6 +311,17 @@ public class HP9820AMainframe extends HP9800Mainframe
   			g2d.drawImage(templateImage, x + TEMPLATE1_X, y + TEMPLATE1_Y, TEMPLATE_W, TEMPLATE_H, this);
 
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  			
+  			// load additional templates for HP11222A module
+  			if(block.getTitle().indexOf("USER_DEFINABLE") >= 0) {
+  				block.setImageIndex(1);
+    			templateImage2 = block.getUniTemplate((int)(TEMPLATE_W * widthScale), (int)(TEMPLATE_H * heightScale), 2);
+    			templateImage2 = block.getUniTemplate(1f, 80f);
+  				block.setImageIndex(2);
+    			templateImage3 = block.getUniTemplate((int)(TEMPLATE_W * widthScale), (int)(TEMPLATE_H * heightScale), 3);
+    			templateImage3 = block.getUniTemplate(1f, 80f);
+  				block.setImageIndex(0);
+  			}
   		}
   	}
 
@@ -333,9 +346,31 @@ public class HP9820AMainframe extends HP9800Mainframe
   			g2d.drawImage(templateImage, x + TEMPLATE2_X, y + TEMPLATE2_Y, TEMPLATE_W, TEMPLATE_H, this);
 
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+  			
+  			// load additional templates for HP11222A module
+  			if(block.getTitle().indexOf("USER_DEFINABLE") >= 0) {
+  				block.setImageIndex(1);
+    			templateImage2 = block.getUniTemplate((int)(TEMPLATE_W * widthScale), (int)(TEMPLATE_H * heightScale), 2);
+    			templateImage2 = block.getUniTemplate(1f, 80f);
+  				block.setImageIndex(2);
+    			templateImage3 = block.getUniTemplate((int)(TEMPLATE_W * widthScale), (int)(TEMPLATE_H * heightScale), 3);
+    			templateImage3 = block.getUniTemplate(1f, 80f);
+  				block.setImageIndex(0);
+  			}
+  			
+  			templateImage3 = templateImage2;  // shift additional template 2 to 3 (if applicable)
+
+  		} else {
+  			// for empty slot, draw additional template (if applicable) 
+	  		if(templateImage2 != null) {
+	  			// draw ROM template with transparence
+	  			g2d.shear(TEMPLATE2_S, 0.);  // negative horizontal shear for correct perspective
+	  			g2d.drawImage(templateImage2, x + TEMPLATE2_X, y + TEMPLATE2_Y, TEMPLATE_W, TEMPLATE_H, this);
+	  			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+	    	}
   		}
   	}
-
+  		
   	block = (MemoryBlock)config.memoryBlocks.get("Slot3");
   	if(block != null) {
   		// draw universal ROM module
@@ -357,8 +392,15 @@ public class HP9820AMainframe extends HP9800Mainframe
   			g2d.drawImage(templateImage, x + TEMPLATE3_X, y + TEMPLATE3_Y, TEMPLATE_W, TEMPLATE_H, this);
 
   			g2d.setTransform(g2dSaveTransform);  // restore original transformation
-  		}
-  	}
+  		} else {
+    		if(templateImage3 != null) {
+    			// draw ROM template with transparence
+    			g2d.shear(TEMPLATE3_S, 0.);  // negative horizontal shear for correct perspective
+    			g2d.drawImage(templateImage3, x + TEMPLATE3_X, y + TEMPLATE3_Y, TEMPLATE_W, TEMPLATE_H, this);
+    			g2d.setTransform(g2dSaveTransform);  // restore original transformation
+    		}
+    	}
+  	} 
 
   	// draw display background area
   	g2d.setColor(ledBack);
@@ -373,7 +415,7 @@ public class HP9820AMainframe extends HP9800Mainframe
   		}
   	}
 
-  	displayPrintOutput(g2d);
+  	displayPrintOutput(g2d, true);
   	displayKeyMatrix(g2d);
   	
   	// draw internal tape status only for HP9821A
