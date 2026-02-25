@@ -121,6 +121,26 @@ class QRegister extends Register
   }
 }
 
+class DefectRegister extends Register
+{
+	public DefectRegister(String registerName, int registerWidth, int initValue)
+	{
+		super(registerName, registerWidth, initValue);
+	}
+	
+  void shift()
+  {
+  	//value |= 0b0000_0000_0000_0010;
+  	value &= 0b1111_1111_1111_1101;
+  	
+  	// shift only if enabled
+  	if(shiftEnabled) {
+  	  // shift register 1 bit right and set input bit (MSB)
+  	  value = (inputBit << width | value) >> 1;
+  	}
+  }
+}
+
 class IRegister extends Register
 {
   private boolean b8mode;

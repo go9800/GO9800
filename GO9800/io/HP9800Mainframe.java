@@ -108,7 +108,7 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
   
   public int STOP_KEYCODE = 041; // code of STOP key
   
-  // mainframe ressources used by all modules, interfaces, devices  
+  // mainframe resources used by all modules, interfaces, devices  
   public CPU cpu;
   public Memory[] memory;
   public IOunit ioUnit;
