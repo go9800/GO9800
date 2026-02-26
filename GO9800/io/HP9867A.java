@@ -134,7 +134,9 @@ public class HP9867A extends IOdevice
       deviceWindow.setLocation(220 + unit * 20, unit * 20);
       deviceWindow.setSize(hp9867Image.getWidth(this) + deviceWindow.getInsets().left + deviceWindow.getInsets().right, hp9867Image.getHeight(this) + deviceWindow.getInsets().top + deviceWindow.getInsets().bottom);
       menuBar.setVisible(false); // not yet needed
-      setNormalSize(); // necessary for non-resizable window
+
+      // set initially double size
+      setDoubleSize();
     }
   }
 

@@ -54,6 +54,7 @@ import java.io.PrintStream;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 import javax.swing.*;
 
@@ -64,12 +65,12 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
   private Configuration config;
   public String machine = "";
   public boolean debug = false;
-  boolean update = false;
+  boolean update = false, realSpeed = false;
   JScrollPane scrollPane;
 	JTextArea textArea = new JTextArea(20, 80); // TextArea for stdout
 
 	JMenuBar menuBar;
-	JCheckBoxMenuItem debugItem;
+	JCheckBoxMenuItem debugItem, speedItem;
 
 	class JTextAreaOutputStream extends OutputStream
 	{
@@ -98,6 +99,9 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		if(cmd.startsWith("Exit")) {
 			dispose();
 			System.exit(0);
+		} else if(cmd.startsWith("Real")) {
+    	realSpeed = !realSpeed;
+    	speedItem.setSelected(realSpeed);
 		} else if(cmd.startsWith("Clear")) {
 			textArea.setText(null);
     } else if(cmd.startsWith("Debug")) {
@@ -130,6 +134,8 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
 		menuBar.setMinimumSize(new Dimension(0, 23));
 		
 		JMenu runMenu = new JMenu("Run");
+    runMenu.add(speedItem = new JCheckBoxMenuItem("Real Speed")).addActionListener(this);
+    runMenu.addSeparator();
 		runMenu.add(new JMenuItem("HP9810A")).addActionListener(this);
 		runMenu.add(new JMenuItem("HP9810A2")).addActionListener(this);
 		runMenu.add(new JMenuItem("HP9820A")).addActionListener(this);
@@ -229,6 +235,8 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
     if(!config.loadKeyConfig(machine))
     	return;
 
+    // set speed and debug mode from selection in GO9800
+  	mainframe.realSpeed = realSpeed;
     mainframe.console.setDebugMode(debug);
     if(debug)
       mainframe.cpu.outputDecoderToConsole(); // transfer decoded micro code to console 
@@ -283,7 +291,7 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.52 Feb 12, 2026. Copyright (C) 2006-2026 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.52 Feb 26, 2026. Copyright (C) 2006-2026 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to redistribute it under certain conditions.\n");
     System.out.println("GO9800 is in no way associated with the Hewlett Packard Company or its subsidiaries.");

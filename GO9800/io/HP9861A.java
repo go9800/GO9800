@@ -160,8 +160,9 @@ public class HP9861A extends IOdevice implements ActionListener, Printable
         setScale(false, true);
       }
     });
-    
-    setNormalSize();
+
+    // set initially double size
+    setDoubleSize();
   }
 
   public JMenuItem makeMenuItem(String menuText)

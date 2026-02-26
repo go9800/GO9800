@@ -258,7 +258,8 @@ public class HP9866A extends IOdevice implements Printable, ActionListener
 			}
 		});
 
-		setNormalSize();
+    // set initially double size
+    setDoubleSize();
 	}
 
 	public JMenuItem makeMenuItem(String menuText)

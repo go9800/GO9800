@@ -124,7 +124,8 @@ public class HP9868A extends IOdevice implements ActionListener
 			}
 		});
 
-		setNormalSize();
+    // set initially double size
+    setDoubleSize();
   }
   
   private JMenu selectCodeMenu(String device, int min, int max)

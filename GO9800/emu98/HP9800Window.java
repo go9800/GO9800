@@ -162,6 +162,9 @@ public class HP9800Window extends JFrame implements ActionListener
     addKeyListener(new HP9800KeyListener());
 
     setResizable(true); // this changes size of insets
+    
+    // set initially double size
+    mainframe.setDoubleSize();
   }
   
   public JMenu makeDevicesMenu()

@@ -234,6 +234,9 @@ public class HP9800Mainframe extends JPanel implements LineListener, Printable
 
       System.out.println("HP9800 Printer loaded.");
     }
+
+    // set initially double size
+    setDoubleSize();
   }
   
   public void setHP9800Window(HP9800Window hp9800Window)

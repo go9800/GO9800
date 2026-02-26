@@ -160,7 +160,7 @@ public class HP9820AMainframe extends HP9800Mainframe
     keyboardImageMedia = new ImageMedia("media/HP9820A/HP9820A_Keyboard.png", imageController);
     blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png", imageController);
 
-    setNormalSize();
+    //setNormalSize();
     System.out.println("HP9820 Mainframe loaded.");
   }
   

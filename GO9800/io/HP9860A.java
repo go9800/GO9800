@@ -115,7 +115,8 @@ public class HP9860A extends IOdevice implements ActionListener
 			}
 		});
 
-		setNormalSize();
+    // set initially double size
+    setDoubleSize();
   }
 
   public JMenuItem makeMenuItem(String menuText)

@@ -178,7 +178,7 @@ public class HP9810AMainframe extends HP9800Mainframe
     ledSmallOnImageMedia = new ImageMedia("media/HP9810A/HP9810A_LED_Small_On.png", imageController);
     ledSmallOffImageMedia = new ImageMedia("media/HP9810A/HP9810A_LED_Small_Off.png", imageController);
     
-    setNormalSize();
+    //setNormalSize();
     System.out.println("HP9810 Mainframe loaded.");
   }
   

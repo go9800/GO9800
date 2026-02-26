@@ -8,6 +8,7 @@ New: HP9820+21 Additional keyboard templates for User Definable Functions ROM HP
 Change: Keyboard template management extended to support multiple templates per ROM
 Change: HP9810+20 build-in printer timing and speed improved
 Change: Hardcopy output on FreePDF has now a correct title and file name
+Change: Calculator and device windows are now rendered in double size on startup
 
 Changes in Release 2.51
 =========================

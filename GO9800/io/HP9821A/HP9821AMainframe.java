@@ -161,7 +161,7 @@ public class HP9821AMainframe extends HP9820AMainframe
  		driveloadedImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Loaded.png", imageController);
     blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png", imageController);
 
-    setNormalSize();
+    //setNormalSize();
     System.out.println("HP9821 Mainframe loaded.");
   }
   

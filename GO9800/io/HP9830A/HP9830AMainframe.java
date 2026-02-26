@@ -221,7 +221,7 @@ public class HP9830AMainframe extends HP9800Mainframe
  		driveloadedImageMedia = new ImageMedia("media/HP9830A/HP9830A_Drive_Loaded.png", imageController);
     romSlots = new HP9830ROMslots(this);
 
-    setNormalSize();
+    //setNormalSize();
     System.out.println("HP9830 Mainframe loaded.");
   }
   

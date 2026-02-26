@@ -121,6 +121,7 @@ class QRegister extends Register
   }
 }
 
+// for simulation of hardware register defects
 class DefectRegister extends Register
 {
 	public DefectRegister(String registerName, int registerWidth, int initValue)
