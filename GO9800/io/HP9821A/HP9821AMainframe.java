@@ -30,6 +30,10 @@
  * 21.10.2017 Rel. 2.10 Added Graphics scaling using class Graphics2D
  * 24.10.2017 Rel. 2.10 Added display of click areas, changed size and behaviour (left-click) of ROM template and instructions click areas
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
+ * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
+ * 18.11.2017 Rel. 2.10 Bugfix: display(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
+ * 08.02.2026 Rel. 2.52 New: Additional templates for HP11223A User Definable ROM
+ * 10.08.2026 Rel. 2.52 Added HP11224A Peripheral Control II ROM
  */
 
 package io.HP9821A;
@@ -155,7 +159,8 @@ public class HP9821AMainframe extends HP9820AMainframe
     romSelector.addRomButton("media/HP9821A/HP11221A_Module.png", "HP11221A");
     romSelector.addRomButton("media/HP9821A/HP11222A_Module.png", "HP11222A");
     //romSelector.addRomButton("media/HP9821A/HP11223A_Block.jpg", "HP11223A");
-    
+    romSelector.addRomButton("media/HP9820A/HP11224A_Module.png", "HP11224A");
+
     keyboardImageMedia = new ImageMedia("media/HP9821A/HP9821A_Keyboard.png", imageController);
  		driveopenImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Open.png", imageController);
  		driveloadedImageMedia = new ImageMedia("media/HP9821A/HP9821A_Drive_Loaded.png", imageController);

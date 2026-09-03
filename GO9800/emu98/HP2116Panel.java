@@ -42,6 +42,7 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
   Thread panelThread;
   int timerValue = 100;
   int previous1 = 0177777, previous2 = 0177777, previous3 = 0177777, previous4 = 0177777, previous5 = 0177777; 
+  boolean running;
 
   public HP2116Panel(HP9800Mainframe mainframe)
   {
@@ -79,6 +80,7 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
 
     setSize(hp2116PanelImage.getWidth(this) + getInsets().left + getInsets().right, hp2116PanelImage.getHeight(this) + getInsets().top + getInsets().bottom);
 
+    running = true;
     panelThread.start();
 
     System.out.println("HP2116 Panel loaded.");
@@ -86,7 +88,7 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
 
   public void run()
   {
-    while(true) {
+    while(running) {
       try {
         Thread.sleep(timerValue);
       } catch(InterruptedException e) {
@@ -111,8 +113,9 @@ public class HP2116Panel extends Frame implements KeyListener, Runnable
   {
   	if(panelThread != null) {
   		System.out.println("HP2116 Panel stopped.");
-  		panelThread.stop();
-  		panelThread = null;
+  		running = false;
+  		//panelThread.stop();
+  		//panelThread = null;
   	}
   	dispose();
   }

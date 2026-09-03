@@ -46,6 +46,7 @@
  * 10.11.2017 Tel. 2.10 Added dynamic image scaling and processing
  * 18.11.2017 Rel. 2.10 Bugfix: display(), displayClickAreas() now get actual Graphics2D to avoid problems during update()
  * 08.02.2026 Rel. 2.52 New: Additional templates for HP11223A User Definable ROM
+ * 10.08.2026 Rel. 2.52 Added HP11224A Peripheral Control II ROM
  */
 
 package io.HP9820A;
@@ -156,6 +157,7 @@ public class HP9820AMainframe extends HP9800Mainframe
     romSelector.addRomButton("media/HP9820A/HP11221A_Module.png", "HP11221A");
     romSelector.addRomButton("media/HP9820A/HP11222A_Module.png", "HP11222A");
     romSelector.addRomButton("media/HP9820A/HP11223A_Module.png", "HP11223A");
+    romSelector.addRomButton("media/HP9820A/HP11224A_Module.png", "HP11224A");
 
     keyboardImageMedia = new ImageMedia("media/HP9820A/HP9820A_Keyboard.png", imageController);
     blockImageMedia = new ImageMedia("media/HP9820A/HP9820A_Module.png", imageController);

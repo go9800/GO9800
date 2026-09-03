@@ -24,7 +24,7 @@
  * 04.10.2016 Rel. 2.02: optimizing BCD operations
  * 04.10.2016 Rel. 2.02: performance optimization by suppressing useless shift loops
  * 25.10.2016 Rel. 2.10: ALU operations transfered to new class ALU
- * 06.11.2016	Rel. 2.10: Further performance optimizations in ALU 
+ * 06.11.2016 Rel. 2.10: Further performance optimizations in ALU 
  * 28.10.2017 Rel. 2.10: Added new linking between Mainframe and other components
  */
 

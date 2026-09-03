@@ -246,19 +246,20 @@ class GO9800Window extends JDialog implements ActionListener, Runnable
     hp9800Window.setVisible(true);
     emu.start();
     
+    /*
     while(emu.running){
     	try {
-				Thread.sleep(500);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
     	
     	// set scrollbar to lowest position
-    	/* causes an issue with painting of the calculator window on startup
+    	// may cause an issue with painting of the calculator window on startup when sleep time too short (see above)
     	if(update) {
     		scrollPane.getVerticalScrollBar().setValue(100000000);
     		update = false;
     	}
-    	*/
     }
+    */
 	}
 }
 
@@ -291,7 +292,7 @@ public class GO9800
       }
     }
     
-    System.out.println("HP Series 9800 Emulator Release 2.52 Feb 26, 2026. Copyright (C) 2006-2026 Achim Buerger\n");
+    System.out.println("HP Series 9800 Emulator Release 2.53 Sep 01, 2026. Copyright (C) 2006-2026 Achim Buerger\n");
     System.out.println("GO9800 comes with ABSOLUTELY NO WARRANTY.");
     System.out.println("This is free software, and you are welcome to redistribute it under certain conditions.\n");
     System.out.println("GO9800 is in no way associated with the Hewlett Packard Company or its subsidiaries.");

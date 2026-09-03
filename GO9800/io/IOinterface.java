@@ -41,7 +41,7 @@ import emu98.IOunit;
 
 public class IOinterface implements Runnable
 {
-	public HP9800Mainframe mainframe; // connection to HP9800 mainframe
+  public HP9800Mainframe mainframe; // connection to HP9800 mainframe
   protected IOunit ioUnit; // connection to IOunit
   public ImageMedia labelImageMedia;
   public boolean internalInterface;
@@ -52,6 +52,7 @@ public class IOinterface implements Runnable
   
   protected IOdevice ioDevice;
   protected Thread devThread;
+  protected boolean running;
   
   protected int status = IOunit.devStatusReady;
   protected int timerValue = 1000;
@@ -117,12 +118,14 @@ public class IOinterface implements Runnable
   public void start()
   {
     // start only explicid named threads
-    if(!devThread.getName().startsWith("Thread"))
+    if(!devThread.getName().startsWith("Thread")) {
+      running = true;
       devThread.start();
+    }
   }
   
   public void run()  {
-    while(true) {
+    while(running) {
       // sleep until interrupted by IO-instruction
       try {
         Thread.sleep(timerValue);
@@ -152,8 +155,9 @@ public class IOinterface implements Runnable
   {
   	if(devThread != null)
   	{
-  		devThread.stop();
-  		devThread = null;
+  		running = false;
+  		//devThread.stop();
+  		//devThread = null;
   	}
   	
     mainframe.ioInterfaces.removeElement(this);  // remove device interface object from IObus

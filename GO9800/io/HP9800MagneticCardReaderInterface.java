@@ -98,8 +98,9 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   public void run()
   {
     debug = mainframe.console.getDebugMode();
+    running = true;
     
-    while(true) {
+    while(running) {
       // sleep until interrupted by IO-instruction
       try {
         Thread.sleep(timerValue);
@@ -476,7 +477,10 @@ public class HP9800MagneticCardReaderInterface extends IOinterface
   
   public void stop()
   {
-  	if(devThread != null)	devThread.stop();
+    if(devThread != null) {
+      running = false;
+  	  //devThread.stop();
+  	}
   	
     // stop all sound threads
   	if(startSound != null) startSound.close();

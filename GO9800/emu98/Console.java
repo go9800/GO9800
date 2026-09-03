@@ -456,7 +456,7 @@ public class Console extends JDialog implements ActionListener
       microCodeCheckBox.setDisabledIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg", imageController).getImage()));
       microCodeCheckBox.setIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_Off.jpg", imageController).getImage()));
       microCodeCheckBox.setSelectedIcon(new ImageIcon(new ImageMedia("media/HP9810A/HP9810A_LED_Large_On.jpg", imageController).getImage()));
-      microCodeCheckBox.setText("µCODE");
+      microCodeCheckBox.setText("MICROCODE");
       microCodeCheckBox.setActionCommand("MicroCodeLED");
       microCodeCheckBox.addActionListener(this);
     }
